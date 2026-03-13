@@ -1,0 +1,87 @@
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
+import { platforms } from "@/lib/platforms";
+
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+  const platform = body.platform as string;
+
+  if (!platform || !platforms[platform]) {
+    return NextResponse.json(
+      { error: "Invalid platform" },
+      { status: 400 }
+    );
+  }
+
+  const listing = await prisma.listing.findUnique({
+    where: { id },
+    include: {
+      images: { orderBy: { order: "asc" } },
+      platformListings: {
+        where: { platform },
+      },
+    },
+  });
+
+  if (!listing) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  const platformListing = listing.platformListings[0];
+  if (!platformListing) {
+    return NextResponse.json(
+      { error: "Listing not optimized for this platform yet. Run optimize first." },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const automation = platforms[platform];
+    const result = await automation.publish({
+      title: platformListing.optimizedTitle,
+      description: platformListing.optimizedDescription,
+      price: platformListing.suggestedPrice || listing.price,
+      category: listing.category,
+      brand: listing.brand,
+      size: listing.size,
+      condition: listing.condition,
+      images: listing.images.map((img) => img.path),
+      hashtags: JSON.parse(platformListing.hashtags || "[]"),
+    });
+
+    await prisma.platformListing.update({
+      where: { id: platformListing.id },
+      data: {
+        status: "published",
+        platformUrl: result.url,
+        publishedAt: new Date(),
+      },
+    });
+
+    await prisma.listing.update({
+      where: { id },
+      data: { status: "active" },
+    });
+
+    return NextResponse.json({ success: true, url: result.url });
+  } catch (error) {
+    await prisma.platformListing.update({
+      where: { id: platformListing.id },
+      data: { status: "failed" },
+    });
+
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Publishing failed" },
+      { status: 500 }
+    );
+  }
+}
