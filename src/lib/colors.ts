@@ -4,15 +4,15 @@
  * All palette-derived Tailwind class strings live here so that every
  * component pulls from one source of truth.
  *
- * Palette reference (navy / blue / orange / yellow):
- *   Dark Navy  #0F1B3D   oklch(0.18 0.05 260)
- *   Navy Blue  #002B80   oklch(0.28 0.14 260)
- *   Royal Blue #2563EB   oklch(0.52 0.22 260)
- *   Medium Blue#5591F5   oklch(0.64 0.18 260)
- *   Light Blue #A5C9FF   oklch(0.82 0.09 260)
- *   Orange     #F5A623   oklch(0.78 0.16 75)
- *   Yellow     #F9D44B   oklch(0.87 0.14 90)
- *   Light Yel  #FDE68A   oklch(0.93 0.10 95)
+ * Palette reference (forest green / gold / cream):
+ *   Dark Green  #1A3A2A   oklch(0.22 0.06 155)
+ *   Forest Grn  #2D6A4F   oklch(0.45 0.15 155)
+ *   Medium Grn  #40916C   oklch(0.55 0.12 155)
+ *   Light Green #52B788   oklch(0.65 0.10 155)
+ *   Pale Green  #95D5B2   oklch(0.80 0.08 155)
+ *   Gold/Amber  #D4A843   oklch(0.80 0.12 85)
+ *   Warm Cream  #F5F0E8   oklch(0.97 0.01 90)
+ *   Terracotta  #C4593A   oklch(0.60 0.14 30)
  */
 
 // ── Platform badges (simple bg + text, used in listings, tools, hashtags) ──
@@ -81,9 +81,9 @@ export const statusStyles: Record<string, string> = {
   draft:
     "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-700",
   active:
-    "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-300 dark:border-blue-700",
+    "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-700",
   sold:
-    "bg-green-500/10 text-green-700 dark:text-green-400 border-green-300 dark:border-green-700",
+    "bg-teal-500/10 text-teal-700 dark:text-teal-400 border-teal-300 dark:border-teal-700",
 };
 
 // ── Platform-listing publish status ──
@@ -92,7 +92,7 @@ export const publishStatusColor: Record<string, string> = {
   draft:
     "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-700",
   published:
-    "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-300 dark:border-blue-700",
+    "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-700",
   failed:
     "bg-red-500/10 text-red-700 dark:text-red-400 border-red-300 dark:border-red-700",
 };
@@ -112,8 +112,8 @@ export const priorityStyles: Record<
     bg: "bg-amber-500/10",
   },
   low: {
-    color: "text-blue-600 dark:text-blue-400",
-    bg: "bg-blue-500/10",
+    color: "text-emerald-600 dark:text-emerald-400",
+    bg: "bg-emerald-500/10",
   },
 };
 
@@ -121,47 +121,47 @@ export const priorityStyles: Record<
 
 export const statCardColors = {
   listings: {
-    color: "text-blue-600 dark:text-blue-400",
-    bg: "bg-blue-500/10",
+    color: "text-emerald-600 dark:text-emerald-400",
+    bg: "bg-emerald-500/10",
   },
   active: {
-    color: "text-blue-600 dark:text-blue-400",
-    bg: "bg-blue-500/10",
+    color: "text-teal-600 dark:text-teal-400",
+    bg: "bg-teal-500/10",
   },
   published: {
-    color: "text-indigo-600 dark:text-indigo-400",
-    bg: "bg-indigo-500/10",
+    color: "text-emerald-700 dark:text-emerald-300",
+    bg: "bg-emerald-500/10",
   },
   revenue: {
     color: "text-amber-600 dark:text-amber-400",
     bg: "bg-amber-500/10",
   },
   views: {
-    color: "text-sky-600 dark:text-sky-400",
-    bg: "bg-sky-500/10",
+    color: "text-teal-600 dark:text-teal-400",
+    bg: "bg-teal-500/10",
   },
   likes: {
     color: "text-pink-600 dark:text-pink-400",
     bg: "bg-pink-500/10",
   },
   sales: {
-    color: "text-blue-600 dark:text-blue-400",
-    bg: "bg-blue-500/10",
+    color: "text-emerald-600 dark:text-emerald-400",
+    bg: "bg-emerald-500/10",
   },
 };
 
 // ── Health score helpers ──
 
 export function scoreColor(score: number): string {
-  if (score >= 85) return "text-blue-600 dark:text-blue-400";
-  if (score >= 70) return "text-sky-600 dark:text-sky-400";
+  if (score >= 85) return "text-emerald-600 dark:text-emerald-400";
+  if (score >= 70) return "text-teal-600 dark:text-teal-400";
   if (score >= 50) return "text-amber-600 dark:text-amber-400";
   return "text-red-600 dark:text-red-400";
 }
 
 export function scoreBg(score: number): string {
-  if (score >= 85) return "bg-blue-500";
-  if (score >= 70) return "bg-sky-500";
+  if (score >= 85) return "bg-emerald-500";
+  if (score >= 70) return "bg-teal-500";
   if (score >= 50) return "bg-amber-500";
   return "bg-red-500";
 }
@@ -170,19 +170,19 @@ export const impactStyles: Record<string, string> = {
   high: "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800",
   medium:
     "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800",
-  low: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800",
+  low: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800",
 };
 
 // ── Confidence score helpers (smart lister) ──
 
 export function confidenceColor(score: number): string {
-  if (score >= 80) return "text-blue-600 dark:text-blue-400";
+  if (score >= 80) return "text-emerald-600 dark:text-emerald-400";
   if (score >= 60) return "text-amber-600 dark:text-amber-400";
   return "text-red-600 dark:text-red-400";
 }
 
 export function confidenceBg(score: number): string {
-  if (score >= 80) return "bg-blue-500";
+  if (score >= 80) return "bg-emerald-500";
   if (score >= 60) return "bg-amber-500";
   return "bg-red-500";
 }
@@ -194,7 +194,7 @@ export const responseStyles: Record<string, string> = {
   negotiate:
     "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800",
   accept:
-    "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800",
+    "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800",
 };
 
 // ── Trend heat helpers ──
@@ -221,11 +221,11 @@ export function heatColor(heat: number) {
 
 export function brandGradient(index: number): string {
   const gradients = [
-    "bg-gradient-to-br from-blue-500 to-indigo-600",
+    "bg-gradient-to-br from-emerald-500 to-teal-600",
     "bg-gradient-to-br from-orange-500 to-amber-600",
-    "bg-gradient-to-br from-sky-500 to-blue-600",
+    "bg-gradient-to-br from-teal-500 to-emerald-600",
     "bg-gradient-to-br from-amber-500 to-yellow-500",
-    "bg-gradient-to-br from-indigo-500 to-blue-700",
+    "bg-gradient-to-br from-emerald-600 to-green-700",
   ];
   return gradients[index % gradients.length];
 }
@@ -233,18 +233,18 @@ export function brandGradient(index: number): string {
 // ── Chart bar fill colors (oklch, for Recharts) ──
 
 export const chartFills = {
-  listings: "oklch(0.546 0.245 262.881)", // blue
-  published: "oklch(0.646 0.222 41.116)", // orange
-  views: "oklch(0.6 0.118 184.704)", // teal
-  likes: "oklch(0.828 0.189 84.429)", // yellow
+  listings: "oklch(0.45 0.15 155)", // deep green
+  published: "oklch(0.55 0.12 155)", // medium green
+  views: "oklch(0.65 0.10 155)", // light green
+  likes: "oklch(0.80 0.12 85)", // gold
 };
 
 // ── Profit calculator ──
 
-export const profitPositive = "text-blue-600 dark:text-blue-400";
+export const profitPositive = "text-emerald-600 dark:text-emerald-400";
 export const profitNegative = "text-red-600 dark:text-red-400";
-export const bestPlatformBadge = "bg-blue-600 text-white";
+export const bestPlatformBadge = "bg-emerald-600 text-white";
 export const profitSummaryBorder =
-  "border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950/30";
+  "border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/30";
 export const profitSummaryText =
-  "text-blue-800 dark:text-blue-300";
+  "text-emerald-800 dark:text-emerald-300";

@@ -346,7 +346,7 @@ export default function TrendsPage() {
       {/* ── Sleeper Picks ── */}
       <section>
         <div className="flex items-center gap-2 mb-1">
-          <Gem className="h-5 w-5 text-indigo-500" />
+          <Gem className="h-5 w-5 text-emerald-500" />
           <h2 className="text-lg font-semibold">Sleeper Picks</h2>
         </div>
         <p className="text-muted-foreground text-sm mb-4">
@@ -358,23 +358,23 @@ export default function TrendsPage() {
               key={pick.name}
               className="border-0 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden"
             >
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-700" />
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-700" />
               <CardContent className="pt-6 pb-5 space-y-3">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2.5">
-                    <div className="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 p-2 rounded-lg">
+                    <div className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 p-2 rounded-lg">
                       <Lightbulb className="h-4 w-4" />
                     </div>
                     <h3 className="font-semibold text-sm">{pick.name}</h3>
                   </div>
-                  <Badge className="bg-gradient-to-r from-blue-500 to-indigo-500 border-0 text-white text-xs font-bold shrink-0 shadow-sm">
+                  <Badge className="bg-gradient-to-r from-emerald-500 to-teal-500 border-0 text-white text-xs font-bold shrink-0 shadow-sm">
                     +{pick.estimatedROI}
                   </Badge>
                 </div>
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   {pick.reasoning}
                 </p>
-                <div className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 pt-1">
+                <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400 pt-1">
                   <Gem className="h-3 w-3" />
                   <span>Hidden opportunity</span>
                 </div>
@@ -389,10 +389,10 @@ export default function TrendsPage() {
       {/* ── Seasonal Advice ── */}
       <section>
         <Card className="border-0 shadow-sm overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-600" />
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-400 via-teal-500 to-emerald-600" />
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
-              <div className="bg-blue-500/10 text-blue-600 dark:text-blue-400 p-2 rounded-lg">
+              <div className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 p-2 rounded-lg">
                 <Calendar className="h-4 w-4" />
               </div>
               Seasonal Forecast

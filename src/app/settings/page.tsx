@@ -86,7 +86,7 @@ export default function SettingsPage() {
   const connectedCount = platforms.filter((p) => p.connected).length;
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Settings</h1>
         <p className="text-muted-foreground text-sm">Manage your platform connections and preferences</p>

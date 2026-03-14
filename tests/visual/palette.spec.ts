@@ -83,12 +83,18 @@ function contrastRatio(l1: number, l2: number): number {
 }
 
 async function enableDarkMode(page: Page) {
-  await page.evaluate(() => document.documentElement.classList.add("dark"));
+  await page.evaluate(() => {
+    localStorage.setItem("theme", "dark");
+    document.documentElement.classList.add("dark");
+  });
   await page.waitForTimeout(200);
 }
 
 async function enableLightMode(page: Page) {
-  await page.evaluate(() => document.documentElement.classList.remove("dark"));
+  await page.evaluate(() => {
+    localStorage.setItem("theme", "light");
+    document.documentElement.classList.remove("dark");
+  });
   await page.waitForTimeout(200);
 }
 
@@ -151,9 +157,6 @@ test.describe("A — Full-page screenshots", () => {
 // ════════════════════════════════════════════════════════════════════
 
 test.describe("B — CSS token verification", () => {
-  // The build system resolves oklch to hex, so we verify hex ranges using
-  // a canvas-based RGB extraction from the resolved computed style.
-
   async function varAsRGB(page: Page, varName: string): Promise<[number, number, number]> {
     return page.evaluate((v) => {
       const raw = getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -165,55 +168,54 @@ test.describe("B — CSS token verification", () => {
     }, varName);
   }
 
-  test("B1: --primary is a blue tone in light mode", async ({ page }) => {
+  test("B1: --primary is a green tone in light mode", async ({ page }) => {
     await page.goto("/");
     await enableLightMode(page);
     const [r, g, b] = await varAsRGB(page, "--primary");
-    // Royal blue: blue > red, blue > green
-    expect(b).toBeGreaterThan(r);
-    expect(b).toBeGreaterThan(g);
-    expect(b).toBeGreaterThan(150);
+    // Forest green: green > red, green > blue
+    expect(g).toBeGreaterThan(r);
+    expect(g).toBeGreaterThan(b);
+    expect(g).toBeGreaterThan(50);
   });
 
-  test("B2: --accent is light neutral in light mode", async ({ page }) => {
+  test("B2: --accent is green (matches primary) in light mode", async ({ page }) => {
     await page.goto("/");
     await enableLightMode(page);
     const [r, g, b] = await varAsRGB(page, "--accent");
-    // Accent is oklch(0.968 0 0) — achromatic near-white: all channels > 230
-    expect(r).toBeGreaterThan(230);
-    expect(g).toBeGreaterThan(230);
-    expect(b).toBeGreaterThan(230);
+    // Accent is now green like primary: green > red, green > blue
+    expect(g).toBeGreaterThan(r);
+    expect(g).toBeGreaterThan(b);
   });
 
-  test("B3: --background in light mode is near-white", async ({ page }) => {
+  test("B3: --background in light mode is clean white", async ({ page }) => {
     await page.goto("/");
     await enableLightMode(page);
     const [r, g, b] = await varAsRGB(page, "--background");
-    // Near-white: all channels > 240
-    expect(r).toBeGreaterThan(230);
-    expect(g).toBeGreaterThan(230);
-    expect(b).toBeGreaterThan(230);
+    // Clean white: all channels > 245
+    expect(r).toBeGreaterThan(245);
+    expect(g).toBeGreaterThan(245);
+    expect(b).toBeGreaterThan(245);
   });
 
-  test("B4: --background in dark mode is deep navy (dark, blue-ish)", async ({ page }) => {
+  test("B4: --background in dark mode is deep green-tinted", async ({ page }) => {
     await page.goto("/");
     await enableDarkMode(page);
     const [r, g, b] = await varAsRGB(page, "--background");
-    // Dark: all channels < 60, blue channel is highest
+    // Dark: all channels < 60, green >= red
     expect(r).toBeLessThan(60);
     expect(g).toBeLessThan(60);
-    expect(b).toBeLessThan(80);
-    expect(b).toBeGreaterThanOrEqual(r);
+    expect(b).toBeLessThan(60);
+    expect(g).toBeGreaterThanOrEqual(r);
   });
 
   test("B5: --foreground in light mode is dark", async ({ page }) => {
     await page.goto("/");
     await enableLightMode(page);
     const [r, g, b] = await varAsRGB(page, "--foreground");
-    // Dark navy: all channels < 80
+    // Dark green-tinted: all channels < 80
     expect(r).toBeLessThan(80);
     expect(g).toBeLessThan(80);
-    expect(b).toBeLessThan(120);
+    expect(b).toBeLessThan(80);
   });
 
   test("B6: --foreground in dark mode is light", async ({ page }) => {
@@ -226,13 +228,14 @@ test.describe("B — CSS token verification", () => {
     expect(b).toBeGreaterThan(200);
   });
 
-  test("B7: --border is light and has blue undertone", async ({ page }) => {
+  test("B7: --border is light in light mode", async ({ page }) => {
     await page.goto("/");
     await enableLightMode(page);
     const [r, g, b] = await varAsRGB(page, "--border");
-    // Light border: all channels > 180, blue ≥ others
-    expect(r).toBeGreaterThan(180);
-    expect(b).toBeGreaterThanOrEqual(r);
+    // Light border: all channels > 200
+    expect(r).toBeGreaterThan(200);
+    expect(g).toBeGreaterThan(200);
+    expect(b).toBeGreaterThan(200);
   });
 
   test("B8: --ring matches primary in light mode", async ({ page }) => {
@@ -246,22 +249,22 @@ test.describe("B — CSS token verification", () => {
     expect(Math.abs(ring[2] - primary[2])).toBeLessThan(5);
   });
 
-  test("B9: chart-1 is warm/orange", async ({ page }) => {
+  test("B9: chart-1 is green (matches primary)", async ({ page }) => {
     await page.goto("/");
     const [r, g, b] = await varAsRGB(page, "--chart-1");
-    // chart-1 is oklch(0.646 0.222 41.116) — orange hue: red > blue
-    expect(r).toBeGreaterThan(b);
-    expect(r).toBeGreaterThan(150);
+    // chart-1 is forest green: green > red, green > blue
+    expect(g).toBeGreaterThan(r);
+    expect(g).toBeGreaterThan(b);
   });
 
-  test("B10: chart-2 is teal/cyan", async ({ page }) => {
+  test("B10: chart-2 is medium green", async ({ page }) => {
     await page.goto("/");
     const [r, g, b] = await varAsRGB(page, "--chart-2");
-    // chart-2 is oklch(0.6 0.118 184.704) — teal hue: green >= red, blue > red
+    // chart-2 is medium green: green > red
     expect(g).toBeGreaterThan(r);
   });
 
-  test("B11: --destructive is red, not blue", async ({ page }) => {
+  test("B11: --destructive is red, not green", async ({ page }) => {
     await page.goto("/");
     await enableLightMode(page);
     const [r, g, b] = await varAsRGB(page, "--destructive");
@@ -269,12 +272,13 @@ test.describe("B — CSS token verification", () => {
     expect(r).toBeGreaterThan(150);
   });
 
-  test("B12: --primary in dark mode is brighter blue", async ({ page }) => {
+  test("B12: --primary in dark mode is brighter green", async ({ page }) => {
     await page.goto("/");
     await enableDarkMode(page);
     const [r, g, b] = await varAsRGB(page, "--primary");
-    expect(b).toBeGreaterThan(r);
-    expect(b).toBeGreaterThan(150);
+    expect(g).toBeGreaterThan(r);
+    expect(g).toBeGreaterThan(b);
+    expect(g).toBeGreaterThan(100);
   });
 });
 
@@ -283,11 +287,12 @@ test.describe("B — CSS token verification", () => {
 // ════════════════════════════════════════════════════════════════════
 
 test.describe("C — Component colors", () => {
-  test("C1: Navbar has sf-blur class applied", async ({ page }) => {
+  test("C1: Top header is present with border", async ({ page }) => {
     await page.goto("/");
-    const nav = page.locator("nav");
-    const cls = await nav.getAttribute("class");
-    expect(cls).toContain("sf-blur");
+    const header = page.locator("header");
+    await expect(header).toBeVisible();
+    const cls = await header.getAttribute("class");
+    expect(cls).toContain("border-b");
   });
 
   test("C2: Primary buttons exist and are visible", async ({ page }) => {
@@ -302,10 +307,11 @@ test.describe("C — Component colors", () => {
     await expect(card).toBeVisible();
   });
 
-  test("C4: Hero section uses primary bg", async ({ page }) => {
+  test("C4: Featured stat card has green gradient background", async ({ page }) => {
     await page.goto("/");
-    const hero = page.locator(".bg-primary").first();
-    await expect(hero).toBeVisible();
+    // Featured stat card uses bg-gradient-to-br with green oklch values
+    const featured = page.locator("[class*='bg-gradient-to-br']").first();
+    await expect(featured).toBeVisible();
   });
 
   test("C5: Status badges render on listings", async ({ page }) => {
@@ -315,20 +321,19 @@ test.describe("C — Component colors", () => {
     await expect(body).toBeVisible();
   });
 
-  test("C6: Muted text has blue undertone (not pure gray)", async ({ page }) => {
+  test("C6: Muted text has green undertone (not pure gray)", async ({ page }) => {
     await page.goto("/");
     await enableLightMode(page);
-    // Get the muted-foreground color and verify blue >= red (not pure gray where all equal)
     const muteEl = page.locator(".text-muted-foreground").first();
     if (await muteEl.isVisible()) {
-      const [r, , b] = await muteEl.evaluate((el) => {
+      const [r, g, b] = await muteEl.evaluate((el) => {
         const c = getComputedStyle(el).color;
         const canvas = document.createElement("canvas"); canvas.width=1; canvas.height=1;
         const ctx = canvas.getContext("2d")!; ctx.fillStyle = c; ctx.fillRect(0,0,1,1);
         const d = ctx.getImageData(0,0,1,1).data; return [d[0],d[1],d[2]] as [number,number,number];
       });
-      // Blue channel should be >= red channel (navy undertone, not pure gray)
-      expect(b).toBeGreaterThanOrEqual(r);
+      // Green channel should be >= red channel (green undertone)
+      expect(g).toBeGreaterThanOrEqual(r);
     }
   });
 
@@ -338,13 +343,14 @@ test.describe("C — Component colors", () => {
     await expect(input).toBeVisible();
   });
 
-  test("C8: Navbar logo icon container uses bg-primary", async ({ page }) => {
+  test("C8: Sidebar logo icon is visible with primary color", async ({ page }) => {
     await page.goto("/");
-    const logo = page.locator("nav .bg-primary").first();
+    // The logo container uses bg-primary/10 and the icon inside uses text-primary
+    const logo = page.locator("aside .text-primary").first();
     await expect(logo).toBeVisible();
   });
 
-  test("C9: Dark mode card bg is dark with blue undertone", async ({ page }) => {
+  test("C9: Dark mode card bg is dark with green undertone", async ({ page }) => {
     await page.goto("/");
     await enableDarkMode(page);
     const [r, g, b] = await page.evaluate(() => {
@@ -355,12 +361,12 @@ test.describe("C — Component colors", () => {
       const d = ctx.getImageData(0, 0, 1, 1).data;
       return [d[0], d[1], d[2]] as [number, number, number];
     });
-    // Dark: all < 80, blue >= red
+    // Dark: all < 80, green >= red
     expect(r).toBeLessThan(80);
-    expect(b).toBeGreaterThanOrEqual(r);
+    expect(g).toBeGreaterThanOrEqual(r);
   });
 
-  test("C10: Secondary color is light with blue tint", async ({ page }) => {
+  test("C10: Secondary color is light with green tint", async ({ page }) => {
     await page.goto("/");
     await enableLightMode(page);
     const [r, g, b] = await page.evaluate(() => {
@@ -371,9 +377,10 @@ test.describe("C — Component colors", () => {
       const d = ctx.getImageData(0, 0, 1, 1).data;
       return [d[0], d[1], d[2]] as [number, number, number];
     });
-    // Light secondary: all > 220, blue >= red
+    // Light secondary: all > 220
     expect(r).toBeGreaterThan(220);
-    expect(b).toBeGreaterThanOrEqual(r);
+    expect(g).toBeGreaterThan(220);
+    expect(b).toBeGreaterThan(220);
   });
 
   test("C11: Smart Lister page loads with AI-Powered badge", async ({ page }) => {
@@ -394,7 +401,7 @@ test.describe("C — Component colors", () => {
 // ════════════════════════════════════════════════════════════════════
 
 test.describe("D — WCAG contrast", () => {
-  test("D1: Foreground on background (light) ≥ 4.5:1", async ({ page }) => {
+  test("D1: Foreground on background (light) >= 4.5:1", async ({ page }) => {
     await page.goto("/");
     await enableLightMode(page);
     const fg = await getElementColorAsRGB(page, "body", "color");
@@ -403,7 +410,7 @@ test.describe("D — WCAG contrast", () => {
     expect(ratio).toBeGreaterThanOrEqual(4.5);
   });
 
-  test("D2: Foreground on background (dark) ≥ 4.5:1", async ({ page }) => {
+  test("D2: Foreground on background (dark) >= 4.5:1", async ({ page }) => {
     await page.goto("/");
     await enableDarkMode(page);
     const fg = await getElementColorAsRGB(page, "body", "color");
@@ -412,7 +419,7 @@ test.describe("D — WCAG contrast", () => {
     expect(ratio).toBeGreaterThanOrEqual(4.5);
   });
 
-  test("D3: Primary button text on primary bg (light) ≥ 3:1", async ({ page }) => {
+  test("D3: Primary button text on primary bg (light) >= 3:1", async ({ page }) => {
     await page.goto("/");
     await enableLightMode(page);
     const btn = page.locator("a[href='/listings/new'] button").first();
@@ -436,7 +443,7 @@ test.describe("D — WCAG contrast", () => {
     }
   });
 
-  test("D4: Muted text on background (light) ≥ 3:1", async ({ page }) => {
+  test("D4: Muted text on background (light) >= 3:1", async ({ page }) => {
     await page.goto("/");
     await enableLightMode(page);
     const muteEl = page.locator(".text-muted-foreground").first();
@@ -453,10 +460,10 @@ test.describe("D — WCAG contrast", () => {
     }
   });
 
-  test("D5: Card text on card bg (light) ≥ 4.5:1", async ({ page }) => {
+  test("D5: Card text on card bg (light) >= 4.5:1", async ({ page }) => {
     await page.goto("/");
     await enableLightMode(page);
-    const card = page.locator("[class*='sf-shadow']").first();
+    const card = page.locator("[data-slot='card']").first();
     if (await card.isVisible()) {
       const [fg, bg] = await Promise.all([
         card.evaluate((el) => {
@@ -473,17 +480,16 @@ test.describe("D — WCAG contrast", () => {
         }),
       ]);
       const ratio = contrastRatio(relativeLuminance(fg), relativeLuminance(bg));
-      // bg might be transparent (0,0,0,0) — skip if so
       if (bg[0] + bg[1] + bg[2] > 0) {
         expect(ratio).toBeGreaterThanOrEqual(4.5);
       }
     }
   });
 
-  test("D6: Card text on card bg (dark) ≥ 4.5:1", async ({ page }) => {
+  test("D6: Card text on card bg (dark) >= 4.5:1", async ({ page }) => {
     await page.goto("/");
     await enableDarkMode(page);
-    const card = page.locator("[class*='sf-shadow']").first();
+    const card = page.locator("[data-slot='card']").first();
     if (await card.isVisible()) {
       const [fg, bg] = await Promise.all([
         card.evaluate((el) => {
@@ -506,32 +512,47 @@ test.describe("D — WCAG contrast", () => {
     }
   });
 
-  test("D7: Navbar text readable (light)", async ({ page }) => {
+  test("D7: Sidebar text readable (light)", async ({ page }) => {
     await page.goto("/");
     await enableLightMode(page);
-    const navText = page.locator("nav span.font-semibold").first();
-    const fg = await navText.evaluate((el) => {
+    const sidebarText = page.locator("aside span.font-bold").first();
+    const fg = await sidebarText.evaluate((el) => {
       const c = getComputedStyle(el).color;
       const canvas = document.createElement("canvas"); canvas.width=1; canvas.height=1;
       const ctx = canvas.getContext("2d")!; ctx.fillStyle = c; ctx.fillRect(0,0,1,1);
       const d = ctx.getImageData(0,0,1,1).data; return [d[0],d[1],d[2]] as [number,number,number];
     });
-    const bg = await getElementColorAsRGB(page, "body", "background-color");
+    const bg = await sidebarText.evaluate((el) => {
+      // Get the sidebar background
+      const aside = el.closest("aside");
+      if (!aside) return [0, 0, 0] as [number, number, number];
+      const c = getComputedStyle(aside).backgroundColor;
+      const canvas = document.createElement("canvas"); canvas.width=1; canvas.height=1;
+      const ctx = canvas.getContext("2d")!; ctx.fillStyle = c; ctx.fillRect(0,0,1,1);
+      const d = ctx.getImageData(0,0,1,1).data; return [d[0],d[1],d[2]] as [number,number,number];
+    });
     const ratio = contrastRatio(relativeLuminance(fg), relativeLuminance(bg));
     expect(ratio).toBeGreaterThanOrEqual(4.5);
   });
 
-  test("D8: Navbar text readable (dark)", async ({ page }) => {
+  test("D8: Sidebar text readable (dark)", async ({ page }) => {
     await page.goto("/");
     await enableDarkMode(page);
-    const navText = page.locator("nav span.font-semibold").first();
-    const fg = await navText.evaluate((el) => {
+    const sidebarText = page.locator("aside span.font-bold").first();
+    const fg = await sidebarText.evaluate((el) => {
       const c = getComputedStyle(el).color;
       const canvas = document.createElement("canvas"); canvas.width=1; canvas.height=1;
       const ctx = canvas.getContext("2d")!; ctx.fillStyle = c; ctx.fillRect(0,0,1,1);
       const d = ctx.getImageData(0,0,1,1).data; return [d[0],d[1],d[2]] as [number,number,number];
     });
-    const bg = await getElementColorAsRGB(page, "body", "background-color");
+    const bg = await sidebarText.evaluate((el) => {
+      const aside = el.closest("aside");
+      if (!aside) return [0, 0, 0] as [number, number, number];
+      const c = getComputedStyle(aside).backgroundColor;
+      const canvas = document.createElement("canvas"); canvas.width=1; canvas.height=1;
+      const ctx = canvas.getContext("2d")!; ctx.fillStyle = c; ctx.fillRect(0,0,1,1);
+      const d = ctx.getImageData(0,0,1,1).data; return [d[0],d[1],d[2]] as [number, number, number];
+    });
     const ratio = contrastRatio(relativeLuminance(fg), relativeLuminance(bg));
     expect(ratio).toBeGreaterThanOrEqual(4.5);
   });
@@ -584,13 +605,10 @@ test.describe("E — Responsive layout", () => {
 // ════════════════════════════════════════════════════════════════════
 
 test.describe("F — Interactive states", () => {
-  test("F1: Nav link shows active state", async ({ page }) => {
+  test("F1: Sidebar link shows active state", async ({ page }) => {
     await page.goto("/");
-    const activeLink = page.locator("nav a.bg-background").first();
+    const activeLink = page.locator("aside a.bg-sidebar-primary").first();
     await expect(activeLink).toBeVisible();
-    // Active link should have shadow
-    const shadow = await activeLink.evaluate((el) => getComputedStyle(el).boxShadow);
-    expect(shadow).not.toBe("none");
   });
 
   test("F2: Card hover shows increased shadow", async ({ page }) => {
@@ -602,19 +620,16 @@ test.describe("F — Interactive states", () => {
       await card.hover();
       await page.waitForTimeout(300);
       const afterShadow = await card.evaluate((el) => getComputedStyle(el).boxShadow);
-      // Shadow should exist after hover
       expect(afterShadow).toBeTruthy();
     }
   });
 
   test("F3: Filter buttons toggle state", async ({ page }) => {
     await page.goto("/");
-    const allBtn = page.locator("button:text('All')").first();
     const draftBtn = page.locator("button:text('Draft')").first();
     if (await draftBtn.isVisible()) {
       await draftBtn.click();
       await page.waitForTimeout(200);
-      // Draft button should now have active styling
       const cls = await draftBtn.getAttribute("class");
       expect(cls).toContain("bg-background");
     }
@@ -623,8 +638,8 @@ test.describe("F — Interactive states", () => {
   test("F4: Theme toggle switches to dark mode", async ({ page }) => {
     await page.goto("/");
     await enableLightMode(page);
-    // Click the theme toggle button
-    const themeBtn = page.locator("nav button.rounded-full").first();
+    // Click the theme toggle button in sidebar
+    const themeBtn = page.locator("aside button").first();
     if (await themeBtn.isVisible()) {
       await themeBtn.click();
       await page.waitForTimeout(300);
@@ -638,7 +653,6 @@ test.describe("F — Interactive states", () => {
   test("F5: Settings page connect button visible", async ({ page }) => {
     await page.goto("/settings");
     await page.waitForTimeout(500);
-    // Should see either Connect or Disconnect buttons
     const connectBtn = page.locator("button:text('Connect')").first();
     const disconnectBtn = page.locator("button:text('Disconnect')").first();
     const hasConnect = await connectBtn.isVisible().catch(() => false);

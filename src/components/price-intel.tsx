@@ -76,8 +76,8 @@ export function PriceIntel({ title, brand, category, condition, size, currentPri
     return (
       <Card className="border-0 shadow-sm">
         <CardContent className="py-8 text-center">
-          <div className="mx-auto w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center mb-3">
-            <DollarSign className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+          <div className="mx-auto w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-3">
+            <DollarSign className="h-6 w-6 text-primary" />
           </div>
           <h3 className="font-semibold mb-1">Price Intelligence</h3>
           <p className="text-sm text-muted-foreground mb-4 max-w-xs mx-auto">
@@ -102,7 +102,7 @@ export function PriceIntel({ title, brand, category, condition, size, currentPri
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
-            <DollarSign className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <DollarSign className="h-4 w-4 text-primary" />
             Price Intelligence
           </CardTitle>
           <Button variant="ghost" size="sm" onClick={analyze} disabled={loading}>
@@ -116,7 +116,7 @@ export function PriceIntel({ title, brand, category, condition, size, currentPri
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Market Range</p>
           <div className="relative h-8 bg-muted/50 rounded-full overflow-hidden">
             <div
-              className="absolute inset-y-0 bg-gradient-to-r from-amber-400 via-blue-400 to-indigo-500 opacity-20 rounded-full"
+              className="absolute inset-y-0 bg-gradient-to-r from-amber-400 via-emerald-400 to-teal-500 opacity-20 rounded-full"
               style={{
                 left: "5%",
                 right: "5%",
@@ -131,7 +131,7 @@ export function PriceIntel({ title, brand, category, condition, size, currentPri
             />
             {/* Optimal price marker */}
             <div
-              className="absolute top-1 bottom-1 w-6 h-6 rounded-full bg-blue-500 border-2 border-white shadow-md flex items-center justify-center -ml-3"
+              className="absolute top-1 bottom-1 w-6 h-6 rounded-full bg-primary border-2 border-white shadow-md flex items-center justify-center -ml-3"
               style={{
                 left: `${Math.min(95, Math.max(5, ((data.strategy.optimalPrice - data.marketAnalysis.lowEnd) / (data.marketAnalysis.highEnd - data.marketAnalysis.lowEnd)) * 90 + 5))}%`,
               }}
@@ -153,7 +153,7 @@ export function PriceIntel({ title, brand, category, condition, size, currentPri
             <StratIcon className="h-4 w-4 text-primary" />
             <p className="text-sm font-semibold">Optimal Price: ${data.strategy.optimalPrice}</p>
             {data.strategy.optimalPrice !== currentPrice && (
-              <Badge variant="outline" className={data.strategy.optimalPrice > currentPrice ? "text-blue-600 border-blue-300" : "text-amber-600 border-amber-300"}>
+              <Badge variant="outline" className={data.strategy.optimalPrice > currentPrice ? "text-emerald-600 border-emerald-300" : "text-amber-600 border-amber-300"}>
                 {data.strategy.optimalPrice > currentPrice ? "+" : ""}
                 ${(data.strategy.optimalPrice - currentPrice).toFixed(0)}
               </Badge>
