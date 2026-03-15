@@ -5,6 +5,8 @@ import { Sidebar } from "@/components/sidebar";
 import { TopHeader } from "@/components/top-header";
 import { Toaster } from "@/components/ui/sonner";
 import { MainContent } from "@/components/main-content";
+import { HelpProvider } from "@/components/help-context";
+import { HelpAssistant } from "@/components/help-assistant";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,14 +34,17 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen font-sans`}
       >
-        <div className="flex min-h-screen">
-          <Sidebar className="hidden lg:flex" />
-          <MainContent>
-            <TopHeader />
-            {children}
-          </MainContent>
-        </div>
-        <Toaster position="bottom-right" richColors />
+        <HelpProvider>
+          <div className="flex min-h-screen">
+            <Sidebar className="hidden lg:flex" />
+            <MainContent>
+              <TopHeader />
+              {children}
+            </MainContent>
+          </div>
+          <HelpAssistant />
+          <Toaster position="bottom-right" richColors />
+        </HelpProvider>
       </body>
     </html>
   );

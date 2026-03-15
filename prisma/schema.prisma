@@ -205,3 +205,10 @@ model PasswordReset {
   used      Boolean  @default(false)
   createdAt DateTime @default(now())
 }
+
+model SupportMessage {
+  id        String   @id @default(uuid())
+  message   String
+  page      String   @default("")
+  createdAt DateTime @default(now())
+}

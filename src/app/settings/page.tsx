@@ -40,6 +40,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useHelp } from "@/components/help-context";
 import { platformBranding } from "@/lib/colors";
 import { THEMES as THEME_MAP, applyTheme as applyThemeFromLib, saveTheme as saveThemeToStorage, getSavedTheme as getSavedThemeFromStorage } from "@/lib/themes";
 
@@ -941,6 +942,7 @@ function PlatformsTab() {
   const [saving, setSaving] = useState<string | null>(null);
   const [testingPlatform, setTestingPlatform] = useState<string | null>(null);
   const [testResults, setTestResults] = useState<Record<string, { success: boolean; message: string; tip?: string }>>({});
+  const { pushError } = useHelp();
 
   const fetchPlatforms = useCallback(() => {
     fetch("/api/platforms/connect")
@@ -1027,6 +1029,8 @@ function PlatformsTab() {
       setTestResults((prev) => ({ ...prev, [platform]: data }));
       if (data.success) {
         toast.success(`${platformInfo[platform]?.name}: Connection verified!`);
+      } else {
+        pushError(`${platformInfo[platform]?.name}: ${data.message}`, data.tip);
       }
     } catch {
       setTestResults((prev) => ({
