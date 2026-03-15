@@ -7,6 +7,7 @@ import {
   LayoutDashboard, PlusCircle, BarChart3, Settings, Moon, Sun, Zap,
   Camera, Radar, HelpCircle, DollarSign, FileUp, BookTemplate,
   Truck, Target, Calendar, LogOut, Stethoscope, PanelLeftClose, PanelLeftOpen,
+  MessageCircle,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { applyTheme, getSavedTheme } from "@/lib/themes";
@@ -25,6 +26,7 @@ const sections = [
   {
     label: "Insights",
     items: [
+      { href: "/inbox", label: "Inbox", icon: MessageCircle },
       { href: "/inventory", label: "Inventory & P/L", icon: DollarSign },
       { href: "/analytics", label: "Analytics", icon: BarChart3 },
       { href: "/trends", label: "Trends", icon: Radar },

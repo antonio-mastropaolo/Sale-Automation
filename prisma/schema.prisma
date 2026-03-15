@@ -25,6 +25,7 @@ model Listing {
   platformListings PlatformListing[]
   sales            Sale[]
   scheduledPosts   ScheduledPost[]
+  conversations    Conversation[]
 }
 
 model ListingImage {
@@ -163,6 +164,37 @@ model Session {
   expiresAt DateTime
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Conversation {
+  id            String    @id @default(uuid())
+  platform      String    // depop, grailed, poshmark, mercari, ebay, vinted, facebook, vestiaire
+  buyerName     String
+  buyerUsername String    @default("")
+  buyerAvatar   String    @default("")
+  listingId     String?   // optional link to a listing
+  listingTitle  String    @default("")
+  status        String    @default("open") // open, closed, archived
+  lastMessage   String    @default("")
+  lastMessageAt DateTime  @default(now())
+  unread        Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  listing  Listing?  @relation(fields: [listingId], references: [id], onDelete: SetNull)
+  messages Message[]
+}
+
+model Message {
+  id             String   @id @default(uuid())
+  conversationId String
+  sender         String   // "buyer" or "seller"
+  content        String
+  platform       String   // which platform this was sent on
+  read           Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 }
 
 model PasswordReset {
