@@ -37,9 +37,7 @@ export function TopHeader() {
         </Sheet>
 
         <div className="flex items-center gap-2">
-          <div className="h-7 w-7 rounded-lg flex items-center justify-center" style={{ background: "var(--primary)" }}>
-            <Zap className="h-3.5 w-3.5" style={{ color: "var(--primary-foreground)" }} />
-          </div>
+          <img src="/logo.png" alt="ListBlitz" className="h-7 object-contain" />
           <span className="font-bold text-sm tracking-tight">ListBlitz</span>
         </div>
       </header>

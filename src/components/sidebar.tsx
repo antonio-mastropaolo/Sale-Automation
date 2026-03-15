@@ -88,10 +88,8 @@ export function Sidebar({ className }: { className?: string }) {
       className,
     )}>
       {/* Header */}
-      <div className={cn("flex items-center h-[52px] shrink-0 border-b border-[var(--sidebar-border)]", collapsed ? "justify-center" : "px-4 gap-2.5")}>
-        <div className="h-[30px] w-[30px] rounded-[8px] flex items-center justify-center shrink-0" style={{ background: "var(--primary)" }}>
-          <Zap className="h-[15px] w-[15px]" style={{ color: "var(--primary-foreground)" }} />
-        </div>
+      <div className={cn("flex items-center h-[52px] shrink-0 border-b border-[var(--sidebar-border)]", collapsed ? "justify-center" : "px-3 gap-2")}>
+        <img src="/logo.png" alt="ListBlitz" className={cn("shrink-0 object-contain", collapsed ? "h-8 w-8" : "h-9")} />
         {!collapsed && <span className="font-semibold text-[15px] tracking-tight text-[var(--foreground)]">ListBlitz</span>}
       </div>
 

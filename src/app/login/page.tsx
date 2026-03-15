@@ -56,10 +56,7 @@ export default function LoginPage() {
       <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-12" style={{ background: "linear-gradient(135deg, #0f766e, #134e4a)" }}>
         <div className="max-w-md text-white space-y-6">
           <div className="flex items-center gap-3">
-            <div className="h-11 w-11 rounded-xl bg-white/15 flex items-center justify-center">
-              <Zap className="h-5 w-5 text-white" />
-            </div>
-            <span className="font-bold text-2xl tracking-tight">ListBlitz</span>
+            <img src="/logo.png" alt="ListBlitz" className="h-12 object-contain" />
           </div>
           <h1 className="text-4xl font-bold leading-tight">
             List once,<br />sell everywhere.
@@ -84,11 +81,8 @@ export default function LoginPage() {
       <div className="flex-1 flex items-center justify-center p-6 bg-[#f2f2f7] dark:bg-black">
         <div className="w-full max-w-md">
           {/* Mobile logo */}
-          <div className="lg:hidden flex items-center gap-3 mb-8 justify-center">
-            <div className="h-10 w-10 rounded-full bg-primary/10 border-2 border-primary/20 flex items-center justify-center">
-              <Zap className="h-5 w-5 text-primary" />
-            </div>
-            <span className="font-bold text-2xl tracking-tight text-foreground">ListBlitz</span>
+          <div className="lg:hidden flex items-center justify-center mb-8">
+            <img src="/logo.png" alt="ListBlitz" className="h-14 object-contain" />
           </div>
 
           <Card className="rounded-2xl">

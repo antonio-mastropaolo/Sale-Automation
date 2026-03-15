@@ -163,11 +163,8 @@ export default function OnboardPage() {
       style={{ background: "linear-gradient(135deg, #0f766e, #134e4a)" }}>
       <div className="w-full max-w-lg">
         {/* Logo */}
-        <div className="flex items-center gap-3 mb-5 justify-center">
-          <div className="h-10 w-10 rounded-xl bg-white/15 flex items-center justify-center">
-            <Zap className="h-5 w-5 text-white" />
-          </div>
-          <span className="font-bold text-2xl tracking-tight text-white">ListBlitz</span>
+        <div className="flex items-center justify-center mb-5">
+          <img src="/logo.png" alt="ListBlitz" className="h-14 object-contain" />
         </div>
 
         {/* Progress */}
