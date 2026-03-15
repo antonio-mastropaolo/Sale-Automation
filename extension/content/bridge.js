@@ -19,7 +19,7 @@
   else if (hostname.includes("poshmark.com")) platform = "poshmark";
   else if (hostname.includes("mercari.com")) platform = "mercari";
   else if (hostname.includes("ebay.com")) platform = "ebay";
-  else if (hostname.includes("vinted.com")) platform = "vinted";
+  else if (hostname.match(/vinted\.(com|fr|de|co\.uk|it|es|pl|nl|be|pt|lt)/)) platform = "vinted";
   else if (hostname.includes("facebook.com")) platform = "facebook";
   else if (hostname.includes("vestiairecollective.com")) platform = "vestiaire";
 
