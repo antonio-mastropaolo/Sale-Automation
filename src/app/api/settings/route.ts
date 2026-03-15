@@ -29,6 +29,8 @@ export async function POST(request: NextRequest) {
 
   const allowedKeys = [
     "ai_provider", "ai_api_key", "ai_model", "ai_base_url",
+    "ai_api_key_openai", "ai_api_key_google", "ai_api_key_groq",
+    "ai_api_key_together", "ai_api_key_openrouter", "ai_api_key_custom",
     "default_condition", "default_category", "currency",
     "auto_optimize", "listing_expiry_days", "theme_color",
   ];

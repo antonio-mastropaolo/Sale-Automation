@@ -170,15 +170,27 @@ function AIProviderTab() {
   const [baseURL, setBaseURL] = useState("");
   const [keyEdited, setKeyEdited] = useState(false);
 
+  // Per-provider key cache — so switching providers doesn't lose the key
+  const [keyCache, setKeyCache] = useState<Record<string, string>>({});
+
   useEffect(() => {
     fetch("/api/settings")
       .then((r) => r.json())
       .then((data: Record<string, string>) => {
         setSettings(data);
-        setProvider(data.ai_provider || "openai");
+        const prov = data.ai_provider || "openai";
+        setProvider(prov);
         setApiKey(data.ai_api_key || "");
         setModel(data.ai_model || "");
         setBaseURL(data.ai_base_url || "");
+        // Seed cache with all per-provider keys
+        const cache: Record<string, string> = {};
+        if (data.ai_api_key) cache[prov] = data.ai_api_key;
+        for (const pid of ["openai", "google", "groq", "together", "openrouter", "custom"]) {
+          const k = data[`ai_api_key_${pid}`];
+          if (k) cache[pid] = k;
+        }
+        setKeyCache(cache);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -187,21 +199,38 @@ function AIProviderTab() {
   const selectedProvider = AI_PROVIDERS.find((p) => p.id === provider) || AI_PROVIDERS[0];
 
   const handleProviderChange = (newId: string) => {
+    // Save current key to cache before switching
+    if (apiKey && keyEdited) {
+      setKeyCache((prev) => ({ ...prev, [provider]: apiKey }));
+    }
     setProvider(newId);
     const p = AI_PROVIDERS.find((x) => x.id === newId);
     if (p) {
       setModel(p.defaultModel);
     }
+    // Restore cached key for the new provider (or show empty)
+    const cached = keyCache[newId];
+    if (cached) {
+      setApiKey(cached);
+      setKeyEdited(true);
+    } else {
+      setApiKey("");
+      setKeyEdited(false);
+    }
+    setTestResult(null);
   };
 
   const save = async () => {
     setSaving(true);
+    // Save both the active provider key AND cache any edited key
     const payload: Record<string, string> = {
       ai_provider: provider,
       ai_model: model,
     };
     if (keyEdited && apiKey) {
       payload.ai_api_key = apiKey;
+      // Also save per-provider key
+      payload[`ai_api_key_${provider}`] = apiKey;
     }
     if (provider === "custom" && baseURL) {
       payload.ai_base_url = baseURL;

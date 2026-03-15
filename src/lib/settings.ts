@@ -120,14 +120,17 @@ export async function getAllSettings(): Promise<Record<string, string>> {
 
 export async function getAIClient(): Promise<{ client: OpenAI; model: string }> {
   const providerId = await getSettingParsed<string>("ai_provider", "openai");
-  const customApiKey = await getSetting("ai_api_key");
   const customModel = await getSetting("ai_model");
   const customBaseURL = await getSetting("ai_base_url");
 
   const provider = AI_PROVIDERS.find((p) => p.id === providerId) || AI_PROVIDERS[0];
 
+  // Try per-provider key first, then fallback to generic key, then env var
+  const providerKey = await getSetting(`ai_api_key_${providerId}`);
+  const genericKey = await getSetting("ai_api_key");
+  const apiKey = providerKey || genericKey || process.env.OPENAI_API_KEY || "";
+
   const baseURL = providerId === "custom" ? (customBaseURL || "") : provider.baseURL;
-  const apiKey = customApiKey || process.env.OPENAI_API_KEY || "";
   const model = customModel || provider.defaultModel;
 
   const client = new OpenAI({ apiKey, baseURL });
