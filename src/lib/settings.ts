@@ -84,6 +84,14 @@ export const AI_PROVIDERS: AIProvider[] = [
     models: [],
     supportsVision: true,
   },
+  {
+    id: "litellm",
+    name: "LiteLLM Proxy",
+    baseURL: "http://localhost:4000/v1",
+    defaultModel: "gpt-5.4",
+    models: ["gpt-5.4", "gpt-5-mini", "claude-sonnet-4", "claude-haiku-4", "gemini-2.5-flash", "gemini-2.5-pro", "llama-3.3-70b"],
+    supportsVision: true,
+  },
 ];
 
 // ── Settings read/write ─────────────────────────────────────────────
