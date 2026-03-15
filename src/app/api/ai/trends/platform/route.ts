@@ -299,7 +299,7 @@ Provide 5-8 items per category. Be specific to ${name}'s audience, fee structure
     const parsed = parseAIJson<{ trendingCategories?: unknown[] }>(text);
 
     // Validate we got real data
-    if (parsed.trendingCategories?.length > 0) {
+    if ((parsed.trendingCategories?.length ?? 0) > 0) {
       return NextResponse.json(parsed);
     }
     throw new Error("Empty AI response");

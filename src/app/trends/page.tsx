@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -223,26 +223,26 @@ export default function TrendsPage() {
     fetchTrends();
   }, [fetchTrends]);
 
-  // Fetch platform-specific trends when tab changes
-  const fetchPlatformTrends = useCallback(async (platform: string) => {
-    if (platform === "all" || platformData[platform]) return; // cached or "all"
+  // Track fetched platforms to avoid duplicate calls
+  const fetchedRef = useRef<Set<string>>(new Set());
+
+  const handleTabChange = async (tab: string) => {
+    setActiveTab(tab);
+    if (tab === "all") return;
+    if (fetchedRef.current.has(tab)) return; // already fetched
+    fetchedRef.current.add(tab);
     setPlatformLoading(true);
     try {
-      const res = await fetch(`/api/ai/trends/platform?p=${platform}`);
+      const res = await fetch(`/api/ai/trends/platform?p=${tab}`);
       const result = await res.json();
-      // Only use if we got real data
       if (result.trendingCategories?.length > 0 || result.trendingBrands?.length > 0) {
-        setPlatformData((prev) => ({ ...prev, [platform]: result }));
+        setPlatformData((prev) => ({ ...prev, [tab]: result }));
       }
     } catch {
-      // silent — fall back to generic data
+      // Remove from cache so user can retry
+      fetchedRef.current.delete(tab);
     }
     setPlatformLoading(false);
-  }, [platformData]);
-
-  const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
-    if (tab !== "all") fetchPlatformTrends(tab);
   };
 
   // Active data — use platform-specific if available, else generic
