@@ -52,19 +52,9 @@ export default function LoginPage() {
 
   return (
     <div className="fixed inset-0 z-[100] flex min-h-screen bg-[#f2f2f7] dark:bg-black">
-      {/* Left branding panel — custom image */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-        <img src="/login-bg.png" alt="" className="absolute inset-0 w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-black/10" />
-        <div className="relative z-10 flex flex-col justify-end p-10">
-          <img src="/logo.png" alt="ListBlitz" className="h-10 object-contain object-left mb-4" />
-          <h1 className="text-3xl font-bold text-white leading-tight mb-2">
-            List once, sell everywhere.
-          </h1>
-          <p className="text-white/70 text-sm leading-relaxed max-w-md">
-            AI-powered cross-platform listing across Depop, Grailed, Poshmark, Mercari, eBay, Vinted, Facebook &amp; Vestiaire.
-          </p>
-        </div>
+      {/* Left branding panel — image only, no text overlay */}
+      <div className="hidden lg:flex lg:w-1/2 bg-black items-center justify-center overflow-hidden">
+        <img src="/login-bg.png" alt="ListBlitz" className="w-full h-full object-contain" />
       </div>
 
       {/* Right login form */}
