@@ -20,6 +20,8 @@ import {
   ArrowRight,
   FileUp,
   Eye,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { platformBadge, statusStyles } from "@/lib/colors";
 
@@ -54,6 +56,9 @@ export default function Dashboard() {
   const totalViews = stats.platformStats.reduce((s, p) => s + (p.views || 0), 0);
   const totalRevenue = stats.platformStats.reduce((s, p) => s + (p.revenue || 0), 0);
 
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 25;
+
   const filtered = listings.filter((l) => {
     if (filterStatus && l.status !== filterStatus) return false;
     if (search) {
@@ -62,6 +67,12 @@ export default function Dashboard() {
     }
     return true;
   });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  // Reset page when filters change
+  useEffect(() => { setPage(1); }, [search, filterStatus]);
 
   const statCards = [
     { label: "Total Listings", value: stats.totalListings, icon: Package, change: "+12%" },
@@ -288,7 +299,7 @@ export default function Dashboard() {
           <>
             {/* Desktop table view */}
             <div className="hidden sm:block divide-y divide-border">
-              {filtered.map((listing) => (
+              {paged.map((listing) => (
                 <Link
                   key={listing.id}
                   href={`/listings/${listing.id}`}
@@ -333,7 +344,7 @@ export default function Dashboard() {
 
             {/* Mobile card view */}
             <div className="sm:hidden divide-y divide-border">
-              {filtered.map((listing) => (
+              {paged.map((listing) => (
                 <Link
                   key={listing.id}
                   href={`/listings/${listing.id}`}
@@ -378,6 +389,57 @@ export default function Dashboard() {
                 </Link>
               ))}
             </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+                <p className="text-xs text-muted-foreground">
+                  {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}
+                </p>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 w-7 p-0"
+                    disabled={page <= 1}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  >
+                    <ChevronLeft className="h-3.5 w-3.5" />
+                  </Button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
+                    .reduce<(number | "...")[]>((acc, p, idx, arr) => {
+                      if (idx > 0 && p - (arr[idx - 1]) > 1) acc.push("...");
+                      acc.push(p);
+                      return acc;
+                    }, [])
+                    .map((p, i) =>
+                      p === "..." ? (
+                        <span key={`dots-${i}`} className="text-xs text-muted-foreground px-1">...</span>
+                      ) : (
+                        <Button
+                          key={p}
+                          variant={page === p ? "default" : "outline"}
+                          size="sm"
+                          className="h-7 w-7 p-0 text-xs"
+                          onClick={() => setPage(p)}
+                        >
+                          {p}
+                        </Button>
+                      )
+                    )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 w-7 p-0"
+                    disabled={page >= totalPages}
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  >
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
