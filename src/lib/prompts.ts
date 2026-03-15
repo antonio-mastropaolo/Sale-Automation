@@ -425,10 +425,10 @@ Based on your knowledge of current resale market trends, provide a comprehensive
 
 Provide the following:
 
-1. **Top 5 Trending Categories** — what types of items are hottest right now. Include a heat score (1-100) and a short description.
-2. **Top 5 Trending Brands** — which brands are commanding the most demand and premium prices. Include a heat score (1-100) and a short description.
-3. **Top 5 Hot Items/Styles** — specific items or styles that are selling fast right now. Include an estimated resale price range and description.
-4. **3 Sleeper Picks** — undervalued items that are about to trend. Include your reasoning and estimated ROI percentage.
+1. **Top 10-20 Trending Categories** — what types of items are hottest right now. Include a heat score (1-100) and a short description. Provide at least 10, up to 20.
+2. **Top 10-20 Trending Brands** — which brands are commanding the most demand and premium prices. Include a heat score (1-100) and a short description. Provide at least 10, up to 20.
+3. **Top 10-20 Hot Items/Styles** — specific items or styles that are selling fast right now. Include an estimated resale price range and description. Provide at least 10, up to 20.
+4. **5-10 Sleeper Picks** — undervalued items that are about to trend. Include your reasoning and estimated ROI percentage.
 5. **Seasonal Advice** — what's about to be in demand in the next 2-4 weeks based on seasonal shifts.
 6. **Platform-Specific Tips** — what's performing best on each platform (Depop, Grailed, Poshmark, Mercari, eBay) and how to optimize for each.
 

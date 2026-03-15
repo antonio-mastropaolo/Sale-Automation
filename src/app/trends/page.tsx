@@ -16,6 +16,8 @@ import {
   Loader2,
   Target,
   Lightbulb,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -121,6 +123,62 @@ function LoadingSkeleton() {
   );
 }
 
+// ── Reusable section: shows 5 in a grid, expandable to all (up to 20) ──
+
+function TrendSection<T>({
+  title,
+  subtitle,
+  icon,
+  items,
+  renderItem,
+  defaultCount = 5,
+}: {
+  title: string;
+  subtitle?: string;
+  icon: React.ReactNode;
+  items: T[];
+  renderItem: (item: T, index: number) => React.ReactNode;
+  defaultCount?: number;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const visible = expanded ? items : items.slice(0, defaultCount);
+  const hasMore = items.length > defaultCount;
+
+  return (
+    <section className="space-y-3">
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            {icon}
+            <h2 className="text-base font-semibold">{title}</h2>
+            <span className="text-xs text-muted-foreground ml-1">{items.length}</span>
+          </div>
+          {subtitle && <p className="text-xs text-muted-foreground mt-0.5 ml-7">{subtitle}</p>}
+        </div>
+        {hasMore && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 text-xs gap-1 text-muted-foreground"
+            onClick={() => setExpanded(!expanded)}
+          >
+            {expanded ? (
+              <><ChevronUp className="h-3 w-3" /> Show top {defaultCount}</>
+            ) : (
+              <><ChevronDown className="h-3 w-3" /> Show all {items.length}</>
+            )}
+          </Button>
+        )}
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+        {visible.map((item, i) => (
+          <div key={i}>{renderItem(item, i)}</div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export default function TrendsPage() {
   const [data, setData] = useState<TrendData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -184,189 +242,98 @@ export default function TrendsPage() {
       </div>
 
       {/* ── Trending Categories ── */}
-      <section>
-        <div className="flex items-center gap-2 mb-4">
-          <Flame className="h-5 w-5 text-orange-500" />
-          <h2 className="text-lg font-semibold">Trending Categories</h2>
-        </div>
-        <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin">
-          {data.trendingCategories.map((cat) => {
-            const heat = getHeatColor(cat.heat);
-            return (
-              <Card
-                key={cat.name}
-                className="min-w-[240px] max-w-[260px] shrink-0 border-0 shadow-sm hover:shadow-md transition-shadow"
-              >
-                <CardContent className="pt-5 pb-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-semibold text-sm truncate pr-2">
-                      {cat.name}
-                    </h3>
-                    <Badge
-                      variant="outline"
-                      className={`text-xs font-bold shrink-0 ${heat.text}`}
-                    >
-                      {cat.heat}
-                    </Badge>
-                  </div>
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span>{heat.label}</span>
-                      <span>{cat.heat}/100</span>
-                    </div>
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className={`h-full rounded-full ${heat.bar} transition-all duration-500`}
-                        style={{ width: `${cat.heat}%` }}
-                      />
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
-                    {cat.description}
-                  </p>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      </section>
-
-      <Separator />
+      <TrendSection
+        title="Trending Categories"
+        icon={<Flame className="h-5 w-5 text-orange-500" />}
+        items={data.trendingCategories}
+        renderItem={(cat) => {
+          const heat = getHeatColor(cat.heat);
+          return (
+            <div className="rounded-xl bg-card p-4 space-y-2.5 card-hover">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-[13px] truncate pr-2">{cat.name}</h3>
+                <Badge variant="outline" className={`text-[10px] font-bold shrink-0 ${heat.text}`}>
+                  {cat.heat}
+                </Badge>
+              </div>
+              <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                <div className={`h-full rounded-full ${heat.bar}`} style={{ width: `${cat.heat}%` }} />
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">{cat.description}</p>
+            </div>
+          );
+        }}
+      />
 
       {/* ── Trending Brands ── */}
-      <section>
-        <div className="flex items-center gap-2 mb-4">
-          <TrendingUp className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-semibold">Trending Brands</h2>
-        </div>
-        <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin">
-          {data.trendingBrands.map((brand, idx) => {
-            const heat = getHeatColor(brand.heat);
-            return (
-              <Card
-                key={brand.name}
-                className="min-w-[220px] max-w-[240px] shrink-0 border-0 shadow-sm hover:shadow-md transition-shadow"
-              >
-                <CardContent className="pt-5 pb-4 space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-10 h-10 rounded-full ${getBrandColor(idx)} flex items-center justify-center text-white font-bold text-sm shadow-md`}
-                    >
-                      {brand.name.charAt(0).toUpperCase()}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="font-semibold text-sm truncate">
-                        {brand.name}
-                      </h3>
-                      <Badge
-                        variant="outline"
-                        className={`text-xs font-bold mt-0.5 ${heat.text}`}
-                      >
-                        {heat.label} {brand.heat}
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className={`h-full rounded-full ${heat.bar} transition-all duration-500`}
-                        style={{ width: `${brand.heat}%` }}
-                      />
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
-                    {brand.description}
-                  </p>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      </section>
-
-      <Separator />
+      <TrendSection
+        title="Trending Brands"
+        icon={<TrendingUp className="h-5 w-5 text-primary" />}
+        items={data.trendingBrands}
+        renderItem={(brand, idx) => {
+          const heat = getHeatColor(brand.heat);
+          return (
+            <div className="rounded-xl bg-card p-4 space-y-2.5 card-hover">
+              <div className="flex items-center gap-2.5">
+                <div className={`w-9 h-9 rounded-full ${getBrandColor(idx)} flex items-center justify-center text-white font-bold text-xs shrink-0`}>
+                  {brand.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-semibold text-[13px] truncate">{brand.name}</h3>
+                  <span className={`text-[10px] font-bold ${heat.text}`}>{heat.label} {brand.heat}</span>
+                </div>
+              </div>
+              <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                <div className={`h-full rounded-full ${heat.bar}`} style={{ width: `${brand.heat}%` }} />
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">{brand.description}</p>
+            </div>
+          );
+        }}
+      />
 
       {/* ── Hot Items ── */}
-      <section>
-        <div className="flex items-center gap-2 mb-4">
-          <Zap className="h-5 w-5 text-orange-500" />
-          <h2 className="text-lg font-semibold">Hot Items</h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {data.hotItems.map((item, idx) => (
-            <Card
-              key={item.name}
-              className="border-0 shadow-sm hover:shadow-md transition-shadow group"
-            >
-              <CardContent className="pt-5 pb-4 space-y-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2.5">
-                    <div className="bg-orange-500/10 text-orange-600 dark:text-orange-400 p-2 rounded-lg">
-                      <Zap className="h-4 w-4" />
-                    </div>
-                    <h3 className="font-semibold text-sm leading-tight">
-                      {item.name}
-                    </h3>
-                  </div>
-                  <Badge className="bg-primary text-primary-foreground border-0 text-xs font-bold shrink-0 shadow-sm">
-                    {item.priceRange}
-                  </Badge>
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {item.description}
-                </p>
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground pt-1">
-                  <Flame className="h-3 w-3 text-orange-400" />
-                  <span>#{idx + 1} trending item</span>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
-
-      <Separator />
+      <TrendSection
+        title="Hot Items"
+        icon={<Zap className="h-5 w-5 text-orange-500" />}
+        items={data.hotItems}
+        renderItem={(item, idx) => (
+          <div className="rounded-xl bg-card p-4 space-y-2.5 card-hover">
+            <div className="flex items-start justify-between gap-2">
+              <h3 className="font-semibold text-[13px] leading-tight">{item.name}</h3>
+              <Badge className="bg-primary text-primary-foreground border-0 text-[10px] font-bold shrink-0">
+                {item.priceRange}
+              </Badge>
+            </div>
+            <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">{item.description}</p>
+            <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+              <Flame className="h-3 w-3 text-orange-400" />
+              #{idx + 1} trending
+            </div>
+          </div>
+        )}
+      />
 
       {/* ── Sleeper Picks ── */}
-      <section>
-        <div className="flex items-center gap-2 mb-1">
-          <Gem className="h-5 w-5 text-emerald-500" />
-          <h2 className="text-lg font-semibold">Sleeper Picks</h2>
-        </div>
-        <p className="text-muted-foreground text-sm mb-4">
-          Undervalued items about to trend — get ahead of the curve
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {data.sleeperPicks.map((pick) => (
-            <Card
-              key={pick.name}
-              className="border-0 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden"
-            >
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-700" />
-              <CardContent className="pt-6 pb-5 space-y-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2.5">
-                    <div className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 p-2 rounded-lg">
-                      <Lightbulb className="h-4 w-4" />
-                    </div>
-                    <h3 className="font-semibold text-sm">{pick.name}</h3>
-                  </div>
-                  <Badge className="bg-gradient-to-r from-emerald-500 to-teal-500 border-0 text-white text-xs font-bold shrink-0 shadow-sm">
-                    +{pick.estimatedROI}
-                  </Badge>
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {pick.reasoning}
-                </p>
-                <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400 pt-1">
-                  <Gem className="h-3 w-3" />
-                  <span>Hidden opportunity</span>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
+      <TrendSection
+        title="Sleeper Picks"
+        subtitle="Undervalued items about to trend — get ahead of the curve"
+        icon={<Gem className="h-5 w-5 text-emerald-500" />}
+        items={data.sleeperPicks}
+        defaultCount={5}
+        renderItem={(pick) => (
+          <div className="rounded-xl bg-card p-4 space-y-2.5 card-hover relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-500 to-teal-500" />
+            <div className="flex items-start justify-between gap-2">
+              <h3 className="font-semibold text-[13px]">{pick.name}</h3>
+              <Badge className="bg-emerald-500 border-0 text-white text-[10px] font-bold shrink-0">
+                +{pick.estimatedROI}
+              </Badge>
+            </div>
+            <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-3">{pick.reasoning}</p>
+          </div>
+        )}
+      />
 
       <Separator />
 
