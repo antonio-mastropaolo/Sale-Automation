@@ -77,6 +77,16 @@ const CATEGORY_LABELS: Record<string, string> = {
   T2: "Trends — Data Validation",
   T3: "Trends — Performance",
   T4: "Trends — Edge Cases",
+  P1: "Platforms — Connect API",
+  P2: "Platforms — Config API",
+  P3: "Platforms — AI Optimization",
+  P4: "Platforms — Scheduler",
+  P5: "Platforms — Batch Operations",
+  P6: "Platforms — Export",
+  P7: "Platforms — Branding Consistency",
+  P8: "Platforms — Trend Tips",
+  P9: "Platforms — Image Search",
+  P10: "Platforms — Competitor Discovery",
   T5: "Trends — Page UI",
 };
 
