@@ -88,8 +88,8 @@ export function Sidebar({ className }: { className?: string }) {
       className,
     )}>
       {/* Header */}
-      <div className={cn("flex items-center shrink-0 border-b border-[var(--sidebar-border)]", collapsed ? "justify-center h-[52px] px-1" : "h-[52px] px-3")}>
-        <img src="/logo.png" alt="ListBlitz" className={cn("shrink-0 object-contain", collapsed ? "h-7 w-7" : "max-h-[28px] max-w-full")} />
+      <div className={cn("flex items-center shrink-0 border-b border-[var(--sidebar-border)]", collapsed ? "justify-center h-[52px] px-1" : "h-[52px] px-2")}>
+        <img src="/logo.png" alt="ListBlitz" className={cn("object-contain", collapsed ? "h-8" : "w-full h-auto")} />
       </div>
 
       {/* Collapse toggle */}
