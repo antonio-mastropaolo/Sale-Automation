@@ -175,6 +175,7 @@ export default function CompetitorPage() {
   // Step 1 — Discovery
   const [brand, setBrand] = useState("");
   const [category, setCategory] = useState("");
+  const [sku, setSku] = useState("");
   const [discovering, setDiscovering] = useState(false);
   const [discovery, setDiscovery] = useState<DiscoveryResult | null>(null);
 
@@ -198,7 +199,7 @@ export default function CompetitorPage() {
       const res = await fetch("/api/ai/competitor/discover", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ brand: brand.trim(), category: category.trim() }),
+        body: JSON.stringify({ brand: brand.trim(), category: category.trim(), sku: sku.trim() || undefined }),
       });
       const data = await res.json();
       if (data.error && (!data.products || data.products.length === 0)) {
@@ -270,6 +271,7 @@ export default function CompetitorPage() {
     setAnalysis(null);
     setBrand("");
     setCategory("");
+    setSku("");
   };
 
   // ═══════════════════════════════════════════════════════════════
@@ -362,6 +364,16 @@ export default function CompetitorPage() {
                   onKeyDown={(e) => e.key === "Enter" && discoverProducts()}
                 />
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label>SKU / Model Number <span className="text-muted-foreground font-normal">(optional)</span></Label>
+              <Input
+                placeholder="e.g., CW2288-111, 501-0115, FW23 — leave empty to discover all"
+                value={sku}
+                onChange={(e) => setSku(e.target.value)}
+                className="h-11 font-mono text-sm"
+                onKeyDown={(e) => e.key === "Enter" && discoverProducts()}
+              />
             </div>
             <Button
               className="w-full h-11"

@@ -76,6 +76,11 @@ const bestTimes: {
     times: "Evenings 6-8pm, Saturday mornings",
     icon: "M",
   },
+  {
+    platform: "ebay",
+    times: "Sunday evenings 7-10pm, Thursday 6-9pm",
+    icon: "e",
+  },
 ];
 
 /* ── Status badge styles ── */
@@ -125,6 +130,7 @@ export default function SchedulerPage() {
     grailed: false,
     poshmark: false,
     mercari: false,
+    ebay: false,
   });
   const [scheduledTime, setScheduledTime] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -378,9 +384,44 @@ export default function SchedulerPage() {
                   </div>
                 </div>
 
-                {/* Date/time */}
+                {/* Quick delay buttons */}
                 <div className="space-y-2">
-                  <Label>Date & Time</Label>
+                  <Label>When to post</Label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {[
+                      { label: "In 30 min", mins: 30 },
+                      { label: "In 1 hour", mins: 60 },
+                      { label: "In 3 hours", mins: 180 },
+                      { label: "In 6 hours", mins: 360 },
+                      { label: "Tomorrow 9am", mins: -1 },
+                      { label: "Custom", mins: 0 },
+                    ].map((opt) => (
+                      <button
+                        key={opt.label}
+                        type="button"
+                        onClick={() => {
+                          if (opt.mins === 0) return; // just show the datetime picker
+                          let d: Date;
+                          if (opt.mins === -1) {
+                            d = new Date();
+                            d.setDate(d.getDate() + 1);
+                            d.setHours(9, 0, 0, 0);
+                          } else {
+                            d = new Date(Date.now() + opt.mins * 60_000);
+                          }
+                          const iso = d.toISOString().slice(0, 16);
+                          setScheduledTime(iso);
+                        }}
+                        className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                          opt.mins === 0
+                            ? "border border-border text-muted-foreground hover:bg-muted"
+                            : "bg-[var(--accent)] text-[var(--accent-foreground)] hover:opacity-80"
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
                   <Input
                     type="datetime-local"
                     value={scheduledTime}

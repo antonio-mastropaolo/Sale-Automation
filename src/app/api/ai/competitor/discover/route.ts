@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { brand, category } = body as { brand?: string; category?: string };
+  const { brand, category, sku } = body as { brand?: string; category?: string; sku?: string };
   if (!brand && !category) {
     return NextResponse.json(
       { error: "At least brand or category is required" },
@@ -69,13 +69,15 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const skuLine = sku ? `\n- SKU / Model Number: ${sku} (find products matching or related to this specific model)` : "";
+
   const prompt = `You are an expert resale market analyst with deep knowledge of secondhand fashion and goods across Depop, Grailed, Poshmark, Mercari, and eBay.
 
 Given the following:
 - Brand: ${brand || "Any"}
-- Category: ${category || "Any"}
+- Category: ${category || "Any"}${skuLine}
 
-Generate a list of 8 specific, real products that resellers commonly list and flip in this brand/category space. For each product, provide detailed information.
+${sku ? `Find the exact product matching SKU "${sku}" and also list 7 related/similar products from the same brand.` : "Generate a list of 8 specific, real products that resellers commonly list and flip in this brand/category space."} For each product, provide detailed information.
 
 Respond with valid JSON only (no markdown, no code fences):
 {
