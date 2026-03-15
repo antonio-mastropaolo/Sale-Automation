@@ -227,21 +227,22 @@ export default function InboxPage() {
                 className="pl-8 h-8 text-[13px] rounded-lg"
               />
             </div>
-            {/* Platform filter — horizontal scroll */}
-            <div className="flex gap-1 overflow-x-auto pb-1 -mx-1 px-1">
+            {/* Platform filter — wrapping grid */}
+            <div className="flex flex-wrap gap-1">
               {PLATFORMS.map((p) => {
                 const branding = platformBranding[p];
+                const label = p === "all" ? "All" : p === "facebook" ? "FB Mktplace" : p === "vestiaire" ? "Vestiaire" : (branding?.label || p);
                 return (
                   <button
                     key={p}
                     onClick={() => setPlatformFilter(p)}
-                    className={`shrink-0 px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+                    className={`px-2 py-1 rounded-lg text-[10px] font-medium transition-colors ${
                       platformFilter === p
                         ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
                         : "bg-muted text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    {p === "all" ? "All" : branding?.label || p}
+                    {label}
                   </button>
                 );
               })}
