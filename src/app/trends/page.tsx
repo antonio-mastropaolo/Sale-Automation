@@ -210,40 +210,86 @@ export default function TrendsPage() {
     fetchTrends();
   }, [fetchTrends]);
 
+  const [activeTab, setActiveTab] = useState("all");
+
   if (loading || !data) {
     return <LoadingSkeleton />;
   }
 
+  const platformKeys = Object.keys(data.platformTips || {});
+  const activePlatformTip = activeTab !== "all" ? (data.platformTips as unknown as Record<string, string>)[activeTab] : null;
+  const activePlatformConfig = activeTab !== "all" ? platformConfig[activeTab] : null;
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-5 animate-fade-in">
       {/* ── Header ── */}
       <div className="flex items-center justify-between">
         <div>
-          <div className="flex items-center gap-3">
-            <div className="bg-primary p-2.5 rounded-xl">
-              <Target className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold">Trend Radar</h1>
-              <p className="text-muted-foreground text-sm">
-                AI-powered market intelligence
-              </p>
-            </div>
-          </div>
+          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">Trend Radar</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm mt-0.5">AI-powered market intelligence across 8 platforms</p>
         </div>
         <Button
+          variant="outline"
+          size="sm"
           onClick={() => fetchTrends(true)}
           disabled={refreshing}
-          className="bg-primary text-primary-foreground shadow-md"
+          className="h-8 text-xs gap-1.5"
         >
-          {refreshing ? (
-            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-          ) : (
-            <RefreshCw className="h-4 w-4 mr-2" />
-          )}
+          {refreshing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
           Refresh
         </Button>
       </div>
+
+      {/* ── Platform Tabs ── */}
+      <div className="flex flex-wrap gap-1.5">
+        <button
+          onClick={() => setActiveTab("all")}
+          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            activeTab === "all"
+              ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
+              : "bg-muted text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          All Platforms
+        </button>
+        {platformKeys.map((p) => {
+          const config = platformConfig[p];
+          if (!config) return null;
+          return (
+            <button
+              key={p}
+              onClick={() => setActiveTab(p)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                activeTab === p
+                  ? `${config.bg} ${config.color} font-semibold`
+                  : "bg-muted text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <span className={`w-4 h-4 rounded text-[9px] font-bold flex items-center justify-center ${activeTab === p ? "" : config.bg + " " + config.color}`}>
+                {config.icon || config.label.charAt(0)}
+              </span>
+              {config.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ── Platform-specific tip banner ── */}
+      {activeTab !== "all" && activePlatformTip && activePlatformConfig && (
+        <div className={`rounded-xl p-4 ${activePlatformConfig.bg} border ${activePlatformConfig.border}`}>
+          <div className="flex items-start gap-3">
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm shrink-0 ${activePlatformConfig.color} ${activePlatformConfig.bg}`}>
+              {activePlatformConfig.icon || activePlatformConfig.label.charAt(0)}
+            </div>
+            <div>
+              <h3 className={`text-sm font-semibold ${activePlatformConfig.color}`}>
+                {activePlatformConfig.label} — What&apos;s Working Now
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed mt-1">{activePlatformTip}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Trending Categories ── */}
       <TrendSection
@@ -256,9 +302,7 @@ export default function TrendsPage() {
             <div className="rounded-xl bg-card p-4 space-y-2.5 card-hover">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-[13px] truncate pr-2">{cat.name}</h3>
-                <Badge variant="outline" className={`text-[10px] font-bold shrink-0 ${heat.text}`}>
-                  {cat.heat}
-                </Badge>
+                <Badge variant="outline" className={`text-[10px] font-bold shrink-0 ${heat.text}`}>{cat.heat}</Badge>
               </div>
               <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                 <div className={`h-full rounded-full ${heat.bar}`} style={{ width: `${cat.heat}%` }} />
@@ -305,14 +349,11 @@ export default function TrendsPage() {
           <div className="rounded-xl bg-card p-4 space-y-2.5 card-hover">
             <div className="flex items-start justify-between gap-2">
               <h3 className="font-semibold text-[13px] leading-tight">{item.name}</h3>
-              <Badge className="bg-primary text-primary-foreground border-0 text-[10px] font-bold shrink-0">
-                {item.priceRange}
-              </Badge>
+              <Badge className="bg-primary text-primary-foreground border-0 text-[10px] font-bold shrink-0">{item.priceRange}</Badge>
             </div>
             <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">{item.description}</p>
             <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-              <Flame className="h-3 w-3 text-orange-400" />
-              #{idx + 1} trending
+              <Flame className="h-3 w-3 text-orange-400" />#{idx + 1} trending
             </div>
           </div>
         )}
@@ -330,77 +371,54 @@ export default function TrendsPage() {
             <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-500 to-teal-500" />
             <div className="flex items-start justify-between gap-2">
               <h3 className="font-semibold text-[13px]">{pick.name}</h3>
-              <Badge className="bg-emerald-500 border-0 text-white text-[10px] font-bold shrink-0">
-                +{pick.estimatedROI}
-              </Badge>
+              <Badge className="bg-emerald-500 border-0 text-white text-[10px] font-bold shrink-0">+{pick.estimatedROI}</Badge>
             </div>
             <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-3">{pick.reasoning}</p>
           </div>
         )}
       />
 
-      <Separator />
-
       {/* ── Seasonal Advice ── */}
-      <section>
-        <Card className="border-0 shadow-sm overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-400 via-teal-500 to-emerald-600" />
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <div className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 p-2 rounded-lg">
-                <Calendar className="h-4 w-4" />
-              </div>
-              Seasonal Forecast
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pb-5">
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {data.seasonalAdvice}
-            </p>
-          </CardContent>
-        </Card>
-      </section>
-
-      <Separator />
-
-      {/* ── Platform Tips ── */}
-      <section>
-        <div className="flex items-center gap-2 mb-4">
-          <Target className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-semibold">Platform Intelligence</h2>
+      <div className="rounded-xl bg-card p-4 sm:p-5">
+        <div className="flex items-start gap-3">
+          <Calendar className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" />
+          <div>
+            <h3 className="text-sm font-semibold mb-1">Seasonal Forecast</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">{data.seasonalAdvice}</p>
+          </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {(Object.entries(data.platformTips) as [string, string][]).map(
-            ([platform, tip]) => {
+      </div>
+
+      {/* ── All Platform Tips (only on "All" tab) ── */}
+      {activeTab === "all" && (
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold flex items-center gap-2">
+            <Target className="h-4 w-4" style={{ color: "var(--primary)" }} />
+            Platform Intelligence
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+            {(Object.entries(data.platformTips as unknown as Record<string, string>)).map(([platform, tip]) => {
               const config = platformConfig[platform];
               if (!config) return null;
               return (
-                <Card
+                <button
                   key={platform}
-                  className={`border-0 shadow-sm hover:shadow-md transition-shadow overflow-hidden`}
+                  onClick={() => setActiveTab(platform)}
+                  className="text-left rounded-xl bg-card p-4 card-hover space-y-2"
                 >
-                  <div className={`h-1 ${config.accent}`} />
-                  <CardContent className="pt-5 pb-4 space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`w-9 h-9 rounded-lg ${config.bg} ${config.color} flex items-center justify-center font-bold text-sm`}
-                      >
-                        {config.label.charAt(0)}
-                      </div>
-                      <h3 className={`font-semibold ${config.color}`}>
-                        {config.label}
-                      </h3>
+                  <div className="flex items-center gap-2">
+                    <div className={`w-7 h-7 rounded-md ${config.bg} ${config.color} flex items-center justify-center font-bold text-[10px]`}>
+                      {config.icon || config.label.charAt(0)}
                     </div>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {tip}
-                    </p>
-                  </CardContent>
-                </Card>
+                    <span className={`text-xs font-semibold ${config.color}`}>{config.label}</span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-3">{tip}</p>
+                </button>
               );
-            }
-          )}
+            })}
+          </div>
         </div>
-      </section>
+      )}
     </div>
   );
 }

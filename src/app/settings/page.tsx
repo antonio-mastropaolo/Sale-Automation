@@ -73,11 +73,11 @@ interface TestResult {
 // ── Provider definitions (client-side mirror) ───────────────────────
 
 const AI_PROVIDERS = [
-  { id: "openai", name: "OpenAI", defaultModel: "gpt-4o", models: ["gpt-4o", "gpt-4o-mini", "gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano", "o3-mini"] },
-  { id: "google", name: "Google Gemini", defaultModel: "gemini-2.5-flash", models: ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash"] },
+  { id: "openai", name: "OpenAI", defaultModel: "gpt-5.4", models: ["gpt-5.4", "gpt-5.4-pro", "gpt-5.2", "gpt-5.2-pro", "gpt-5.1", "gpt-5", "gpt-5-mini", "gpt-5-nano", "gpt-4o", "gpt-4o-mini", "gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano", "o4-mini", "o3", "o3-mini", "o1"] },
+  { id: "google", name: "Google Gemini", defaultModel: "gemini-3.1-pro-preview", models: ["gemini-3.1-pro-preview", "gemini-3.1-flash-lite", "gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.0-flash"] },
   { id: "groq", name: "Groq", defaultModel: "llama-3.3-70b-versatile", models: ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "mixtral-8x7b-32768"] },
   { id: "together", name: "Together AI", defaultModel: "meta-llama/Llama-3.3-70B-Instruct-Turbo", models: ["meta-llama/Llama-3.3-70B-Instruct-Turbo", "mistralai/Mixtral-8x22B-Instruct-v0.1"] },
-  { id: "openrouter", name: "OpenRouter", defaultModel: "anthropic/claude-sonnet-4", models: ["anthropic/claude-sonnet-4", "anthropic/claude-haiku-4", "openai/gpt-4o", "google/gemini-2.5-flash"] },
+  { id: "openrouter", name: "OpenRouter", defaultModel: "anthropic/claude-sonnet-4", models: ["anthropic/claude-sonnet-4", "anthropic/claude-haiku-4", "openai/gpt-5.4", "google/gemini-3.1-pro-preview"] },
   { id: "custom", name: "Custom (OpenAI-compatible)", defaultModel: "", models: [] },
 ];
 
