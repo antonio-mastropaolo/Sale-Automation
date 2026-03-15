@@ -37,6 +37,7 @@ import {
   Check,
   Star,
   Lightbulb,
+  ArrowRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { platformBranding } from "@/lib/colors";
@@ -156,6 +157,17 @@ export default function SettingsPage() {
 // TAB 1 — AI PROVIDER
 // ═══════════════════════════════════════════════════════════════════
 
+// Pipeline stages for smart AI configuration
+const AI_STAGES = [
+  { id: "smart_list", label: "AI Vision", description: "Photo → full listing" },
+  { id: "enhance", label: "Description", description: "Polish & SEO optimize" },
+  { id: "optimize", label: "Platform Optimize", description: "Rewrite per marketplace" },
+  { id: "price_intel", label: "Price Intelligence", description: "Competitor analysis & pricing" },
+  { id: "health_score", label: "Health Score", description: "Grade listing quality" },
+  { id: "negotiate", label: "Negotiation", description: "Draft buyer responses" },
+  { id: "trends", label: "Market Trends", description: "Trend reports & picks" },
+];
+
 function AIProviderTab() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -167,13 +179,20 @@ function AIProviderTab() {
   const [model, setModel] = useState("");
   const [baseURL, setBaseURL] = useState("");
 
-  // Per-provider keys — all editable at once
+  // Per-provider keys
   const [keys, setKeys] = useState<Record<string, string>>({});
   const [savedKeys, setSavedKeys] = useState<Record<string, string>>({});
   const [showKeyFor, setShowKeyFor] = useState<Record<string, boolean>>({});
 
-  // Smart AI suggestions toggle
-  const [smartSuggestions, setSmartSuggestions] = useState(false);
+  // Expanded provider (left panel)
+  const [expandedProvider, setExpandedProvider] = useState<string | null>(null);
+
+  // Smart AI wizard
+  const [smartEnabled, setSmartEnabled] = useState(false);
+  const [wizardStep, setWizardStep] = useState(0); // 0=off, 1=pick count, 2=select models, 3=assign stages
+  const [modelBudget, setModelBudget] = useState(3);
+  const [selectedModels, setSelectedModels] = useState<string[]>([]);
+  const [stageAssignments, setStageAssignments] = useState<Record<string, string>>({});
 
   useEffect(() => {
     fetch("/api/settings")
@@ -183,34 +202,70 @@ function AIProviderTab() {
         setDefaultProvider(prov);
         setModel(data.ai_model || "");
         setBaseURL(data.ai_base_url || "");
-        setSmartSuggestions(data.ai_smart_suggestions === "true");
-        // Load all per-provider keys
+        const smart = data.ai_smart_suggestions === "true";
+        setSmartEnabled(smart);
+        // Load per-provider keys
         const loaded: Record<string, string> = {};
         for (const pid of ["openai", "google", "groq", "together", "openrouter", "custom"]) {
           const k = data[`ai_api_key_${pid}`];
           if (k) loaded[pid] = k;
         }
-        // Fallback: if active key exists but per-provider doesn't
         if (data.ai_api_key && !loaded[prov]) loaded[prov] = data.ai_api_key;
         setKeys(loaded);
         setSavedKeys({ ...loaded });
+        // Load stage assignments
+        const assignments: Record<string, string> = {};
+        for (const stage of AI_STAGES) {
+          const v = data[`ai_stage_${stage.id}`];
+          if (v) assignments[stage.id] = v;
+        }
+        setStageAssignments(assignments);
+        // Load selected models
+        if (data.ai_smart_models) {
+          try { setSelectedModels(JSON.parse(data.ai_smart_models)); } catch { /* ignore */ }
+        }
+        if (data.ai_smart_budget) {
+          setModelBudget(parseInt(data.ai_smart_budget) || 3);
+        }
+        if (smart && Object.keys(assignments).length > 0) {
+          setWizardStep(3);
+        }
         setLoading(false);
       })
       .catch(() => setLoading(false));
   }, []);
 
-  const selectedProvider = AI_PROVIDERS.find((p) => p.id === defaultProvider) || AI_PROVIDERS[0];
-  const configuredCount = Object.values(keys).filter(Boolean).length;
+  const selectedProviderObj = AI_PROVIDERS.find((p) => p.id === defaultProvider) || AI_PROVIDERS[0];
+  const configuredProviders = AI_PROVIDERS.filter((p) => !!keys[p.id]);
 
-  const updateKey = (providerId: string, value: string) => {
-    setKeys((prev) => ({ ...prev, [providerId]: value }));
+  // All models from configured providers
+  const availableModels = configuredProviders.flatMap((p) =>
+    p.models.map((m) => ({ model: m, provider: p.id, providerName: p.name }))
+  );
+
+  const updateKey = (pid: string, value: string) => {
+    setKeys((prev) => ({ ...prev, [pid]: value }));
   };
 
-  const setAsDefault = (providerId: string) => {
-    setDefaultProvider(providerId);
-    const p = AI_PROVIDERS.find((x) => x.id === providerId);
+  const setAsDefault = (pid: string) => {
+    setDefaultProvider(pid);
+    const p = AI_PROVIDERS.find((x) => x.id === pid);
     if (p) setModel(p.defaultModel);
     setTestResult(null);
+  };
+
+  const toggleExpand = (pid: string) => {
+    setExpandedProvider((prev) => (prev === pid ? null : pid));
+  };
+
+  const toggleModelSelection = (modelId: string) => {
+    setSelectedModels((prev) =>
+      prev.includes(modelId)
+        ? prev.filter((m) => m !== modelId)
+        : prev.length < modelBudget
+        ? [...prev, modelId]
+        : prev
+    );
   };
 
   const save = async () => {
@@ -218,20 +273,20 @@ function AIProviderTab() {
     const payload: Record<string, string> = {
       ai_provider: defaultProvider,
       ai_model: model,
-      ai_smart_suggestions: smartSuggestions ? "true" : "false",
+      ai_smart_suggestions: smartEnabled ? "true" : "false",
+      ai_smart_budget: String(modelBudget),
+      ai_smart_models: JSON.stringify(selectedModels),
     };
-    // Save all provider keys
     for (const pid of ["openai", "google", "groq", "together", "openrouter", "custom"]) {
-      if (keys[pid]) {
-        payload[`ai_api_key_${pid}`] = keys[pid];
+      if (keys[pid]) payload[`ai_api_key_${pid}`] = keys[pid];
+    }
+    if (keys[defaultProvider]) payload.ai_api_key = keys[defaultProvider];
+    if (defaultProvider === "custom" && baseURL) payload.ai_base_url = baseURL;
+    // Save stage assignments
+    for (const stage of AI_STAGES) {
+      if (stageAssignments[stage.id]) {
+        payload[`ai_stage_${stage.id}`] = stageAssignments[stage.id];
       }
-    }
-    // Also set the active key to the default provider's key
-    if (keys[defaultProvider]) {
-      payload.ai_api_key = keys[defaultProvider];
-    }
-    if (defaultProvider === "custom" && baseURL) {
-      payload.ai_base_url = baseURL;
     }
     try {
       const res = await fetch("/api/settings", {
@@ -241,7 +296,7 @@ function AIProviderTab() {
       });
       if (!res.ok) throw new Error();
       setSavedKeys({ ...keys });
-      toast.success("AI provider settings saved");
+      toast.success("AI settings saved");
     } catch {
       toast.error("Failed to save settings");
     }
@@ -252,7 +307,6 @@ function AIProviderTab() {
     setTesting(true);
     setTestResult(null);
     try {
-      // Save first so test uses current values
       await save();
       const res = await fetch("/api/settings/test-prompt", {
         method: "POST",
@@ -284,7 +338,6 @@ function AIProviderTab() {
 
   return (
     <div className="space-y-4 pt-2">
-      {/* Provider Cards — each with inline key */}
       <Card className="border-0 shadow-sm">
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
@@ -292,175 +345,346 @@ function AIProviderTab() {
             AI Service Providers
           </CardTitle>
           <p className="text-xs text-muted-foreground mt-1">
-            {configuredCount === 0
-              ? "Add API keys to get started. Set one as default, or configure multiple for per-stage AI routing."
-              : configuredCount === 1
-              ? `${configuredCount} provider configured — used globally for all AI features.`
-              : `${configuredCount} providers configured — you can use different models per pipeline stage.`}
+            Configure your API keys. Click a provider to expand. Set one as default, or enable Smart AI to route models per stage.
           </p>
         </CardHeader>
-        <CardContent className="space-y-3">
-          {AI_PROVIDERS.map((p) => {
-            const hasKey = !!keys[p.id];
-            const isDefault = defaultProvider === p.id;
-            const wasSaved = !!savedKeys[p.id];
-            const keyChanged = keys[p.id] !== savedKeys[p.id];
+        <CardContent>
+          <div className="flex gap-5">
+            {/* ─── LEFT: Provider List ─── */}
+            <div className="flex-1 min-w-0 space-y-2">
+              {AI_PROVIDERS.map((p) => {
+                const hasKey = !!keys[p.id];
+                const isDefault = defaultProvider === p.id;
+                const isExpanded = expandedProvider === p.id;
+                const wasSaved = !!savedKeys[p.id];
+                const keyChanged = keys[p.id] !== savedKeys[p.id];
 
-            return (
-              <div
-                key={p.id}
-                className={`rounded-xl border-2 p-3 transition-all ${
-                  isDefault
-                    ? "border-primary bg-primary/5"
-                    : hasKey
-                    ? "border-emerald-500/30 bg-emerald-500/5"
-                    : "border-transparent bg-muted/30"
-                }`}
-              >
-                {/* Header row */}
-                <div className="flex items-center gap-2 mb-2">
-                  <p className="font-semibold text-sm flex-1">{p.name}</p>
-                  {hasKey && (
-                    <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                  )}
-                  {isDefault ? (
-                    <Badge variant="outline" className="text-[10px] h-5 border-primary text-primary gap-1">
-                      <Star className="h-2.5 w-2.5 fill-current" /> Default
-                    </Badge>
-                  ) : (
-                    <button
-                      onClick={() => setAsDefault(p.id)}
-                      className="text-[10px] text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      Set as default
-                    </button>
-                  )}
-                </div>
-                {/* Key input */}
-                <div className="relative">
-                  <Input
-                    type={showKeyFor[p.id] ? "text" : "password"}
-                    value={keys[p.id] || ""}
-                    onChange={(e) => updateKey(p.id, e.target.value)}
-                    placeholder={`Enter your ${p.name} API key`}
-                    className={`h-9 pr-9 font-mono text-xs ${
-                      wasSaved && !keyChanged
-                        ? "border-emerald-500/40 bg-emerald-500/5"
-                        : ""
+                return (
+                  <div
+                    key={p.id}
+                    className={`rounded-xl border-2 transition-all ${
+                      isDefault
+                        ? "border-primary bg-primary/5"
+                        : hasKey
+                        ? "border-emerald-500/30 bg-emerald-500/5"
+                        : "border-transparent bg-muted/30"
                     }`}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowKeyFor((prev) => ({ ...prev, [p.id]: !prev[p.id] }))}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
-                    {showKeyFor[p.id] ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                  </button>
+                    {/* Collapsed header — always visible */}
+                    <button
+                      onClick={() => toggleExpand(p.id)}
+                      className="w-full flex items-center gap-2 p-3 text-left"
+                    >
+                      {isExpanded ? (
+                        <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                      ) : (
+                        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                      )}
+                      <span className="font-semibold text-sm flex-1">{p.name}</span>
+                      {hasKey && <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />}
+                      {isDefault && (
+                        <Badge variant="outline" className="text-[10px] h-5 border-primary text-primary gap-1">
+                          <Star className="h-2.5 w-2.5 fill-current" /> Default
+                        </Badge>
+                      )}
+                    </button>
+
+                    {/* Expanded content */}
+                    {isExpanded && (
+                      <div className="px-3 pb-3 space-y-2.5">
+                        {/* Key input */}
+                        <div className="relative">
+                          <Input
+                            type={showKeyFor[p.id] ? "text" : "password"}
+                            value={keys[p.id] || ""}
+                            onChange={(e) => updateKey(p.id, e.target.value)}
+                            placeholder={`Enter your ${p.name} API key`}
+                            className={`h-9 pr-9 font-mono text-xs ${
+                              wasSaved && !keyChanged ? "border-emerald-500/40 bg-emerald-500/5" : ""
+                            }`}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowKeyFor((prev) => ({ ...prev, [p.id]: !prev[p.id] }))}
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          >
+                            {showKeyFor[p.id] ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                          </button>
+                        </div>
+
+                        {/* Default model for this provider */}
+                        {isDefault && p.models.length > 0 && (
+                          <div className="space-y-1.5">
+                            <Label className="text-xs text-muted-foreground">Default Model</Label>
+                            <div className="flex flex-wrap gap-1">
+                              {p.models.map((m) => (
+                                <button
+                                  key={m}
+                                  onClick={() => setModel(m)}
+                                  className={`px-2 py-1 rounded-md text-[11px] font-medium transition-all ${
+                                    model === m
+                                      ? "bg-primary text-primary-foreground shadow-sm"
+                                      : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+                                  }`}
+                                >
+                                  {m}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Custom base URL */}
+                        {p.id === "custom" && (
+                          <div className="space-y-1.5">
+                            <Label className="text-xs text-muted-foreground">Base URL</Label>
+                            <Input
+                              value={baseURL}
+                              onChange={(e) => setBaseURL(e.target.value)}
+                              placeholder="https://your-api.example.com/v1"
+                              className="h-9 font-mono text-xs"
+                            />
+                          </div>
+                        )}
+
+                        {/* Set as default button */}
+                        {!isDefault && (
+                          <button
+                            onClick={() => setAsDefault(p.id)}
+                            className="text-xs text-primary hover:underline font-medium flex items-center gap-1"
+                          >
+                            <Star className="h-3 w-3" /> Set as default provider
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+
+              {/* Actions row */}
+              <div className="flex items-center gap-3 pt-3">
+                <Button onClick={save} disabled={saving} size="sm" className="h-9">
+                  {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Save className="h-3.5 w-3.5 mr-1.5" />}
+                  Save
+                </Button>
+                <Button variant="outline" onClick={testConnection} disabled={testing} size="sm" className="h-9">
+                  {testing ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Sparkles className="h-3.5 w-3.5 mr-1.5" />}
+                  Test
+                </Button>
+              </div>
+
+              {testResult && (
+                <div className={`p-2.5 rounded-lg text-xs font-mono whitespace-pre-wrap ${
+                  testResult.startsWith("Error")
+                    ? "bg-red-500/10 text-red-700 dark:text-red-400"
+                    : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                }`}>
+                  {testResult}
+                </div>
+              )}
+            </div>
+
+            {/* ─── RIGHT: Smart AI Panel ─── */}
+            <div className="w-[340px] shrink-0 hidden lg:block">
+              <div className={`rounded-xl border-2 transition-all h-full ${
+                smartEnabled ? "border-primary/30 bg-gradient-to-b from-primary/5 to-transparent" : "border-dashed border-border bg-muted/20"
+              }`}>
+                {/* Header with toggle */}
+                <div className="p-4 border-b border-border/50">
+                  <div
+                    className="flex items-center gap-3 cursor-pointer"
+                    onClick={() => {
+                      const next = !smartEnabled;
+                      setSmartEnabled(next);
+                      if (next && wizardStep === 0) setWizardStep(1);
+                      if (!next) setWizardStep(0);
+                    }}
+                  >
+                    <div className={`p-2 rounded-lg ${smartEnabled ? "bg-primary/10" : "bg-muted/50"}`}>
+                      <Lightbulb className={`h-4 w-4 ${smartEnabled ? "text-primary" : "text-muted-foreground"}`} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold">Smart AI Routing</p>
+                      <p className="text-[11px] text-muted-foreground">
+                        Different models per pipeline stage
+                      </p>
+                    </div>
+                    <div className={`w-9 h-5 rounded-full transition-all flex items-center px-0.5 ${
+                      smartEnabled ? "bg-primary justify-end" : "bg-muted justify-start"
+                    }`}>
+                      <div className="w-4 h-4 rounded-full bg-white shadow-sm" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4">
+                  {!smartEnabled ? (
+                    /* ── Disabled state ── */
+                    <div className="text-center py-6 space-y-3">
+                      <div className="h-12 w-12 rounded-xl bg-muted/50 flex items-center justify-center mx-auto">
+                        <Brain className="h-6 w-6 text-muted-foreground/40" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Single Model Mode</p>
+                        <p className="text-xs text-muted-foreground/70 mt-1 max-w-[220px] mx-auto leading-relaxed">
+                          All pipeline stages use your default provider. Enable Smart AI to route each stage to the best model.
+                        </p>
+                      </div>
+                    </div>
+                  ) : wizardStep === 1 ? (
+                    /* ── Step 1: How many models ── */
+                    <div className="space-y-4">
+                      <div>
+                        <p className="text-sm font-semibold">How many models?</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Choose how many different models you want to use across your pipeline.
+                        </p>
+                      </div>
+                      <div className="space-y-3">
+                        {[2, 3, 4, 5].map((n) => (
+                          <button
+                            key={n}
+                            onClick={() => {
+                              setModelBudget(n);
+                              setSelectedModels((prev) => prev.slice(0, n));
+                            }}
+                            className={`w-full flex items-center gap-3 p-2.5 rounded-lg border transition-all text-left ${
+                              modelBudget === n
+                                ? "border-primary bg-primary/5"
+                                : "border-border hover:border-primary/30"
+                            }`}
+                          >
+                            <div className={`h-8 w-8 rounded-lg flex items-center justify-center text-sm font-bold ${
+                              modelBudget === n ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                            }`}>
+                              {n}
+                            </div>
+                            <div>
+                              <p className="text-xs font-medium">
+                                {n === 2 ? "Minimal" : n === 3 ? "Balanced" : n === 4 ? "Comprehensive" : "Maximum"}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground">
+                                {n === 2 ? "One fast, one powerful" : n === 3 ? "Best bang for the buck" : n === 4 ? "Specialized per task type" : "Full coverage"}
+                              </p>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                      <Button
+                        onClick={() => setWizardStep(2)}
+                        className="w-full h-9 text-xs"
+                        disabled={configuredProviders.length === 0}
+                      >
+                        Next: Select Models <ArrowRight className="h-3 w-3 ml-1" />
+                      </Button>
+                      {configuredProviders.length === 0 && (
+                        <p className="text-[10px] text-destructive text-center">
+                          Add at least one API key first
+                        </p>
+                      )}
+                    </div>
+                  ) : wizardStep === 2 ? (
+                    /* ── Step 2: Select models ── */
+                    <div className="space-y-4">
+                      <div>
+                        <p className="text-sm font-semibold">Select {modelBudget} models</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Pick from your configured providers. ({selectedModels.length}/{modelBudget} selected)
+                        </p>
+                      </div>
+                      <div className="space-y-3 max-h-[280px] overflow-y-auto pr-1">
+                        {configuredProviders.map((p) => (
+                          <div key={p.id}>
+                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">{p.name}</p>
+                            <div className="space-y-1">
+                              {p.models.map((m) => {
+                                const isSelected = selectedModels.includes(m);
+                                const atLimit = selectedModels.length >= modelBudget && !isSelected;
+                                return (
+                                  <button
+                                    key={m}
+                                    onClick={() => toggleModelSelection(m)}
+                                    disabled={atLimit}
+                                    className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left transition-all text-xs ${
+                                      isSelected
+                                        ? "bg-primary/10 border border-primary/30 text-foreground"
+                                        : atLimit
+                                        ? "bg-muted/20 text-muted-foreground/40 cursor-not-allowed"
+                                        : "bg-muted/30 hover:bg-muted/50 text-foreground"
+                                    }`}
+                                  >
+                                    <div className={`h-4 w-4 rounded border flex items-center justify-center shrink-0 ${
+                                      isSelected ? "bg-primary border-primary" : "border-border"
+                                    }`}>
+                                      {isSelected && <Check className="h-2.5 w-2.5 text-primary-foreground" />}
+                                    </div>
+                                    <span className="truncate font-mono">{m}</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="outline" onClick={() => setWizardStep(1)} size="sm" className="h-8 text-xs flex-1">
+                          Back
+                        </Button>
+                        <Button
+                          onClick={() => setWizardStep(3)}
+                          size="sm"
+                          className="h-8 text-xs flex-1"
+                          disabled={selectedModels.length === 0}
+                        >
+                          Next: Assign Stages <ArrowRight className="h-3 w-3 ml-1" />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : wizardStep === 3 ? (
+                    /* ── Step 3: Assign models to stages ── */
+                    <div className="space-y-4">
+                      <div>
+                        <p className="text-sm font-semibold">Assign per stage</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Choose which model runs each pipeline stage.
+                        </p>
+                      </div>
+                      <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+                        {AI_STAGES.map((stage) => (
+                          <div key={stage.id} className="rounded-lg bg-muted/30 p-2.5 space-y-1.5">
+                            <div>
+                              <p className="text-xs font-semibold">{stage.label}</p>
+                              <p className="text-[10px] text-muted-foreground">{stage.description}</p>
+                            </div>
+                            <select
+                              value={stageAssignments[stage.id] || ""}
+                              onChange={(e) => setStageAssignments((prev) => ({ ...prev, [stage.id]: e.target.value }))}
+                              className="w-full h-7 rounded-md border border-border bg-background px-2 text-[11px] font-mono"
+                            >
+                              <option value="">Use default ({model || selectedProviderObj.defaultModel})</option>
+                              {selectedModels.map((m) => (
+                                <option key={m} value={m}>{m}</option>
+                              ))}
+                            </select>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="outline" onClick={() => setWizardStep(2)} size="sm" className="h-8 text-xs flex-1">
+                          Back
+                        </Button>
+                        <Button onClick={save} disabled={saving} size="sm" className="h-8 text-xs flex-1">
+                          {saving ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Save className="h-3 w-3 mr-1" />}
+                          Save Routing
+                        </Button>
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               </div>
-            );
-          })}
-        </CardContent>
-      </Card>
-
-      {/* Default Model + Options */}
-      <Card className="border-0 shadow-sm">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Settings2 className="h-5 w-5 text-primary" />
-            Default Model
-          </CardTitle>
-          <p className="text-xs text-muted-foreground mt-1">
-            Model used for {selectedProvider.name} when running AI features.
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {selectedProvider.models.length > 0 ? (
-            <div className="flex flex-wrap gap-1.5">
-              {selectedProvider.models.map((m) => (
-                <button
-                  key={m}
-                  onClick={() => setModel(m)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                    model === m
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
-                  }`}
-                >
-                  {m}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <Input
-              value={model}
-              onChange={(e) => setModel(e.target.value)}
-              placeholder="Enter model name (e.g., gpt-4o)"
-              className="h-11"
-            />
-          )}
-
-          {/* Custom base URL */}
-          {defaultProvider === "custom" && (
-            <div className="space-y-2">
-              <Label>Base URL</Label>
-              <Input
-                value={baseURL}
-                onChange={(e) => setBaseURL(e.target.value)}
-                placeholder="https://your-api.example.com/v1"
-                className="h-11 font-mono text-xs"
-              />
-              <p className="text-xs text-muted-foreground">
-                Must be an OpenAI-compatible API endpoint
-              </p>
-            </div>
-          )}
-
-          {/* Smart AI Suggestions */}
-          <div
-            className={`flex items-center gap-3 rounded-xl border p-3 cursor-pointer transition-all ${
-              smartSuggestions ? "border-primary bg-primary/5" : "border-border"
-            }`}
-            onClick={() => setSmartSuggestions(!smartSuggestions)}
-          >
-            <div className={`p-2 rounded-lg ${smartSuggestions ? "bg-primary/10" : "bg-muted/50"}`}>
-              <Lightbulb className={`h-4 w-4 ${smartSuggestions ? "text-primary" : "text-muted-foreground"}`} />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium">Smart AI Suggestions</p>
-              <p className="text-xs text-muted-foreground">
-                Get recommendations on which provider and model works best for each pipeline stage.
-              </p>
-            </div>
-            <div className={`w-9 h-5 rounded-full transition-all flex items-center px-0.5 ${
-              smartSuggestions ? "bg-primary justify-end" : "bg-muted justify-start"
-            }`}>
-              <div className="w-4 h-4 rounded-full bg-white shadow-sm" />
             </div>
           </div>
-
-          {/* Actions */}
-          <div className="flex items-center gap-3 pt-2">
-            <Button onClick={save} disabled={saving} className="h-10">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
-              Save Settings
-            </Button>
-            <Button variant="outline" onClick={testConnection} disabled={testing} className="h-10">
-              {testing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-              Test Connection
-            </Button>
-          </div>
-
-          {/* Test result */}
-          {testResult && (
-            <div className={`p-3 rounded-xl text-sm font-mono whitespace-pre-wrap ${
-              testResult.startsWith("Error")
-                ? "bg-red-500/10 text-red-700 dark:text-red-400"
-                : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
-            }`}>
-              {testResult}
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>
