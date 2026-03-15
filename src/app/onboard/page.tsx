@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,27 +8,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import {
-  Zap,
   ArrowRight,
   ArrowLeft,
   Sparkles,
   Key,
-  Puzzle,
   CheckCircle,
-  ExternalLink,
-  RefreshCw,
   Loader2,
   ShieldCheck,
-  Chrome,
-  AlertCircle,
+  Eye,
+  EyeOff,
+  Save,
 } from "lucide-react";
-import {
-  isExtensionInstalled,
-  waitForExtension,
-  checkAllSessions,
-  loginToPlatform,
-  type PlatformSession,
-} from "@/lib/extension";
 
 // ── Constants ───────────────────────────────────────────────
 
@@ -42,14 +32,14 @@ const AI_PROVIDERS = [
 ];
 
 const PLATFORMS = [
-  { id: "depop", name: "Depop", color: "#ff2300", loginUrl: "https://www.depop.com/login/" },
-  { id: "grailed", name: "Grailed", color: "#333333", loginUrl: "https://www.grailed.com/users/sign_in" },
-  { id: "poshmark", name: "Poshmark", color: "#c83264", loginUrl: "https://poshmark.com/login" },
-  { id: "mercari", name: "Mercari", color: "#4dc4c0", loginUrl: "https://www.mercari.com/login/" },
-  { id: "ebay", name: "eBay", color: "#e53238", loginUrl: "https://signin.ebay.com/" },
-  { id: "vinted", name: "Vinted", color: "#09877e", loginUrl: "https://www.vinted.com/member/login" },
-  { id: "facebook", name: "Facebook Marketplace", color: "#1877f2", loginUrl: "https://www.facebook.com/login" },
-  { id: "vestiaire", name: "Vestiaire Collective", color: "#b8860b", loginUrl: "https://www.vestiairecollective.com/login/" },
+  { id: "depop", name: "Depop", color: "#ff2300" },
+  { id: "grailed", name: "Grailed", color: "#333333" },
+  { id: "poshmark", name: "Poshmark", color: "#c83264" },
+  { id: "mercari", name: "Mercari", color: "#4dc4c0" },
+  { id: "ebay", name: "eBay", color: "#e53238" },
+  { id: "vinted", name: "Vinted", color: "#09877e" },
+  { id: "facebook", name: "Facebook Marketplace", color: "#1877f2" },
+  { id: "vestiaire", name: "Vestiaire Collective", color: "#b8860b" },
 ];
 
 // ═══════════════════════════════════════════════════════════════
@@ -61,13 +51,11 @@ export default function OnboardPage() {
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  // Extension state
-  const [extensionDetected, setExtensionDetected] = useState(false);
-  const [checkingExtension, setCheckingExtension] = useState(false);
-
-  // Platform sessions
-  const [sessions, setSessions] = useState<Record<string, PlatformSession>>({});
-  const [checkingSessions, setCheckingSessions] = useState(false);
+  // Platform credentials
+  const [credentials, setCredentials] = useState<Record<string, { username: string; password: string }>>({});
+  const [showPassword, setShowPassword] = useState<Record<string, boolean>>({});
+  const [savingPlatform, setSavingPlatform] = useState<string | null>(null);
+  const [connectedPlatforms, setConnectedPlatforms] = useState<Set<string>>(new Set());
 
   // AI config
   const [aiProvider, setAiProvider] = useState("");
@@ -76,50 +64,58 @@ export default function OnboardPage() {
 
   const selectedProviderData = AI_PROVIDERS.find((p) => p.id === aiProvider);
 
-  // ── Extension detection ──────────────────────────────────
-
-  const detectExtension = useCallback(async () => {
-    setCheckingExtension(true);
-    const found = await waitForExtension(3000);
-    setExtensionDetected(found);
-    setCheckingExtension(false);
-    if (found) {
-      // Immediately check sessions too
-      refreshSessions();
-    }
-  }, []);
+  // ── Fetch existing connections on mount ─────────────────
 
   useEffect(() => {
-    detectExtension();
-  }, [detectExtension]);
+    fetch("/api/platforms/connect")
+      .then((r) => r.json())
+      .then((data: { platform: string; connected: boolean; username: string | null }[]) => {
+        const connected = new Set<string>();
+        const creds: Record<string, { username: string; password: string }> = {};
+        for (const p of data) {
+          if (p.connected) {
+            connected.add(p.platform);
+            if (p.username) creds[p.platform] = { username: p.username, password: "" };
+          }
+        }
+        setConnectedPlatforms(connected);
+        setCredentials((prev) => ({ ...creds, ...prev }));
+      })
+      .catch(() => {});
+  }, []);
 
-  // ── Session refresh ──────────────────────────────────────
+  const connectedCount = connectedPlatforms.size;
 
-  const refreshSessions = async () => {
-    if (!isExtensionInstalled()) return;
-    setCheckingSessions(true);
-    try {
-      const result = await checkAllSessions();
-      setSessions(result);
-    } catch {
-      // Extension might not be ready yet
-    }
-    setCheckingSessions(false);
+  // ── Save single platform credentials ───────────────────
+
+  const updateCred = (platform: string, field: "username" | "password", value: string) => {
+    setCredentials((prev) => ({
+      ...prev,
+      [platform]: { username: prev[platform]?.username || "", password: prev[platform]?.password || "", [field]: value },
+    }));
   };
 
-  const connectedCount = Object.values(sessions).filter((s) => s.connected).length;
-
-  // ── Open platform login ──────────────────────────────────
-
-  const openLogin = async (platformId: string) => {
-    try {
-      await loginToPlatform(platformId);
-      toast.success("Login page opened — log in then come back here");
-    } catch {
-      // Fallback: open directly
-      const platform = PLATFORMS.find((p) => p.id === platformId);
-      if (platform) window.open(platform.loginUrl, "_blank");
+  const savePlatformCreds = async (platform: string) => {
+    const cred = credentials[platform];
+    if (!cred?.username || !cred?.password) {
+      toast.error("Both username and password are required");
+      return;
     }
+    setSavingPlatform(platform);
+    try {
+      const res = await fetch("/api/platforms/connect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ platform, username: cred.username, password: cred.password }),
+      });
+      if (!res.ok) throw new Error();
+      toast.success(`${PLATFORMS.find((p) => p.id === platform)?.name} connected!`);
+      setConnectedPlatforms((prev) => new Set(prev).add(platform));
+      setCredentials((prev) => ({ ...prev, [platform]: { username: cred.username, password: "" } }));
+    } catch {
+      toast.error("Failed to save credentials");
+    }
+    setSavingPlatform(null);
   };
 
   // ── Finish ───────────────────────────────────────────────
@@ -134,9 +130,7 @@ export default function OnboardPage() {
           aiProvider: aiProvider || undefined,
           aiApiKey: aiApiKey || undefined,
           aiModel: aiModel || undefined,
-          platforms: Object.entries(sessions)
-            .filter(([, s]) => s.connected)
-            .map(([id]) => id),
+          platforms: Array.from(connectedPlatforms),
         }),
       });
       if (!res.ok) throw new Error("Failed to save");
@@ -153,7 +147,6 @@ export default function OnboardPage() {
 
   const steps = [
     { label: "Welcome", icon: Sparkles },
-    { label: "Extension", icon: Puzzle },
     { label: "Platforms", icon: ShieldCheck },
     { label: "AI Setup", icon: Key },
   ];
@@ -223,101 +216,8 @@ export default function OnboardPage() {
               </div>
             )}
 
-            {/* ═══ STEP 1: EXTENSION INSTALL ═══ */}
+            {/* ═══ STEP 1: CONNECT PLATFORMS ═══ */}
             {step === 1 && (
-              <div className="space-y-5">
-                <div className="text-center">
-                  <div className="h-14 w-14 rounded-2xl flex items-center justify-center mx-auto mb-3" style={{ background: "var(--accent)" }}>
-                    <Chrome className="h-7 w-7" style={{ color: "var(--primary)" }} />
-                  </div>
-                  <h2 className="text-xl font-bold mb-1">Install the Browser Extension</h2>
-                  <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-                    The ListBlitz extension connects to your marketplace accounts and handles cross-posting automatically.
-                  </p>
-                </div>
-
-                {/* Status */}
-                <div className={`rounded-xl p-4 text-center ${
-                  extensionDetected
-                    ? "bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800"
-                    : "bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800"
-                }`}>
-                  {checkingExtension ? (
-                    <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Checking for extension...
-                    </div>
-                  ) : extensionDetected ? (
-                    <div className="flex items-center justify-center gap-2 text-sm text-emerald-700 dark:text-emerald-400">
-                      <CheckCircle className="h-5 w-5" />
-                      <span className="font-semibold">Extension detected and ready!</span>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-center gap-2 text-sm text-amber-700 dark:text-amber-400">
-                        <AlertCircle className="h-5 w-5" />
-                        <span className="font-semibold">Extension not detected</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Install it from the Chrome Web Store, then click &quot;Check Again&quot;
-                      </p>
-                      <div className="flex gap-2 justify-center">
-                        <Button
-                          size="sm"
-                          className="h-8 text-xs rounded-lg gap-1.5"
-                          onClick={() => window.open("https://chrome.google.com/webstore", "_blank")}
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                          Chrome Web Store
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-8 text-xs rounded-lg gap-1.5"
-                          onClick={detectExtension}
-                        >
-                          <RefreshCw className="h-3 w-3" />
-                          Check Again
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* How it works */}
-                <div className="bg-muted/30 rounded-xl p-4">
-                  <p className="text-xs font-semibold mb-2">How it works:</p>
-                  <ol className="space-y-1.5 text-xs text-muted-foreground">
-                    <li className="flex gap-2"><span className="font-bold text-foreground">1.</span> Install the extension</li>
-                    <li className="flex gap-2"><span className="font-bold text-foreground">2.</span> Log into each marketplace in your browser (as you normally would)</li>
-                    <li className="flex gap-2"><span className="font-bold text-foreground">3.</span> The extension detects your login and connects automatically</li>
-                    <li className="flex gap-2"><span className="font-bold text-foreground">4.</span> ListBlitz publishes listings through your existing sessions</li>
-                  </ol>
-                </div>
-
-                <div className="flex gap-3">
-                  <Button variant="outline" onClick={() => setStep(0)} className="h-10 rounded-xl">
-                    <ArrowLeft className="h-4 w-4 mr-1" /> Back
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    onClick={() => setStep(2)}
-                    className="h-10 rounded-xl text-muted-foreground text-xs"
-                  >
-                    Skip for now
-                  </Button>
-                  <Button
-                    onClick={() => setStep(2)}
-                    className="flex-1 h-10 rounded-xl font-semibold text-sm"
-                  >
-                    Continue <ArrowRight className="h-4 w-4 ml-1" />
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* ═══ STEP 2: CONNECT PLATFORMS ═══ */}
-            {step === 2 && (
               <div className="space-y-5">
                 <div className="text-center">
                   <div className="h-14 w-14 rounded-2xl flex items-center justify-center mx-auto mb-3" style={{ background: "var(--accent)" }}>
@@ -325,90 +225,98 @@ export default function OnboardPage() {
                   </div>
                   <h2 className="text-xl font-bold mb-1">Connect Your Platforms</h2>
                   <p className="text-sm text-muted-foreground">
-                    {extensionDetected
-                      ? "Log into each platform — the extension will detect your session."
-                      : "Select the platforms you sell on. You'll connect them later."}
+                    Enter your credentials for each marketplace you sell on. You can always add more later in Settings.
                   </p>
                 </div>
 
                 {/* Platform list */}
-                <div className="space-y-2">
+                <div className="space-y-2 max-h-[340px] overflow-y-auto pr-1">
                   {PLATFORMS.map((p) => {
-                    const session = sessions[p.id];
-                    const connected = session?.connected || false;
+                    const connected = connectedPlatforms.has(p.id);
+                    const cred = credentials[p.id] || { username: "", password: "" };
+                    const isSaving = savingPlatform === p.id;
                     return (
                       <div
                         key={p.id}
-                        className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
+                        className={`p-3 rounded-xl border transition-all space-y-2 ${
                           connected
                             ? "border-emerald-300 dark:border-emerald-700 bg-emerald-50/50 dark:bg-emerald-950/20"
                             : "border-border"
                         }`}
                       >
-                        <div
-                          className="h-10 w-10 rounded-lg flex items-center justify-center text-white font-bold text-sm shrink-0"
-                          style={{ backgroundColor: p.color }}
-                        >
-                          {p.name[0]}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold">{p.name}</p>
-                          <p className={`text-xs ${connected ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"}`}>
-                            {connected ? "Connected" : "Not connected"}
-                          </p>
-                        </div>
-                        {connected ? (
-                          <CheckCircle className="h-5 w-5 text-emerald-500 shrink-0" />
-                        ) : (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-8 text-xs rounded-lg shrink-0"
-                            onClick={() => {
-                              if (extensionDetected) openLogin(p.id);
-                              else window.open(p.loginUrl, "_blank");
-                            }}
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="h-8 w-8 rounded-lg flex items-center justify-center text-white font-bold text-xs shrink-0"
+                            style={{ backgroundColor: p.color }}
                           >
-                            <ExternalLink className="h-3 w-3 mr-1" />
-                            Log in
-                          </Button>
+                            {p.name[0]}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold">{p.name}</p>
+                            {connected && (
+                              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                <CheckCircle className="h-3 w-3" /> Connected
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        {!connected && (
+                          <div className="flex gap-2 items-end">
+                            <Input
+                              value={cred.username}
+                              onChange={(e) => updateCred(p.id, "username", e.target.value)}
+                              placeholder="Username / email"
+                              className="h-8 text-xs flex-1"
+                            />
+                            <div className="relative flex-1">
+                              <Input
+                                type={showPassword[p.id] ? "text" : "password"}
+                                value={cred.password}
+                                onChange={(e) => updateCred(p.id, "password", e.target.value)}
+                                placeholder="Password"
+                                className="h-8 text-xs pr-8"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowPassword((prev) => ({ ...prev, [p.id]: !prev[p.id] }))}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                              >
+                                {showPassword[p.id] ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                              </button>
+                            </div>
+                            <Button
+                              size="sm"
+                              className="h-8 text-xs shrink-0"
+                              disabled={isSaving || !cred.username || !cred.password}
+                              onClick={() => savePlatformCreds(p.id)}
+                            >
+                              {isSaving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3 mr-1" />}
+                              Save
+                            </Button>
+                          </div>
                         )}
                       </div>
                     );
                   })}
                 </div>
 
-                {/* Refresh button */}
-                {extensionDetected && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full h-8 text-xs rounded-lg"
-                    onClick={refreshSessions}
-                    disabled={checkingSessions}
-                  >
-                    {checkingSessions ? (
-                      <Loader2 className="h-3 w-3 animate-spin mr-1.5" />
-                    ) : (
-                      <RefreshCw className="h-3 w-3 mr-1.5" />
-                    )}
-                    {checkingSessions ? "Checking..." : `Refresh connections (${connectedCount}/8 connected)`}
-                  </Button>
-                )}
+                <p className="text-[11px] text-muted-foreground text-center">
+                  Credentials are encrypted with AES-256 and only used when publishing listings.
+                </p>
 
                 <div className="flex gap-3">
-                  <Button variant="outline" onClick={() => setStep(1)} className="h-10 rounded-xl">
+                  <Button variant="outline" onClick={() => setStep(0)} className="h-10 rounded-xl">
                     <ArrowLeft className="h-4 w-4 mr-1" /> Back
                   </Button>
-                  <Button onClick={() => setStep(3)} className="flex-1 h-10 rounded-xl font-semibold text-sm">
-                    Continue <ArrowRight className="h-4 w-4 ml-1" />
+                  <Button onClick={() => setStep(2)} className="flex-1 h-10 rounded-xl font-semibold text-sm">
+                    Continue ({connectedCount}/8 connected) <ArrowRight className="h-4 w-4 ml-1" />
                   </Button>
                 </div>
               </div>
             )}
 
-            {/* ═══ STEP 3: AI SETUP ═══ */}
-            {step === 3 && (
+            {/* ═══ STEP 2: AI SETUP ═══ */}
+            {step === 2 && (
               <div className="space-y-5">
                 <div className="text-center">
                   <div className="h-14 w-14 rounded-2xl flex items-center justify-center mx-auto mb-3" style={{ background: "var(--accent)" }}>
@@ -480,7 +388,7 @@ export default function OnboardPage() {
                 </div>
 
                 <div className="flex gap-3 pt-1">
-                  <Button variant="outline" onClick={() => setStep(2)} className="h-10 rounded-xl">
+                  <Button variant="outline" onClick={() => setStep(1)} className="h-10 rounded-xl">
                     <ArrowLeft className="h-4 w-4 mr-1" /> Back
                   </Button>
                   <Button
@@ -510,9 +418,9 @@ export default function OnboardPage() {
         </Card>
 
         {/* Skip all */}
-        {step > 0 && step < 3 && (
+        {step > 0 && step < 2 && (
           <button
-            onClick={() => { setStep(3); }}
+            onClick={() => { setStep(2); }}
             className="block mx-auto mt-3 text-white/50 text-xs hover:text-white/80 transition-colors"
           >
             Skip setup entirely →

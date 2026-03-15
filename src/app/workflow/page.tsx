@@ -79,7 +79,7 @@ const STAGES: Stage[] = [
   {
     id: "publish",
     label: "Cross-Publish",
-    description: "One click publishes to all connected platforms via the browser extension",
+    description: "One click publishes to all connected platforms using your saved credentials",
     icon: Send,
     color: "#0A84FF",
     aiFeature: "",
@@ -227,7 +227,7 @@ export default function WorkflowPage() {
                           </Badge>
                         )}
                         {!isAI && (
-                          <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4">Extension</Badge>
+                          <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4">Auto</Badge>
                         )}
                       </div>
                       <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">{stage.description}</p>
@@ -371,7 +371,7 @@ export default function WorkflowPage() {
                 <div className="rounded-lg bg-muted/50 p-4 text-center">
                   <Send className="h-6 w-6 text-muted-foreground/30 mx-auto mb-2" />
                   <p className="text-xs text-muted-foreground">
-                    This stage uses the browser extension — no AI key needed. Connect your platforms in Settings.
+                    This stage uses your saved platform credentials — no AI key needed. Connect your platforms in Settings.
                   </p>
                 </div>
               )}
