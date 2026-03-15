@@ -37,7 +37,7 @@ export function TopHeader() {
         </Sheet>
 
         <div className="flex items-center">
-          <img src="/logo.png" alt="ListBlitz" className="h-[22px] object-contain" />
+          <img src="/logo.png" alt="ListBlitz" className="h-6 sm:h-7 object-contain" />
         </div>
       </header>
     </div>
