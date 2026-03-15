@@ -44,13 +44,11 @@ export const AI_PROVIDERS: AIProvider[] = [
     id: "google",
     name: "Google Gemini",
     baseURL: "https://generativelanguage.googleapis.com/v1beta/openai",
-    defaultModel: "gemini-3.1-pro-preview",
+    defaultModel: "gemini-2.5-flash",
     models: [
       "gemini-3.1-pro-preview",  // Latest flagship (Feb 2026)
-      "gemini-3.1-flash-lite",   // Ultra-fast, cheap
       "gemini-2.5-pro",          // Previous flagship
       "gemini-2.5-flash",        // Fast + balanced
-      "gemini-2.0-flash",        // Stable
     ],
     supportsVision: true,
   },

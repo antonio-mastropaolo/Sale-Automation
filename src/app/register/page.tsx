@@ -64,9 +64,9 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex min-h-screen">
+    <div className="fixed inset-0 z-[100] flex min-h-screen bg-[#f2f2f7] dark:bg-black">
       {/* Left branding panel */}
-      <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-12" style={{ background: "linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 60%, #1a1a2e))" }}>
+      <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-12" style={{ background: "linear-gradient(135deg, #0f766e, #134e4a)" }}>
         <div className="max-w-md text-white space-y-8">
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 rounded-full bg-white/15 border-2 border-white/20 flex items-center justify-center">

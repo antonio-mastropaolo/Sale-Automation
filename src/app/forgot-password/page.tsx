@@ -41,7 +41,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6" style={{ background: "linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 60%, #1a1a2e))" }}>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6" style={{ background: "linear-gradient(135deg, #0f766e, #134e4a)" }}>
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex items-center gap-3 mb-8 justify-center">

@@ -51,27 +51,27 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex min-h-screen">
-      {/* Left branding panel */}
-      <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-12" style={{ background: "linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 60%, #1a1a2e))" }}>
-        <div className="max-w-md text-white space-y-8">
+    <div className="fixed inset-0 z-[100] flex min-h-screen bg-[#f2f2f7] dark:bg-black">
+      {/* Left branding panel — hardcoded dark gradient, no CSS variable bleed */}
+      <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-12" style={{ background: "linear-gradient(135deg, #0f766e, #134e4a)" }}>
+        <div className="max-w-md text-white space-y-6">
           <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-full bg-white/15 border-2 border-white/20 flex items-center justify-center">
-              <Zap className="h-6 w-6 text-white" />
+            <div className="h-11 w-11 rounded-xl bg-white/15 flex items-center justify-center">
+              <Zap className="h-5 w-5 text-white" />
             </div>
-            <span className="font-bold text-3xl tracking-tight">ListBlitz</span>
+            <span className="font-bold text-2xl tracking-tight">ListBlitz</span>
           </div>
           <h1 className="text-4xl font-bold leading-tight">
             List once,<br />sell everywhere.
           </h1>
-          <p className="text-white/70 text-lg leading-relaxed">
-            AI-powered cross-platform listing tool for Depop, Grailed, Poshmark, Mercari, eBay, Vinted, Facebook Marketplace, and Vestiaire Collective. Optimize your listings, track analytics, and grow your reselling business.
+          <p className="text-white/60 text-base leading-relaxed">
+            AI-powered cross-platform listing tool. Optimize your listings, track analytics, and grow your reselling business across 8 marketplaces.
           </p>
-          <div className="flex gap-3 pt-4">
+          <div className="flex flex-wrap gap-2 pt-2">
             {["Depop", "Grailed", "Poshmark", "Mercari", "eBay", "Vinted", "Facebook", "Vestiaire"].map((p) => (
               <span
                 key={p}
-                className="bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 text-xs font-medium"
+                className="bg-white/10 border border-white/15 rounded-lg px-2.5 py-1 text-[11px] font-medium"
               >
                 {p}
               </span>
@@ -81,7 +81,7 @@ export default function LoginPage() {
       </div>
 
       {/* Right login form */}
-      <div className="flex-1 flex items-center justify-center bg-background p-6">
+      <div className="flex-1 flex items-center justify-center p-6 bg-[#f2f2f7] dark:bg-black">
         <div className="w-full max-w-md">
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-3 mb-8 justify-center">
