@@ -125,6 +125,24 @@ Respond in JSON format only (no markdown):
     sampleVars: {},
   },
 
+  {
+    featureKey: "platform_ebay",
+    label: "eBay Style Guide",
+    description: "Rules for optimizing listings for eBay buyers",
+    category: "listing",
+    prompt: `eBay style guide:
+- Professional, detailed, search-optimized tone
+- Include item specifics (brand, size, color, material, condition)
+- Use eBay-specific features: Best Offer, promoted listings
+- Detailed condition description using eBay's condition grades
+- Include return policy mention
+- Measurements in description
+- Keywords in title (80 chars max, keyword-stuffed for eBay search)
+- No hashtags — eBay uses item specifics for discovery`,
+    variables: [],
+    sampleVars: {},
+  },
+
   // ── Description Enhancement ───────────────────────────────────────
   {
     featureKey: "enhance",
@@ -184,7 +202,8 @@ Return only the polished description text, no JSON or formatting.`,
   "hashtags": {
     "depop": ["5-8 Depop-optimized hashtags"],
     "poshmark": ["5-8 Poshmark-optimized hashtags"],
-    "mercari": ["5-8 Mercari-optimized hashtags"]
+    "mercari": ["5-8 Mercari-optimized hashtags"],
+    "ebay": ["5-8 eBay-optimized keywords"]
   },
   "style_keywords": ["8-12 style/search keywords"],
   "confidence_score": "0-100 confidence in identification accuracy"
@@ -231,7 +250,8 @@ Respond in JSON only (no markdown):
     "depop": {"price": 30, "reasoning": "..."},
     "grailed": {"price": 40, "reasoning": "..."},
     "poshmark": {"price": 35, "reasoning": "..."},
-    "mercari": {"price": 28, "reasoning": "..."}
+    "mercari": {"price": 28, "reasoning": "..."},
+    "ebay": {"price": 32, "reasoning": "..."}
   },
   "strategy": {
     "recommendation": "price_high_drop|price_competitive|price_to_sell",
@@ -399,7 +419,7 @@ Return only valid JSON, no markdown.`,
     label: "Market Trends",
     description: "Generates trend reports for resale fashion market",
     category: "trends",
-    prompt: `You are an expert reselling market analyst specializing in secondhand fashion and goods across Depop, Grailed, Poshmark, and Mercari. Today is {{today}}.
+    prompt: `You are an expert reselling market analyst specializing in secondhand fashion and goods across Depop, Grailed, Poshmark, Mercari, and eBay. Today is {{today}}.
 
 Based on your knowledge of current resale market trends, provide a comprehensive trend report. Consider recent fashion weeks, social media trends, seasonal shifts, and platform-specific dynamics.
 
@@ -410,7 +430,7 @@ Provide the following:
 3. **Top 5 Hot Items/Styles** — specific items or styles that are selling fast right now. Include an estimated resale price range and description.
 4. **3 Sleeper Picks** — undervalued items that are about to trend. Include your reasoning and estimated ROI percentage.
 5. **Seasonal Advice** — what's about to be in demand in the next 2-4 weeks based on seasonal shifts.
-6. **Platform-Specific Tips** — what's performing best on each platform (Depop, Grailed, Poshmark, Mercari) and how to optimize for each.
+6. **Platform-Specific Tips** — what's performing best on each platform (Depop, Grailed, Poshmark, Mercari, eBay) and how to optimize for each.
 
 Respond in JSON format only (no markdown, no code fences):
 {
@@ -419,7 +439,7 @@ Respond in JSON format only (no markdown, no code fences):
   "hotItems": [{"name": "...", "priceRange": "$X-$Y", "description": "..."}],
   "sleeperPicks": [{"name": "...", "reasoning": "...", "estimatedROI": "X%"}],
   "seasonalAdvice": "...",
-  "platformTips": {"depop": "...", "grailed": "...", "poshmark": "...", "mercari": "..."}
+  "platformTips": {"depop": "...", "grailed": "...", "poshmark": "...", "mercari": "...", "ebay": "..."}
 }`,
     variables: ["today"],
     sampleVars: { today: new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) },
@@ -518,7 +538,7 @@ Write a friendly, helpful response that answers their question and encourages th
     label: "Competitor Analysis",
     description: "Analyzes the competitive landscape for an item across resale platforms",
     category: "analytics",
-    prompt: `You are an expert resale market analyst. Analyze the competitive landscape for this item across Depop, Grailed, Poshmark, and Mercari.
+    prompt: `You are an expert resale market analyst. Analyze the competitive landscape for this item across Depop, Grailed, Poshmark, Mercari, and eBay.
 
 Item:
 - Title: {{title}}

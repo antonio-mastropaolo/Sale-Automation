@@ -1161,7 +1161,7 @@ function GeneralTab() {
             <p>
               <span className="font-medium text-foreground">CrossList</span> — AI-Powered Cross-Platform Listing Tool
             </p>
-            <p>List once, sell everywhere. Optimized for Depop, Grailed, Poshmark, and Mercari.</p>
+            <p>List once, sell everywhere. Optimized for Depop, Grailed, Poshmark, Mercari, and eBay.</p>
             <p className="text-xs">Version 0.1.0</p>
           </div>
         </CardContent>

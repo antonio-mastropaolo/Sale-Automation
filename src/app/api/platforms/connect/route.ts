@@ -11,7 +11,7 @@ export async function GET() {
     updatedAt: c.updatedAt,
   }));
 
-  const allPlatforms = ["depop", "grailed", "poshmark", "mercari"];
+  const allPlatforms = ["depop", "grailed", "poshmark", "mercari", "ebay"];
   const result = allPlatforms.map((p) => {
     const existing = connected.find((c) => c.platform === p);
     return existing || { platform: p, connected: false, updatedAt: null };
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const validPlatforms = ["depop", "grailed", "poshmark", "mercari"];
+  const validPlatforms = ["depop", "grailed", "poshmark", "mercari", "ebay"];
   if (!validPlatforms.includes(platform)) {
     return NextResponse.json(
       { error: "Invalid platform" },

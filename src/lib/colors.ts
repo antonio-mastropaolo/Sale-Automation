@@ -26,6 +26,8 @@ export const platformBadge: Record<string, string> = {
     "bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-200 dark:border-pink-800",
   mercari:
     "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800",
+  ebay:
+    "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800",
 };
 
 // ── Platform branding (extended — includes icon letter, border, accent bar) ──
@@ -72,6 +74,14 @@ export const platformBranding: Record<
     border: "border-blue-200 dark:border-blue-800",
     accent: "bg-blue-500",
     icon: "M",
+  },
+  ebay: {
+    label: "eBay",
+    color: "text-yellow-700 dark:text-yellow-400",
+    bg: "bg-yellow-500/10",
+    border: "border-yellow-200 dark:border-yellow-800",
+    accent: "bg-yellow-500",
+    icon: "e",
   },
 };
 

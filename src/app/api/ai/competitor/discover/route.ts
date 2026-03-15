@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const prompt = `You are an expert resale market analyst with deep knowledge of secondhand fashion and goods across Depop, Grailed, Poshmark, and Mercari.
+  const prompt = `You are an expert resale market analyst with deep knowledge of secondhand fashion and goods across Depop, Grailed, Poshmark, Mercari, and eBay.
 
 Given the following:
 - Brand: ${brand || "Any"}
@@ -90,7 +90,7 @@ Respond with valid JSON only (no markdown, no code fences):
       "retailPrice": 110,
       "demandLevel": "high|medium|low",
       "profitMargin": "15-25%",
-      "bestPlatform": "depop|grailed|poshmark|mercari",
+      "bestPlatform": "depop|grailed|poshmark|mercari|ebay",
       "seasonality": "When this sells best",
       "quickTip": "One actionable selling tip"
     }

@@ -269,7 +269,7 @@ test.describe("T2 Data Validation", () => {
     request,
   }) => {
     const body = await fetchTrends(request);
-    const platforms = ["depop", "grailed", "poshmark", "mercari"];
+    const platforms = ["depop", "grailed", "poshmark", "mercari", "ebay"];
     for (const p of platforms) {
       expect(typeof body.platformTips[p]).toBe("string");
       expect(body.platformTips[p].trim().length).toBeGreaterThan(0);
@@ -836,7 +836,7 @@ test.describe("T5 Page UI Tests", () => {
     await page.goto("/trends");
     await page.waitForLoadState("networkidle");
     const platformSection = page.locator(
-      'text=/platform|depop|grailed|poshmark|mercari/i'
+      'text=/platform|depop|grailed|poshmark|mercari|ebay/i'
     );
     await expect(platformSection.first()).toBeVisible({ timeout: 30000 });
   });

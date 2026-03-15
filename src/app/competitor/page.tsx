@@ -69,6 +69,7 @@ const platformLabel: Record<string, string> = {
   grailed: "Grailed",
   poshmark: "Poshmark",
   mercari: "Mercari",
+  ebay: "eBay",
 };
 
 const platformBadgeColor: Record<string, string> = {
@@ -76,6 +77,7 @@ const platformBadgeColor: Record<string, string> = {
   grailed: "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-700",
   poshmark: "bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-300 dark:border-pink-700",
   mercari: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-700",
+  ebay: "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-300 dark:border-yellow-700",
 };
 
 // ── Image resolution ────────────────────────────────────────────

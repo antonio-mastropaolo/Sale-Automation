@@ -39,7 +39,7 @@ model ListingImage {
 model PlatformListing {
   id                   String    @id @default(uuid())
   listingId            String
-  platform             String // depop, grailed, poshmark, mercari
+  platform             String // depop, grailed, poshmark, mercari, ebay
   optimizedTitle       String
   optimizedDescription String
   hashtags             String    @default("") // JSON array stored as string

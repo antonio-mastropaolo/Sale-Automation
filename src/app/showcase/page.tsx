@@ -52,7 +52,7 @@ const features = [
   {
     emoji: "\u{1F680}",
     title: "One-Click Publishing",
-    desc: "Publish to Depop, Grailed, Poshmark, Mercari simultaneously",
+    desc: "Publish to Depop, Grailed, Poshmark, Mercari, eBay simultaneously",
   },
   {
     emoji: "\u{1F4B0}",

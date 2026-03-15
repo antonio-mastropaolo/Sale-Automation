@@ -86,7 +86,7 @@ function LoadingSkeleton() {
         </div>
         <h2 className="text-lg font-semibold mb-1">Analyzing Market Trends</h2>
         <p className="text-sm text-muted-foreground mb-6 max-w-md">
-          AI is scanning resale markets across Depop, Grailed, Poshmark, and Mercari for the latest insights...
+          AI is scanning resale markets across Depop, Grailed, Poshmark, Mercari, and eBay for the latest insights...
         </p>
         {/* Animated progress bar */}
         <div className="w-64 h-1.5 bg-muted rounded-full overflow-hidden">

@@ -158,7 +158,7 @@ export default function Dashboard() {
             </Link>
           </div>
           <div className="space-y-3">
-            {["depop", "grailed", "poshmark", "mercari"].map((platform) => {
+            {["depop", "grailed", "poshmark", "mercari", "ebay"].map((platform) => {
               const pStats = stats.platformStats.find((p) => p.platform === platform);
               const barWidth = pStats?.published ? Math.min((pStats.published / Math.max(stats.totalListings, 1)) * 100, 100) : 0;
               return (

@@ -181,7 +181,7 @@ schema_data = [
     ["Model", "Key Fields", "Notes"],
     ["Listing", "id, title, description, category,\nbrand, size, condition, price, status", "status: draft | active | sold"],
     ["ListingImage", "id, listingId, path, order", "Max 8 images per listing"],
-    ["PlatformListing", "id, listingId, platform,\noptimizedTitle, optimizedDescription,\nhashtags, suggestedPrice, status", "platform: depop | grailed |\nposhmark | mercari"],
+    ["PlatformListing", "id, listingId, platform,\noptimizedTitle, optimizedDescription,\nhashtags, suggestedPrice, status", "platform: depop | grailed |\nposhmark | mercari | ebay"],
     ["PlatformCredential", "id, platform, encryptedData", "AES-256-GCM encrypted"],
     ["AnalyticsEvent", "id, platformListingId,\neventType, value, recordedAt", "eventType: view | like |\noffer | sale"],
 ]

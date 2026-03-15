@@ -9,7 +9,7 @@ interface TrendData {
   hotItems: { name: string; priceRange: string; description: string }[];
   sleeperPicks: { name: string; reasoning: string; estimatedROI: string }[];
   seasonalAdvice: string;
-  platformTips: { depop: string; grailed: string; poshmark: string; mercari: string };
+  platformTips: { depop: string; grailed: string; poshmark: string; mercari: string; ebay: string };
 }
 
 const fallbackData: TrendData = {
@@ -45,6 +45,7 @@ const fallbackData: TrendData = {
     grailed: "Designer and high-end streetwear dominate. Detailed measurements and condition reports drive sales.",
     poshmark: "Contemporary brands and athleisure lead sales. Host virtual Posh Parties and share actively.",
     mercari: "Competitive pricing wins on Mercari. Smart Pricing and promoted listings significantly boost visibility.",
+    ebay: "eBay rewards keyword-rich titles and detailed item specifics. Use promoted listings and Best Offer to maximize visibility and close sales faster.",
   },
 };
 
