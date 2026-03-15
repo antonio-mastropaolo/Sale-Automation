@@ -89,14 +89,14 @@ export function Sidebar({ className }: { className?: string }) {
       className,
     )}>
       {/* Header */}
-      <div className={cn("flex items-center justify-center shrink-0 border-b border-[var(--sidebar-border)]", collapsed ? "h-[56px] px-1" : "h-[64px] px-1")}>
-        <img src="/logo.png" alt="ListBlitz" className={cn("object-contain", collapsed ? "h-9" : "w-full max-h-[52px]")} />
+      <div className={cn("flex items-center justify-center shrink-0 border-b border-[var(--sidebar-border)] overflow-hidden", collapsed ? "h-[56px] p-1" : "h-[70px] p-0")}>
+        <img src="/logo.png" alt="ListBlitz" className={cn("object-contain", collapsed ? "h-10" : "w-full h-full p-2")} />
       </div>
 
       {/* Collapse toggle */}
       <button
         onClick={toggleCollapse}
-        className="absolute -right-[13px] top-[24px] z-50 h-[26px] w-[26px] rounded-full bg-[var(--card)] border border-[var(--border)] flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors shadow-sm"
+        className="absolute -right-[13px] top-[28px] z-50 h-[26px] w-[26px] rounded-full bg-[var(--card)] border border-[var(--border)] flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors shadow-sm"
       >
         {collapsed ? <PanelLeftOpen className="h-3 w-3" /> : <PanelLeftClose className="h-3 w-3" />}
       </button>
