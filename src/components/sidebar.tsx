@@ -9,6 +9,7 @@ import {
   BarChart3,
   Settings,
   Calculator,
+  FileText,
   Moon,
   Sun,
   Zap,
@@ -32,6 +33,7 @@ const menuLinks = [
 const generalLinks = [
   { href: "/settings", label: "Settings", icon: Settings },
   { href: "/tools", label: "Help", icon: HelpCircle },
+  { href: "/report", label: "Test Report", icon: FileText },
 ];
 
 export function Sidebar({ className }: { className?: string }) {

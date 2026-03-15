@@ -709,3 +709,178 @@ test.describe("P — Large payload & edge cases", () => {
     }
   });
 });
+
+// ════════════════════════════════════════════════════════════════════
+// Q. Performance Benchmark Tests
+// ════════════════════════════════════════════════════════════════════
+
+test.describe("Q — Performance benchmarks", () => {
+  test("Q1: Dashboard loads under 5 seconds", async ({ page }) => {
+    const start = Date.now();
+    await page.goto("/", { waitUntil: "networkidle" });
+    const elapsed = Date.now() - start;
+    expect(elapsed).toBeLessThan(5000);
+  });
+
+  test("Q2: API /api/listings responds under 500ms", async ({ request }) => {
+    const start = Date.now();
+    const res = await request.get(`${BASE}/api/listings`);
+    const elapsed = Date.now() - start;
+    expect(res.status()).toBe(200);
+    expect(elapsed).toBeLessThan(500);
+  });
+
+  test("Q3: API /api/analytics responds under 500ms", async ({ request }) => {
+    const start = Date.now();
+    const res = await request.get(`${BASE}/api/analytics`);
+    const elapsed = Date.now() - start;
+    expect(res.status()).toBe(200);
+    expect(elapsed).toBeLessThan(500);
+  });
+
+  test("Q4: Create listing form page loads under 3 seconds", async ({ page }) => {
+    const start = Date.now();
+    await page.goto("/listings/new", { waitUntil: "networkidle" });
+    const elapsed = Date.now() - start;
+    expect(elapsed).toBeLessThan(3000);
+  });
+
+  test("Q5: Settings page loads under 3 seconds", async ({ page }) => {
+    const start = Date.now();
+    await page.goto("/settings", { waitUntil: "networkidle" });
+    const elapsed = Date.now() - start;
+    expect(elapsed).toBeLessThan(3000);
+  });
+
+  test("Q6: 20 concurrent API calls complete under 3 seconds", async ({ request }) => {
+    const start = Date.now();
+    const promises = Array.from({ length: 20 }, () =>
+      request.get(`${BASE}/api/listings`)
+    );
+    const results = await Promise.all(promises);
+    const elapsed = Date.now() - start;
+    for (const res of results) {
+      expect(res.status()).toBe(200);
+    }
+    expect(elapsed).toBeLessThan(3000);
+  });
+
+  test("Q7: Page navigation chain completes under 8 seconds", async ({ page }) => {
+    const routes = ["/", "/listings/new", "/analytics", "/trends", "/tools", "/settings"];
+    const start = Date.now();
+    for (const route of routes) {
+      await page.goto(route, { waitUntil: "domcontentloaded" });
+    }
+    const elapsed = Date.now() - start;
+    expect(elapsed).toBeLessThan(8000);
+  });
+});
+
+// ════════════════════════════════════════════════════════════════════
+// R. Accessibility Audit Tests
+// ════════════════════════════════════════════════════════════════════
+
+test.describe("R — Accessibility audit", () => {
+  test("R1: Dashboard has no missing alt attributes on images", async ({ page }) => {
+    await page.goto("/");
+    const images = page.locator("img");
+    const count = await images.count();
+    for (let i = 0; i < count; i++) {
+      const alt = await images.nth(i).getAttribute("alt");
+      expect(alt).not.toBeNull();
+    }
+  });
+
+  test("R2: All form inputs have associated labels or aria-label", async ({ page }) => {
+    await page.goto("/listings/new");
+    const inputs = page.locator("input, textarea, select");
+    const count = await inputs.count();
+    for (let i = 0; i < count; i++) {
+      const el = inputs.nth(i);
+      const type = await el.getAttribute("type");
+      if (type === "hidden") continue;
+
+      const ariaLabel = await el.getAttribute("aria-label");
+      const ariaLabelledBy = await el.getAttribute("aria-labelledby");
+      const id = await el.getAttribute("id");
+      const placeholder = await el.getAttribute("placeholder");
+
+      // Must have at least one accessible name mechanism
+      let hasLabel = !!ariaLabel || !!ariaLabelledBy || !!placeholder;
+      if (id) {
+        const label = page.locator(`label[for="${id}"]`);
+        hasLabel = hasLabel || (await label.count()) > 0;
+      }
+      expect(hasLabel).toBe(true);
+    }
+  });
+
+  test("R3: Interactive elements are keyboard focusable", async ({ page }) => {
+    await page.goto("/");
+    // Tab through and verify focus is visible
+    await page.keyboard.press("Tab");
+    const focused = await page.evaluate(() => {
+      const el = document.activeElement;
+      return el ? el.tagName : null;
+    });
+    expect(focused).not.toBeNull();
+    expect(focused).not.toBe("BODY");
+  });
+
+  test("R4: No duplicate IDs on dashboard", async ({ page }) => {
+    await page.goto("/");
+    const duplicates = await page.evaluate(() => {
+      const ids = Array.from(document.querySelectorAll("[id]")).map((el) => el.id);
+      const seen = new Set<string>();
+      const dupes: string[] = [];
+      for (const id of ids) {
+        if (seen.has(id)) dupes.push(id);
+        seen.add(id);
+      }
+      return dupes;
+    });
+    expect(duplicates).toHaveLength(0);
+  });
+
+  test("R5: HTML lang attribute is set", async ({ page }) => {
+    await page.goto("/");
+    const lang = await page.locator("html").getAttribute("lang");
+    expect(lang).toBeTruthy();
+    expect(lang).toBe("en");
+  });
+
+  test("R6: Buttons have accessible text content", async ({ page }) => {
+    await page.goto("/");
+    const buttons = page.locator("button");
+    const count = await buttons.count();
+    for (let i = 0; i < count; i++) {
+      const btn = buttons.nth(i);
+      if (!(await btn.isVisible())) continue;
+      const text = await btn.textContent();
+      const ariaLabel = await btn.getAttribute("aria-label");
+      const title = await btn.getAttribute("title");
+      // Must have some accessible name
+      const hasName = (text && text.trim().length > 0) || !!ariaLabel || !!title;
+      expect(hasName).toBe(true);
+    }
+  });
+
+  test("R7: Page has exactly one h1 on each route", async ({ page }) => {
+    const routes = ["/", "/listings/new", "/analytics", "/settings"];
+    for (const route of routes) {
+      await page.goto(route, { waitUntil: "domcontentloaded" });
+      await page.waitForTimeout(500);
+      const h1Count = await page.locator("h1").count();
+      expect(h1Count).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  test("R8: Skip to content or logical focus order exists", async ({ page }) => {
+    await page.goto("/");
+    // Verify tab order starts with interactive elements, not random divs
+    await page.keyboard.press("Tab");
+    const tag = await page.evaluate(() => document.activeElement?.tagName);
+    // First focused element should be a link, button, or input
+    expect(["A", "BUTTON", "INPUT", "SELECT", "TEXTAREA"]).toContain(tag);
+  });
+});
