@@ -296,7 +296,7 @@ Provide 5-8 items per category. Be specific to ${name}'s audience, fee structure
     clearTimeout(timeout);
 
     const text = response.choices[0]?.message?.content || "{}";
-    const parsed = parseAIJson(text);
+    const parsed = parseAIJson<{ trendingCategories?: unknown[] }>(text);
 
     // Validate we got real data
     if (parsed.trendingCategories?.length > 0) {

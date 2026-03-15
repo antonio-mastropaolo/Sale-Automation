@@ -788,11 +788,20 @@ function PromptCard({
 // TAB 3 — PLATFORMS
 // ═══════════════════════════════════════════════════════════════════
 
+// Platform connection methods
+const PLATFORM_CONNECTION: Record<string, { method: "extension" | "oauth"; loginUrl: string; description: string }> = {
+  depop: { method: "extension", loginUrl: "https://www.depop.com/login/", description: "Log in to Depop in your browser. The ListBlitz extension will detect your session." },
+  grailed: { method: "extension", loginUrl: "https://www.grailed.com/users/sign_in", description: "Log in to Grailed in your browser. The extension detects your session automatically." },
+  poshmark: { method: "extension", loginUrl: "https://poshmark.com/login", description: "Log in to Poshmark in your browser. The extension handles the connection." },
+  mercari: { method: "extension", loginUrl: "https://www.mercari.com/login/", description: "Log in to Mercari in your browser. Extension detects your session." },
+  ebay: { method: "extension", loginUrl: "https://signin.ebay.com/", description: "Log in to eBay in your browser. The extension detects your session." },
+  vinted: { method: "extension", loginUrl: "https://www.vinted.com/member/login", description: "Log in to Vinted in your browser. Extension detects your session." },
+  facebook: { method: "extension", loginUrl: "https://www.facebook.com/marketplace/", description: "Log in to Facebook in your browser. The extension detects your session." },
+  vestiaire: { method: "extension", loginUrl: "https://www.vestiairecollective.com/login/", description: "Log in to Vestiaire Collective in your browser. Extension detects your session." },
+};
+
 function PlatformsTab() {
   const [platforms, setPlatforms] = useState<PlatformStatus[]>([]);
-  const [connecting, setConnecting] = useState<string | null>(null);
-  const [dialogOpen, setDialogOpen] = useState<string | null>(null);
-  const [form, setForm] = useState({ username: "", password: "" });
 
   const fetchPlatforms = useCallback(() => {
     fetch("/api/platforms/connect")
@@ -805,36 +814,41 @@ function PlatformsTab() {
     fetchPlatforms();
   }, [fetchPlatforms]);
 
-  const connect = async (platform: string) => {
-    if (!form.username || !form.password) {
-      toast.error("Username and password required");
-      return;
+  const openLogin = (platform: string) => {
+    const conn = PLATFORM_CONNECTION[platform];
+    if (conn) {
+      window.open(conn.loginUrl, "_blank");
+      toast.success(`Opening ${platformInfo[platform]?.name}. Log in, then come back and click "Check Connection".`);
     }
-    setConnecting(platform);
+  };
+
+  const checkConnection = async (platform: string) => {
+    // Try to detect via extension
     try {
-      const res = await fetch("/api/platforms/connect", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ platform, ...form }),
-      });
-      if (!res.ok) throw new Error();
-      toast.success(`Connected to ${platformInfo[platform].name}`);
-      setDialogOpen(null);
-      setForm({ username: "", password: "" });
-      fetchPlatforms();
+      const { checkPlatformSession } = await import("@/lib/extension");
+      const result = await checkPlatformSession(platform);
+      if (result.connected) {
+        // Save to DB so it persists
+        await fetch("/api/platforms/connect", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ platform, username: "extension-session", password: "detected" }),
+        });
+        toast.success(`${platformInfo[platform]?.name} connected via extension!`);
+        fetchPlatforms();
+        return;
+      }
     } catch {
-      toast.error("Failed to connect");
+      // Extension not available
     }
-    setConnecting(null);
+    toast.error(`Could not detect ${platformInfo[platform]?.name} session. Make sure you're logged in and the extension is installed.`);
   };
 
   const disconnect = async (platform: string) => {
-    if (!confirm(`Disconnect from ${platformInfo[platform].name}?`)) return;
+    if (!confirm(`Disconnect from ${platformInfo[platform]?.name}?`)) return;
     try {
-      await fetch(`/api/platforms/connect?platform=${platform}`, {
-        method: "DELETE",
-      });
-      toast.success(`Disconnected from ${platformInfo[platform].name}`);
+      await fetch(`/api/platforms/connect?platform=${platform}`, { method: "DELETE" });
+      toast.success(`Disconnected from ${platformInfo[platform]?.name}`);
       fetchPlatforms();
     } catch {
       toast.error("Failed to disconnect");
@@ -845,146 +859,68 @@ function PlatformsTab() {
 
   return (
     <div className="space-y-4 pt-2">
-      {/* Connection summary */}
+      {/* How it works */}
       <Card className="border-0 shadow-sm">
         <CardContent className="pt-5">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 mb-3">
             <div className="p-3 rounded-xl bg-primary/10">
               <Shield className="h-6 w-6 text-primary" />
             </div>
             <div className="flex-1">
               <h3 className="font-semibold">Platform Connections</h3>
               <p className="text-sm text-muted-foreground">
-                {connectedCount} of 8 platforms connected
+                {connectedCount} of {platforms.length} platforms connected
               </p>
             </div>
-            <div className="flex gap-1">
-              {platforms.map((p) => (
-                <div
-                  key={p.platform}
-                  className={`w-2.5 h-2.5 rounded-full ${
-                    p.connected ? "bg-green-500" : "bg-muted-foreground/20"
-                  }`}
-                />
-              ))}
-            </div>
+          </div>
+          <div className="rounded-xl bg-muted/30 p-3 text-xs text-muted-foreground space-y-1">
+            <p className="font-medium text-foreground">How connecting works:</p>
+            <p>1. Install the ListBlitz Chrome extension</p>
+            <p>2. Click &quot;Log In&quot; to open the marketplace in a new tab</p>
+            <p>3. Sign in to your account on that marketplace</p>
+            <p>4. Come back here and click &quot;Check Connection&quot;</p>
+            <p>5. The extension detects your session — no passwords stored</p>
           </div>
         </CardContent>
       </Card>
 
       {/* Platform list */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         {platforms.map((p) => {
           const info = platformInfo[p.platform];
           if (!info) return null;
           return (
-            <Card key={p.platform} className="border-0 shadow-sm hover:shadow-md transition-shadow">
-              <CardContent className="py-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div
-                      className={`w-11 h-11 rounded-xl ${info.bg} ${info.color} flex items-center justify-center font-bold`}
-                    >
-                      {info.icon}
-                    </div>
-                    <div>
-                      <p className="font-semibold">{info.name}</p>
-                      {p.connected ? (
-                        <div className="flex items-center gap-1.5 text-sm text-green-600 dark:text-green-400">
-                          <CheckCircle2 className="h-3.5 w-3.5" />
-                          Connected
-                          {p.updatedAt && (
-                            <span className="text-muted-foreground ml-1">
-                              · {new Date(p.updatedAt).toLocaleDateString()}
-                            </span>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                          <XCircle className="h-3.5 w-3.5" />
-                          Not connected
-                        </div>
-                      )}
-                    </div>
+            <Card key={p.platform} className="border-0 shadow-sm">
+              <CardContent className="py-3">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl ${info.bg} ${info.color} flex items-center justify-center font-bold text-sm shrink-0`}>
+                    {info.icon}
                   </div>
-                  <div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold">{info.name}</p>
                     {p.connected ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => disconnect(p.platform)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Unlink className="h-4 w-4 mr-1" />
+                      <p className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+                        <CheckCircle2 className="h-3 w-3" />
+                        Connected via extension
+                      </p>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">Not connected</p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {p.connected ? (
+                      <Button variant="outline" size="sm" className="h-7 text-xs text-destructive" onClick={() => disconnect(p.platform)}>
                         Disconnect
                       </Button>
                     ) : (
-                      <Dialog
-                        open={dialogOpen === p.platform}
-                        onOpenChange={(open) => {
-                          setDialogOpen(open ? p.platform : null);
-                          if (!open) setForm({ username: "", password: "" });
-                        }}
-                      >
-                        <DialogTrigger render={<Button size="sm" className="bg-primary text-primary-foreground" />}>
-                            <Link2 className="h-4 w-4 mr-1" />
-                            Connect
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle className="flex items-center gap-3">
-                              <div
-                                className={`w-9 h-9 rounded-lg ${info.bg} ${info.color} flex items-center justify-center font-bold text-sm`}
-                              >
-                                {info.icon}
-                              </div>
-                              Connect to {info.name}
-                            </DialogTitle>
-                          </DialogHeader>
-                          <div className="space-y-4 pt-2">
-                            <div className="space-y-2">
-                              <Label>Username / Email</Label>
-                              <Input
-                                value={form.username}
-                                onChange={(e) =>
-                                  setForm((f) => ({ ...f, username: e.target.value }))
-                                }
-                                placeholder={`Your ${info.name} username`}
-                                className="h-11"
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Password</Label>
-                              <Input
-                                type="password"
-                                value={form.password}
-                                onChange={(e) =>
-                                  setForm((f) => ({ ...f, password: e.target.value }))
-                                }
-                                placeholder="Password"
-                                className="h-11"
-                              />
-                            </div>
-                            <div className="flex items-start gap-2 p-3 bg-muted/30 rounded-lg">
-                              <Key className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-                              <p className="text-xs text-muted-foreground">
-                                Your credentials are encrypted with AES-256-GCM and stored locally on
-                                your machine. They are never sent to any external server.
-                              </p>
-                            </div>
-                            <Button
-                              className="w-full h-11 bg-primary text-primary-foreground"
-                              onClick={() => connect(p.platform)}
-                              disabled={connecting === p.platform}
-                            >
-                              {connecting === p.platform && (
-                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                              )}
-                              Save & Connect
-                            </Button>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
+                      <>
+                        <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => openLogin(p.platform)}>
+                          Log In
+                        </Button>
+                        <Button size="sm" className="h-7 text-xs" onClick={() => checkConnection(p.platform)}>
+                          Check
+                        </Button>
+                      </>
                     )}
                   </div>
                 </div>
