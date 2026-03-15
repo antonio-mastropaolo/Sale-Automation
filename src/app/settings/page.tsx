@@ -35,6 +35,8 @@ import {
   Wand2,
   AlertCircle,
   Check,
+  Star,
+  Lightbulb,
 } from "lucide-react";
 import { toast } from "sonner";
 import { platformBranding } from "@/lib/colors";
@@ -155,83 +157,80 @@ export default function SettingsPage() {
 // ═══════════════════════════════════════════════════════════════════
 
 function AIProviderTab() {
-  const [settings, setSettings] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [showKey, setShowKey] = useState(false);
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<string | null>(null);
 
-  // Local form state
-  const [provider, setProvider] = useState("openai");
-  const [apiKey, setApiKey] = useState("");
+  // Default provider + model
+  const [defaultProvider, setDefaultProvider] = useState("openai");
   const [model, setModel] = useState("");
   const [baseURL, setBaseURL] = useState("");
-  const [keyEdited, setKeyEdited] = useState(false);
 
-  // Per-provider key cache — so switching providers doesn't lose the key
-  const [keyCache, setKeyCache] = useState<Record<string, string>>({});
+  // Per-provider keys — all editable at once
+  const [keys, setKeys] = useState<Record<string, string>>({});
+  const [savedKeys, setSavedKeys] = useState<Record<string, string>>({});
+  const [showKeyFor, setShowKeyFor] = useState<Record<string, boolean>>({});
+
+  // Smart AI suggestions toggle
+  const [smartSuggestions, setSmartSuggestions] = useState(false);
 
   useEffect(() => {
     fetch("/api/settings")
       .then((r) => r.json())
       .then((data: Record<string, string>) => {
-        setSettings(data);
         const prov = data.ai_provider || "openai";
-        setProvider(prov);
-        setApiKey(data.ai_api_key || "");
+        setDefaultProvider(prov);
         setModel(data.ai_model || "");
         setBaseURL(data.ai_base_url || "");
-        // Seed cache with all per-provider keys
-        const cache: Record<string, string> = {};
-        if (data.ai_api_key) cache[prov] = data.ai_api_key;
+        setSmartSuggestions(data.ai_smart_suggestions === "true");
+        // Load all per-provider keys
+        const loaded: Record<string, string> = {};
         for (const pid of ["openai", "google", "groq", "together", "openrouter", "custom"]) {
           const k = data[`ai_api_key_${pid}`];
-          if (k) cache[pid] = k;
+          if (k) loaded[pid] = k;
         }
-        setKeyCache(cache);
+        // Fallback: if active key exists but per-provider doesn't
+        if (data.ai_api_key && !loaded[prov]) loaded[prov] = data.ai_api_key;
+        setKeys(loaded);
+        setSavedKeys({ ...loaded });
         setLoading(false);
       })
       .catch(() => setLoading(false));
   }, []);
 
-  const selectedProvider = AI_PROVIDERS.find((p) => p.id === provider) || AI_PROVIDERS[0];
+  const selectedProvider = AI_PROVIDERS.find((p) => p.id === defaultProvider) || AI_PROVIDERS[0];
+  const configuredCount = Object.values(keys).filter(Boolean).length;
 
-  const handleProviderChange = (newId: string) => {
-    // Save current key to cache before switching
-    if (apiKey && keyEdited) {
-      setKeyCache((prev) => ({ ...prev, [provider]: apiKey }));
-    }
-    setProvider(newId);
-    const p = AI_PROVIDERS.find((x) => x.id === newId);
-    if (p) {
-      setModel(p.defaultModel);
-    }
-    // Restore cached key for the new provider (or show empty)
-    const cached = keyCache[newId];
-    if (cached) {
-      setApiKey(cached);
-      setKeyEdited(true);
-    } else {
-      setApiKey("");
-      setKeyEdited(false);
-    }
+  const updateKey = (providerId: string, value: string) => {
+    setKeys((prev) => ({ ...prev, [providerId]: value }));
+  };
+
+  const setAsDefault = (providerId: string) => {
+    setDefaultProvider(providerId);
+    const p = AI_PROVIDERS.find((x) => x.id === providerId);
+    if (p) setModel(p.defaultModel);
     setTestResult(null);
   };
 
   const save = async () => {
     setSaving(true);
-    // Save both the active provider key AND cache any edited key
     const payload: Record<string, string> = {
-      ai_provider: provider,
+      ai_provider: defaultProvider,
       ai_model: model,
+      ai_smart_suggestions: smartSuggestions ? "true" : "false",
     };
-    if (keyEdited && apiKey) {
-      payload.ai_api_key = apiKey;
-      // Also save per-provider key
-      payload[`ai_api_key_${provider}`] = apiKey;
+    // Save all provider keys
+    for (const pid of ["openai", "google", "groq", "together", "openrouter", "custom"]) {
+      if (keys[pid]) {
+        payload[`ai_api_key_${pid}`] = keys[pid];
+      }
     }
-    if (provider === "custom" && baseURL) {
+    // Also set the active key to the default provider's key
+    if (keys[defaultProvider]) {
+      payload.ai_api_key = keys[defaultProvider];
+    }
+    if (defaultProvider === "custom" && baseURL) {
       payload.ai_base_url = baseURL;
     }
     try {
@@ -241,6 +240,7 @@ function AIProviderTab() {
         body: JSON.stringify({ settings: payload }),
       });
       if (!res.ok) throw new Error();
+      setSavedKeys({ ...keys });
       toast.success("AI provider settings saved");
     } catch {
       toast.error("Failed to save settings");
@@ -252,21 +252,8 @@ function AIProviderTab() {
     setTesting(true);
     setTestResult(null);
     try {
-      // Auto-save settings first so the test uses the current values
-      const payload: Record<string, string> = {
-        ai_provider: provider,
-        ai_model: model,
-      };
-      if (keyEdited && apiKey) payload.ai_api_key = apiKey;
-      if (provider === "custom" && baseURL) payload.ai_base_url = baseURL;
-
-      await fetch("/api/settings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ settings: payload }),
-      });
-
-      // Now test
+      // Save first so test uses current values
+      await save();
       const res = await fetch("/api/settings/test-prompt", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -297,122 +284,124 @@ function AIProviderTab() {
 
   return (
     <div className="space-y-4 pt-2">
-      {/* Provider Selection */}
+      {/* Provider Cards — each with inline key */}
       <Card className="border-0 shadow-sm">
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
             <Brain className="h-5 w-5 text-primary" />
-            AI Service Provider
+            AI Service Providers
           </CardTitle>
+          <p className="text-xs text-muted-foreground mt-1">
+            {configuredCount === 0
+              ? "Add API keys to get started. Set one as default, or configure multiple for per-stage AI routing."
+              : configuredCount === 1
+              ? `${configuredCount} provider configured — used globally for all AI features.`
+              : `${configuredCount} providers configured — you can use different models per pipeline stage.`}
+          </p>
         </CardHeader>
-        <CardContent className="space-y-5">
-          {/* Provider grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {AI_PROVIDERS.map((p) => (
-              <button
+        <CardContent className="space-y-3">
+          {AI_PROVIDERS.map((p) => {
+            const hasKey = !!keys[p.id];
+            const isDefault = defaultProvider === p.id;
+            const wasSaved = !!savedKeys[p.id];
+            const keyChanged = keys[p.id] !== savedKeys[p.id];
+
+            return (
+              <div
                 key={p.id}
-                onClick={() => handleProviderChange(p.id)}
-                className={`relative p-3 rounded-xl border-2 text-left transition-all ${
-                  provider === p.id
-                    ? "border-primary bg-primary/5 shadow-sm"
-                    : "border-transparent bg-muted/30 hover:bg-muted/50"
+                className={`rounded-xl border-2 p-3 transition-all ${
+                  isDefault
+                    ? "border-primary bg-primary/5"
+                    : hasKey
+                    ? "border-emerald-500/30 bg-emerald-500/5"
+                    : "border-transparent bg-muted/30"
                 }`}
               >
-                <p className="font-semibold text-sm">{p.name}</p>
-                {keyCache[p.id] && (
-                  <div className="absolute top-2 right-2">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                  </div>
-                )}
-              </button>
-            ))}
-          </div>
-
-          {/* API Key */}
-          <div className="space-y-2">
-            <Label>API Key</Label>
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Input
-                  type={showKey ? "text" : "password"}
-                  value={apiKey}
-                  onChange={(e) => {
-                    setApiKey(e.target.value);
-                    setKeyEdited(true);
-                  }}
-                  placeholder={`Enter your ${selectedProvider.name} API key`}
-                  className={`h-11 pr-10 font-mono text-xs ${
-                    apiKey && !keyEdited
-                      ? "border-emerald-500/50 bg-emerald-500/5 focus-visible:ring-emerald-500/30"
-                      : ""
-                  }`}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowKey(!showKey)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            </div>
-            <p className={`text-xs flex items-center gap-1.5 ${
-              apiKey && !keyEdited ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"
-            }`}>
-              {apiKey && !keyEdited ? (
-                <CheckCircle2 className="h-3 w-3" />
-              ) : (
-                <Key className="h-3 w-3" />
-              )}
-              {!keyEdited && apiKey
-                ? `${selectedProvider.name} API key is set`
-                : `Enter your ${selectedProvider.name} API key — each provider requires its own key`}
-            </p>
-            {!keyEdited && apiKey && provider !== "openai" && apiKey.startsWith("sk-") && (
-              <p className="text-xs text-destructive flex items-center gap-1.5 mt-1">
-                <AlertCircle className="h-3 w-3" />
-                This looks like an OpenAI key. {selectedProvider.name} needs its own key.
-              </p>
-            )}
-            {!keyEdited && apiKey && provider !== "google" && apiKey.startsWith("AIza") && (
-              <p className="text-xs text-destructive flex items-center gap-1.5 mt-1">
-                <AlertCircle className="h-3 w-3" />
-                This looks like a Google key. {selectedProvider.name} needs its own key.
-              </p>
-            )}
-          </div>
-
-          {/* Model */}
-          <div className="space-y-2">
-            <Label>Model</Label>
-            {selectedProvider.models.length > 0 ? (
-              <div className="flex flex-wrap gap-1.5">
-                {selectedProvider.models.map((m) => (
-                  <button
-                    key={m}
-                    onClick={() => setModel(m)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                      model === m
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+                {/* Header row */}
+                <div className="flex items-center gap-2 mb-2">
+                  <p className="font-semibold text-sm flex-1">{p.name}</p>
+                  {hasKey && (
+                    <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                  )}
+                  {isDefault ? (
+                    <Badge variant="outline" className="text-[10px] h-5 border-primary text-primary gap-1">
+                      <Star className="h-2.5 w-2.5 fill-current" /> Default
+                    </Badge>
+                  ) : (
+                    <button
+                      onClick={() => setAsDefault(p.id)}
+                      className="text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      Set as default
+                    </button>
+                  )}
+                </div>
+                {/* Key input */}
+                <div className="relative">
+                  <Input
+                    type={showKeyFor[p.id] ? "text" : "password"}
+                    value={keys[p.id] || ""}
+                    onChange={(e) => updateKey(p.id, e.target.value)}
+                    placeholder={`Enter your ${p.name} API key`}
+                    className={`h-9 pr-9 font-mono text-xs ${
+                      wasSaved && !keyChanged
+                        ? "border-emerald-500/40 bg-emerald-500/5"
+                        : ""
                     }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowKeyFor((prev) => ({ ...prev, [p.id]: !prev[p.id] }))}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
-                    {m}
+                    {showKeyFor[p.id] ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                   </button>
-                ))}
+                </div>
               </div>
-            ) : (
-              <Input
-                value={model}
-                onChange={(e) => setModel(e.target.value)}
-                placeholder="Enter model name (e.g., gpt-4o)"
-                className="h-11"
-              />
-            )}
-          </div>
+            );
+          })}
+        </CardContent>
+      </Card>
+
+      {/* Default Model + Options */}
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Settings2 className="h-5 w-5 text-primary" />
+            Default Model
+          </CardTitle>
+          <p className="text-xs text-muted-foreground mt-1">
+            Model used for {selectedProvider.name} when running AI features.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {selectedProvider.models.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5">
+              {selectedProvider.models.map((m) => (
+                <button
+                  key={m}
+                  onClick={() => setModel(m)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    model === m
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }`}
+                >
+                  {m}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <Input
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+              placeholder="Enter model name (e.g., gpt-4o)"
+              className="h-11"
+            />
+          )}
 
           {/* Custom base URL */}
-          {provider === "custom" && (
+          {defaultProvider === "custom" && (
             <div className="space-y-2">
               <Label>Base URL</Label>
               <Input
@@ -426,6 +415,29 @@ function AIProviderTab() {
               </p>
             </div>
           )}
+
+          {/* Smart AI Suggestions */}
+          <div
+            className={`flex items-center gap-3 rounded-xl border p-3 cursor-pointer transition-all ${
+              smartSuggestions ? "border-primary bg-primary/5" : "border-border"
+            }`}
+            onClick={() => setSmartSuggestions(!smartSuggestions)}
+          >
+            <div className={`p-2 rounded-lg ${smartSuggestions ? "bg-primary/10" : "bg-muted/50"}`}>
+              <Lightbulb className={`h-4 w-4 ${smartSuggestions ? "text-primary" : "text-muted-foreground"}`} />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium">Smart AI Suggestions</p>
+              <p className="text-xs text-muted-foreground">
+                Get recommendations on which provider and model works best for each pipeline stage.
+              </p>
+            </div>
+            <div className={`w-9 h-5 rounded-full transition-all flex items-center px-0.5 ${
+              smartSuggestions ? "bg-primary justify-end" : "bg-muted justify-start"
+            }`}>
+              <div className="w-4 h-4 rounded-full bg-white shadow-sm" />
+            </div>
+          </div>
 
           {/* Actions */}
           <div className="flex items-center gap-3 pt-2">
