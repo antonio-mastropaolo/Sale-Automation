@@ -43,6 +43,27 @@ const PLATFORMS = {
     sellUrl: "https://www.ebay.com/sl/sell",
     cookieNames: ["ebay", "nonsession", "s", "ds2"],
   },
+  vinted: {
+    name: "Vinted",
+    domain: "vinted.com",
+    loginUrl: "https://www.vinted.com/member/login",
+    sellUrl: "https://www.vinted.com/items/new",
+    cookieNames: ["_vinted_session", "vinted_token", "session_id"],
+  },
+  facebook: {
+    name: "Facebook Marketplace",
+    domain: "facebook.com",
+    loginUrl: "https://www.facebook.com/login",
+    sellUrl: "https://www.facebook.com/marketplace/create/item",
+    cookieNames: ["c_user", "xs", "datr", "sb"],
+  },
+  vestiaire: {
+    name: "Vestiaire Collective",
+    domain: "vestiairecollective.com",
+    loginUrl: "https://www.vestiairecollective.com/login/",
+    sellUrl: "https://www.vestiairecollective.com/sell/",
+    cookieNames: ["_vestiaire_session", "vc_token", "PHPSESSID"],
+  },
 };
 
 // ── Session detection ─────────────────────────────────────────

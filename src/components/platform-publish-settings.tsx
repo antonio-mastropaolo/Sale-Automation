@@ -34,6 +34,9 @@ import {
   type PoshmarkConfig,
   type MercariConfig,
   type EbayConfig,
+  type VintedConfig,
+  type FacebookConfig,
+  type VestiaireConfig,
   type PlatformConfig,
   DEFAULT_PLATFORM_CONFIG,
   EBAY_CONDITIONS,
@@ -771,9 +774,208 @@ function EbaySettings({
   );
 }
 
+function VintedSettings({
+  config,
+  onChange,
+}: {
+  config: VintedConfig;
+  onChange: (c: VintedConfig) => void;
+}) {
+  const update = <K extends keyof VintedConfig>(key: K, val: VintedConfig[K]) =>
+    onChange({ ...config, [key]: val });
+
+  return (
+    <div className="space-y-1">
+      <PlatformHeader platform="vinted" />
+
+      <InfoBanner>
+        Vinted charges no seller fees — buyers pay a protection fee instead.
+        Price competitively to win.
+      </InfoBanner>
+
+      <SettingRow>
+        <SettingLabel hint="Use Vinted's integrated shipping or your own">
+          Shipping method
+        </SettingLabel>
+        <Select
+          value={config.shippingMethod}
+          onValueChange={(v) =>
+            update("shippingMethod", v as VintedConfig["shippingMethod"])
+          }
+        >
+          <SelectTrigger className="w-40 h-8 text-sm">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="vinted_shipping">Vinted Shipping</SelectItem>
+            <SelectItem value="custom">Custom Shipping</SelectItem>
+          </SelectContent>
+        </Select>
+      </SettingRow>
+
+      <SettingRow>
+        <SettingLabel hint="Discount for buyers purchasing 2+ items">
+          Bundle discount
+        </SettingLabel>
+        <PercentInput
+          value={config.bundleDiscount}
+          onChange={(v) => update("bundleDiscount", v)}
+          min={0}
+          max={80}
+        />
+      </SettingRow>
+
+      <SettingRow>
+        <SettingLabel hint="Include shipping cost in the listed price">
+          Price includes shipping
+        </SettingLabel>
+        <Switch
+          checked={config.priceInclShipping}
+          onCheckedChange={(v) => update("priceInclShipping", v as boolean)}
+        />
+      </SettingRow>
+    </div>
+  );
+}
+
+function FacebookSettings({
+  config,
+  onChange,
+}: {
+  config: FacebookConfig;
+  onChange: (c: FacebookConfig) => void;
+}) {
+  const update = <K extends keyof FacebookConfig>(key: K, val: FacebookConfig[K]) =>
+    onChange({ ...config, [key]: val });
+
+  return (
+    <div className="space-y-1">
+      <PlatformHeader platform="facebook" />
+
+      <SettingRow>
+        <SettingLabel hint="Allow buyers to pick up the item locally">
+          Pickup available
+        </SettingLabel>
+        <Switch
+          checked={config.pickupAvailable}
+          onCheckedChange={(v) => update("pickupAvailable", v as boolean)}
+        />
+      </SettingRow>
+
+      {config.pickupAvailable && (
+        <SettingRow>
+          <SettingLabel hint="General area for pickup (e.g., 'Brooklyn, NY')">
+            Pickup location
+          </SettingLabel>
+          <Input
+            value={config.pickupLocation}
+            onChange={(e) => update("pickupLocation", e.target.value)}
+            placeholder="e.g., Brooklyn, NY"
+            className="w-44 h-8 text-sm"
+          />
+        </SettingRow>
+      )}
+
+      <SettingRow>
+        <SettingLabel hint="Offer shipping as a delivery option">
+          Shipping available
+        </SettingLabel>
+        <Switch
+          checked={config.shippingAvailable}
+          onCheckedChange={(v) => update("shippingAvailable", v as boolean)}
+        />
+      </SettingRow>
+
+      <SettingRow>
+        <SettingLabel hint="Pay to boost listing visibility on Facebook">
+          Boost listing
+        </SettingLabel>
+        <Switch
+          checked={config.boostListing}
+          onCheckedChange={(v) => update("boostListing", v as boolean)}
+        />
+      </SettingRow>
+    </div>
+  );
+}
+
+function VestiaireSettings({
+  config,
+  onChange,
+}: {
+  config: VestiaireConfig;
+  onChange: (c: VestiaireConfig) => void;
+}) {
+  const update = <K extends keyof VestiaireConfig>(key: K, val: VestiaireConfig[K]) =>
+    onChange({ ...config, [key]: val });
+
+  return (
+    <div className="space-y-1">
+      <PlatformHeader platform="vestiaire" />
+
+      <InfoBanner>
+        Vestiaire Collective authenticates items before delivery. Factor in
+        commission + authentication fees when pricing.
+      </InfoBanner>
+
+      <SettingRow>
+        <SettingLabel hint="Item condition using Vestiaire's grading system">
+          Condition grade
+        </SettingLabel>
+        <Select
+          value={config.conditionGrade}
+          onValueChange={(v) =>
+            update("conditionGrade", v as VestiaireConfig["conditionGrade"])
+          }
+        >
+          <SelectTrigger className="w-36 h-8 text-sm">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="never_worn">Never worn</SelectItem>
+            <SelectItem value="very_good">Very good</SelectItem>
+            <SelectItem value="good">Good</SelectItem>
+            <SelectItem value="fair">Fair</SelectItem>
+          </SelectContent>
+        </Select>
+      </SettingRow>
+
+      <SettingRow>
+        <SettingLabel hint="Has authenticity markers (serial number, date code, etc.)">
+          Has authenticity markers
+        </SettingLabel>
+        <Switch
+          checked={config.hasAuthenticity}
+          onCheckedChange={(v) => update("hasAuthenticity", v as boolean)}
+        />
+      </SettingRow>
+
+      <SettingRow>
+        <SettingLabel hint="Includes original packaging, dust bag, box, etc.">
+          Has original packaging
+        </SettingLabel>
+        <Switch
+          checked={config.hasOriginalPackaging}
+          onCheckedChange={(v) => update("hasOriginalPackaging", v as boolean)}
+        />
+      </SettingRow>
+
+      <SettingRow>
+        <SettingLabel hint="Includes original purchase receipt">
+          Has receipt
+        </SettingLabel>
+        <Switch
+          checked={config.hasReceipt}
+          onCheckedChange={(v) => update("hasReceipt", v as boolean)}
+        />
+      </SettingRow>
+    </div>
+  );
+}
+
 // ── Main exported component ──────────────────────────────────────────
 
-const PLATFORM_KEYS = ["depop", "grailed", "poshmark", "mercari", "ebay"] as const;
+const PLATFORM_KEYS = ["depop", "grailed", "poshmark", "mercari", "ebay", "vinted", "facebook", "vestiaire"] as const;
 
 export interface PlatformPublishSettingsProps {
   config: PlatformConfig;
@@ -869,6 +1071,33 @@ export function PlatformPublishSettings({
               <EbaySettings
                 config={config.ebay}
                 onChange={(c) => handleChange("ebay", c)}
+              />
+            </TabsContent>
+          )}
+
+          {visiblePlatforms.includes("vinted") && (
+            <TabsContent value="vinted">
+              <VintedSettings
+                config={config.vinted}
+                onChange={(c) => handleChange("vinted", c)}
+              />
+            </TabsContent>
+          )}
+
+          {visiblePlatforms.includes("facebook") && (
+            <TabsContent value="facebook">
+              <FacebookSettings
+                config={config.facebook}
+                onChange={(c) => handleChange("facebook", c)}
+              />
+            </TabsContent>
+          )}
+
+          {visiblePlatforms.includes("vestiaire") && (
+            <TabsContent value="vestiaire">
+              <VestiaireSettings
+                config={config.vestiaire}
+                onChange={(c) => handleChange("vestiaire", c)}
               />
             </TabsContent>
           )}

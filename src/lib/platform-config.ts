@@ -48,6 +48,26 @@ export interface EbayConfig {
   conditionId: string;
 }
 
+export interface VintedConfig {
+  shippingMethod: "vinted_shipping" | "custom";
+  bundleDiscount: number;
+  priceInclShipping: boolean;
+}
+
+export interface FacebookConfig {
+  pickupAvailable: boolean;
+  pickupLocation: string;
+  shippingAvailable: boolean;
+  boostListing: boolean;
+}
+
+export interface VestiaireConfig {
+  conditionGrade: "never_worn" | "very_good" | "good" | "fair";
+  hasAuthenticity: boolean;
+  hasOriginalPackaging: boolean;
+  hasReceipt: boolean;
+}
+
 // ── Defaults ──────────────────────────────────────────────────────────
 
 export const DEFAULT_DEPOP: DepopConfig = {
@@ -98,6 +118,26 @@ export const DEFAULT_EBAY: EbayConfig = {
   conditionId: "3000", // Good
 };
 
+export const DEFAULT_VINTED: VintedConfig = {
+  shippingMethod: "vinted_shipping",
+  bundleDiscount: 10,
+  priceInclShipping: false,
+};
+
+export const DEFAULT_FACEBOOK: FacebookConfig = {
+  pickupAvailable: true,
+  pickupLocation: "",
+  shippingAvailable: true,
+  boostListing: false,
+};
+
+export const DEFAULT_VESTIAIRE: VestiaireConfig = {
+  conditionGrade: "very_good",
+  hasAuthenticity: false,
+  hasOriginalPackaging: false,
+  hasReceipt: false,
+};
+
 // ── Combined type ─────────────────────────────────────────────────────
 
 export type PlatformConfig = {
@@ -106,6 +146,9 @@ export type PlatformConfig = {
   poshmark: PoshmarkConfig;
   mercari: MercariConfig;
   ebay: EbayConfig;
+  vinted: VintedConfig;
+  facebook: FacebookConfig;
+  vestiaire: VestiaireConfig;
 };
 
 export const DEFAULT_PLATFORM_CONFIG: PlatformConfig = {
@@ -114,6 +157,9 @@ export const DEFAULT_PLATFORM_CONFIG: PlatformConfig = {
   poshmark: DEFAULT_POSHMARK,
   mercari: DEFAULT_MERCARI,
   ebay: DEFAULT_EBAY,
+  vinted: DEFAULT_VINTED,
+  facebook: DEFAULT_FACEBOOK,
+  vestiaire: DEFAULT_VESTIAIRE,
 };
 
 // ── eBay condition map (id → label) ───────────────────────────────────

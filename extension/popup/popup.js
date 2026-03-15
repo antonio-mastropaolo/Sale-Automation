@@ -8,6 +8,9 @@ const PLATFORM_COLORS = {
   poshmark: "#c83264",
   mercari: "#4dc4c0",
   ebay: "#e53238",
+  vinted: "#09877e",
+  facebook: "#1877f2",
+  vestiaire: "#b8860b",
 };
 
 const PLATFORM_NAMES = {
@@ -16,6 +19,9 @@ const PLATFORM_NAMES = {
   poshmark: "Poshmark",
   mercari: "Mercari",
   ebay: "eBay",
+  vinted: "Vinted",
+  facebook: "Facebook Marketplace",
+  vestiaire: "Vestiaire Collective",
 };
 
 async function loadSessions() {

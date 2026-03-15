@@ -1,7 +1,7 @@
 /**
  * ListBlitz — Marketplace Content Script
  *
- * Runs on Depop, Grailed, Poshmark, Mercari, and eBay.
+ * Runs on Depop, Grailed, Poshmark, Mercari, eBay, Vinted, Facebook Marketplace, and Vestiaire Collective.
  * Detects which platform we're on, checks for pending listings,
  * and auto-fills the listing creation form.
  */
@@ -19,6 +19,9 @@
   else if (hostname.includes("poshmark.com")) platform = "poshmark";
   else if (hostname.includes("mercari.com")) platform = "mercari";
   else if (hostname.includes("ebay.com")) platform = "ebay";
+  else if (hostname.includes("vinted.com")) platform = "vinted";
+  else if (hostname.includes("facebook.com")) platform = "facebook";
+  else if (hostname.includes("vestiairecollective.com")) platform = "vestiaire";
 
   if (!platform) return;
 
@@ -119,6 +122,31 @@
       if (descField) setInputValue('textarea[name="description"]', listing.description);
       setInputValue('input[name="price"], [data-testid="price-input"]', String(listing.price));
       console.log("[ListBlitz] eBay form filled");
+    },
+
+    async vinted(listing) {
+      await waitForElement('input[name="title"], [data-testid="item-title"]');
+      setInputValue('input[name="title"], [data-testid="item-title"]', listing.title);
+      setInputValue('textarea[name="description"], [data-testid="item-description"]', listing.description);
+      setInputValue('input[name="price"], [data-testid="item-price"]', String(listing.price));
+      console.log("[ListBlitz] Vinted form filled");
+    },
+
+    async facebook(listing) {
+      await waitForElement('input[aria-label="Title"], input[name="title"], [data-testid="marketplace-create-title"]');
+      setInputValue('input[aria-label="Title"], input[name="title"]', listing.title);
+      setInputValue('textarea[aria-label="Description"], textarea[name="description"]', listing.description);
+      setInputValue('input[aria-label="Price"], input[name="price"]', String(listing.price));
+      console.log("[ListBlitz] Facebook Marketplace form filled");
+    },
+
+    async vestiaire(listing) {
+      await waitForElement('input[name="title"], [data-testid="sell-title"]');
+      setInputValue('input[name="title"], [data-testid="sell-title"]', listing.title);
+      setInputValue('textarea[name="description"], [data-testid="sell-description"]', listing.description);
+      setInputValue('input[name="price"], [data-testid="sell-price"]', String(listing.price));
+      if (listing.brand) setInputValue('input[name="brand"]', listing.brand);
+      console.log("[ListBlitz] Vestiaire Collective form filled");
     },
   };
 

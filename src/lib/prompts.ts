@@ -143,6 +143,61 @@ Respond in JSON format only (no markdown):
     sampleVars: {},
   },
 
+  {
+    featureKey: "platform_vinted",
+    label: "Vinted Style Guide",
+    description: "Rules for optimizing listings for Vinted buyers",
+    category: "listing",
+    prompt: `Vinted style guide:
+- Casual, friendly European tone
+- No seller fees — emphasize competitive pricing
+- Detailed condition description with Vinted's condition scale
+- Clear size information using EU sizing
+- Good quality photos are essential (Vinted algorithm favors them)
+- Mention shipping options (Vinted integrated shipping)
+- Use relevant brand tags for discoverability
+- Short, honest descriptions work best
+- No hashtags — Vinted uses brand/category search`,
+    variables: [],
+    sampleVars: {},
+  },
+  {
+    featureKey: "platform_facebook",
+    label: "Facebook Marketplace Style Guide",
+    description: "Rules for optimizing listings for Facebook Marketplace buyers",
+    category: "listing",
+    prompt: `Facebook Marketplace style guide:
+- Conversational, local-first tone
+- Price competitively — buyers expect deals
+- Mention pickup availability and location area
+- Clear condition description
+- Responsive to messages (FB algorithm rewards fast replies)
+- Include dimensions/measurements
+- Cross-post to Facebook Buy/Sell groups for more reach
+- Use all 10 photo slots
+- Title should be searchable and descriptive (brand + item + size + condition)`,
+    variables: [],
+    sampleVars: {},
+  },
+  {
+    featureKey: "platform_vestiaire",
+    label: "Vestiaire Collective Style Guide",
+    description: "Rules for optimizing listings for Vestiaire Collective buyers",
+    category: "listing",
+    prompt: `Vestiaire Collective style guide:
+- Professional, luxury-focused tone
+- Emphasize authenticity and provenance
+- Include serial numbers, date codes, or authenticity markers if available
+- Detailed condition using Vestiaire's grades (Never worn, Very good, Good, Fair)
+- Mention original packaging, dust bags, receipt if included
+- High-end photography on neutral background
+- Include designer name, collection/season if known
+- Measurements in cm (international audience)
+- Price with authentication fee in mind (Vestiaire takes commission + auth fee)`,
+    variables: [],
+    sampleVars: {},
+  },
+
   // ── Description Enhancement ───────────────────────────────────────
   {
     featureKey: "enhance",
@@ -203,7 +258,10 @@ Return only the polished description text, no JSON or formatting.`,
     "depop": ["5-8 Depop-optimized hashtags"],
     "poshmark": ["5-8 Poshmark-optimized hashtags"],
     "mercari": ["5-8 Mercari-optimized hashtags"],
-    "ebay": ["5-8 eBay-optimized keywords"]
+    "ebay": ["5-8 eBay-optimized keywords"],
+    "vinted": ["5-8 Vinted-optimized brand tags"],
+    "facebook": ["5-8 Facebook Marketplace search terms"],
+    "vestiaire": ["5-8 Vestiaire Collective luxury keywords"]
   },
   "style_keywords": ["8-12 style/search keywords"],
   "confidence_score": "0-100 confidence in identification accuracy"
@@ -251,7 +309,10 @@ Respond in JSON only (no markdown):
     "grailed": {"price": 40, "reasoning": "..."},
     "poshmark": {"price": 35, "reasoning": "..."},
     "mercari": {"price": 28, "reasoning": "..."},
-    "ebay": {"price": 32, "reasoning": "..."}
+    "ebay": {"price": 32, "reasoning": "..."},
+    "vinted": {"price": 27, "reasoning": "..."},
+    "facebook": {"price": 25, "reasoning": "..."},
+    "vestiaire": {"price": 45, "reasoning": "..."}
   },
   "strategy": {
     "recommendation": "price_high_drop|price_competitive|price_to_sell",
@@ -419,7 +480,7 @@ Return only valid JSON, no markdown.`,
     label: "Market Trends",
     description: "Generates trend reports for resale fashion market",
     category: "trends",
-    prompt: `You are an expert reselling market analyst specializing in secondhand fashion and goods across Depop, Grailed, Poshmark, Mercari, and eBay. Today is {{today}}.
+    prompt: `You are an expert reselling market analyst specializing in secondhand fashion and goods across Depop, Grailed, Poshmark, Mercari, eBay, Vinted, Facebook Marketplace, and Vestiaire Collective. Today is {{today}}.
 
 Based on your knowledge of current resale market trends, provide a comprehensive trend report. Consider recent fashion weeks, social media trends, seasonal shifts, and platform-specific dynamics.
 
@@ -430,7 +491,7 @@ Provide the following:
 3. **Top 10-20 Hot Items/Styles** — specific items or styles that are selling fast right now. Include an estimated resale price range and description. Provide at least 10, up to 20.
 4. **5-10 Sleeper Picks** — undervalued items that are about to trend. Include your reasoning and estimated ROI percentage.
 5. **Seasonal Advice** — what's about to be in demand in the next 2-4 weeks based on seasonal shifts.
-6. **Platform-Specific Tips** — what's performing best on each platform (Depop, Grailed, Poshmark, Mercari, eBay) and how to optimize for each.
+6. **Platform-Specific Tips** — what's performing best on each platform (Depop, Grailed, Poshmark, Mercari, eBay, Vinted, Facebook Marketplace, Vestiaire Collective) and how to optimize for each.
 
 Respond in JSON format only (no markdown, no code fences):
 {
@@ -439,7 +500,7 @@ Respond in JSON format only (no markdown, no code fences):
   "hotItems": [{"name": "...", "priceRange": "$X-$Y", "description": "..."}],
   "sleeperPicks": [{"name": "...", "reasoning": "...", "estimatedROI": "X%"}],
   "seasonalAdvice": "...",
-  "platformTips": {"depop": "...", "grailed": "...", "poshmark": "...", "mercari": "...", "ebay": "..."}
+  "platformTips": {"depop": "...", "grailed": "...", "poshmark": "...", "mercari": "...", "ebay": "...", "vinted": "...", "facebook": "...", "vestiaire": "..."}
 }`,
     variables: ["today"],
     sampleVars: { today: new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) },
@@ -538,7 +599,7 @@ Write a friendly, helpful response that answers their question and encourages th
     label: "Competitor Analysis",
     description: "Analyzes the competitive landscape for an item across resale platforms",
     category: "analytics",
-    prompt: `You are an expert resale market analyst. Analyze the competitive landscape for this item across Depop, Grailed, Poshmark, Mercari, and eBay.
+    prompt: `You are an expert resale market analyst. Analyze the competitive landscape for this item across Depop, Grailed, Poshmark, Mercari, eBay, Vinted, Facebook Marketplace, and Vestiaire Collective.
 
 Item:
 - Title: {{title}}

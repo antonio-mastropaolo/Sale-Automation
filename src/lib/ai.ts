@@ -2,7 +2,7 @@ import { getAIClient, getPromptText } from "./settings";
 import { interpolatePrompt } from "./prompts";
 import { parseAIJson } from "./ai-utils";
 
-export type Platform = "depop" | "grailed" | "poshmark" | "mercari" | "ebay";
+export type Platform = "depop" | "grailed" | "poshmark" | "mercari" | "ebay" | "vinted" | "facebook" | "vestiaire";
 
 interface ListingInput {
   title: string;
@@ -77,7 +77,7 @@ export async function optimizeForAllPlatforms(
   listing: ListingInput,
   platforms?: Platform[]
 ): Promise<OptimizedListing[]> {
-  const targets = platforms || (["depop", "grailed", "poshmark", "mercari", "ebay"] as Platform[]);
+  const targets = platforms || (["depop", "grailed", "poshmark", "mercari", "ebay", "vinted", "facebook", "vestiaire"] as Platform[]);
   const results = await Promise.all(
     targets.map((platform) => optimizeForPlatform(listing, platform))
   );

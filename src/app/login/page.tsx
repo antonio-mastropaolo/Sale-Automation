@@ -65,10 +65,10 @@ export default function LoginPage() {
             List once,<br />sell everywhere.
           </h1>
           <p className="text-white/70 text-lg leading-relaxed">
-            AI-powered cross-platform listing tool for Depop, Grailed, Poshmark, Mercari, and eBay. Optimize your listings, track analytics, and grow your reselling business.
+            AI-powered cross-platform listing tool for Depop, Grailed, Poshmark, Mercari, eBay, Vinted, Facebook Marketplace, and Vestiaire Collective. Optimize your listings, track analytics, and grow your reselling business.
           </p>
           <div className="flex gap-3 pt-4">
-            {["Depop", "Grailed", "Poshmark", "Mercari", "eBay"].map((p) => (
+            {["Depop", "Grailed", "Poshmark", "Mercari", "eBay", "Vinted", "Facebook", "Vestiaire"].map((p) => (
               <span
                 key={p}
                 className="bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 text-xs font-medium"

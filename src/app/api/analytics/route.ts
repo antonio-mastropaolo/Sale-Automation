@@ -14,7 +14,7 @@ export async function GET() {
     },
   });
 
-  const platformStats = ["depop", "grailed", "poshmark", "mercari", "ebay"].map((platform) => {
+  const platformStats = ["depop", "grailed", "poshmark", "mercari", "ebay", "vinted", "facebook", "vestiaire"].map((platform) => {
     const pListings = platformListings.filter((pl) => pl.platform === platform);
     const events = pListings.flatMap((pl) => pl.analyticsEvents);
     return {

@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
 
   const skuLine = sku ? `\n- SKU / Model Number: ${sku} (find products matching or related to this specific model)` : "";
 
-  const prompt = `You are an expert resale market analyst with deep knowledge of secondhand fashion and goods across Depop, Grailed, Poshmark, Mercari, and eBay.
+  const prompt = `You are an expert resale market analyst with deep knowledge of secondhand fashion and goods across Depop, Grailed, Poshmark, Mercari, eBay, Vinted, Facebook Marketplace, and Vestiaire Collective.
 
 Given the following:
 - Brand: ${brand || "Any"}
@@ -92,7 +92,7 @@ Respond with valid JSON only (no markdown, no code fences):
       "retailPrice": 110,
       "demandLevel": "high|medium|low",
       "profitMargin": "15-25%",
-      "bestPlatform": "depop|grailed|poshmark|mercari|ebay",
+      "bestPlatform": "depop|grailed|poshmark|mercari|ebay|vinted|facebook|vestiaire",
       "seasonality": "When this sells best",
       "quickTip": "One actionable selling tip"
     }

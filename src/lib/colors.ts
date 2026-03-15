@@ -28,6 +28,12 @@ export const platformBadge: Record<string, string> = {
     "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800",
   ebay:
     "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800",
+  vinted:
+    "bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-200 dark:border-teal-800",
+  facebook:
+    "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800",
+  vestiaire:
+    "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800",
 };
 
 // ── Platform branding (extended — includes icon letter, border, accent bar) ──
@@ -82,6 +88,30 @@ export const platformBranding: Record<
     border: "border-yellow-200 dark:border-yellow-800",
     accent: "bg-yellow-500",
     icon: "e",
+  },
+  vinted: {
+    label: "Vinted",
+    color: "text-teal-600 dark:text-teal-400",
+    bg: "bg-teal-500/10",
+    border: "border-teal-200 dark:border-teal-800",
+    accent: "bg-teal-500",
+    icon: "V",
+  },
+  facebook: {
+    label: "Facebook Marketplace",
+    color: "text-blue-600 dark:text-blue-400",
+    bg: "bg-blue-500/10",
+    border: "border-blue-200 dark:border-blue-800",
+    accent: "bg-blue-500",
+    icon: "F",
+  },
+  vestiaire: {
+    label: "Vestiaire Collective",
+    color: "text-amber-700 dark:text-amber-400",
+    bg: "bg-amber-500/10",
+    border: "border-amber-200 dark:border-amber-800",
+    accent: "bg-amber-500",
+    icon: "VC",
   },
 };
 

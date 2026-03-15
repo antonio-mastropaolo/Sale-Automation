@@ -77,7 +77,7 @@ interface Stats {
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
-const PLATFORMS = ["depop", "grailed", "poshmark", "mercari", "ebay"] as const;
+const PLATFORMS = ["depop", "grailed", "poshmark", "mercari", "ebay", "vinted", "facebook", "vestiaire"] as const;
 
 function formatCurrency(n: number) {
   return `$${n.toFixed(2)}`;

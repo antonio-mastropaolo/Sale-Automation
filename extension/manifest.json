@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "ListBlitz — Cross-Platform Publishing",
   "version": "1.0.0",
-  "description": "Publish listings to Depop, Grailed, Poshmark, Mercari, and eBay directly from ListBlitz.",
+  "description": "Publish listings to Depop, Grailed, Poshmark, Mercari, eBay, Vinted, Facebook Marketplace, and Vestiaire Collective directly from ListBlitz.",
   "permissions": [
     "cookies",
     "activeTab",
@@ -22,6 +22,12 @@
     "https://www.ebay.com/*",
     "https://ebay.com/*",
     "https://signin.ebay.com/*",
+    "https://www.vinted.com/*",
+    "https://vinted.com/*",
+    "https://www.facebook.com/*",
+    "https://facebook.com/*",
+    "https://www.vestiairecollective.com/*",
+    "https://vestiairecollective.com/*",
     "https://listblitz.io/*",
     "http://localhost:3000/*"
   ],
@@ -35,7 +41,10 @@
         "https://www.grailed.com/*",
         "https://www.poshmark.com/*",
         "https://www.mercari.com/*",
-        "https://www.ebay.com/*"
+        "https://www.ebay.com/*",
+        "https://www.vinted.com/*",
+        "https://www.facebook.com/*",
+        "https://www.vestiairecollective.com/*"
       ],
       "js": ["content/bridge.js"],
       "run_at": "document_idle"

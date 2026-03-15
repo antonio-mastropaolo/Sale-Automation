@@ -15,7 +15,7 @@ import {
 
 const heroStats = [
   { label: "AI-Powered Features", value: "15+" },
-  { label: "Marketplaces", value: "4" },
+  { label: "Marketplaces", value: "8" },
   { label: "Platform", value: "1" },
 ];
 
@@ -52,7 +52,7 @@ const features = [
   {
     emoji: "\u{1F680}",
     title: "One-Click Publishing",
-    desc: "Publish to Depop, Grailed, Poshmark, Mercari, eBay simultaneously",
+    desc: "Publish to Depop, Grailed, Poshmark, Mercari, eBay, Vinted, Facebook, Vestiaire simultaneously",
   },
   {
     emoji: "\u{1F4B0}",
@@ -142,7 +142,7 @@ const steps = [
     num: "02",
     emoji: "\u{2728}",
     title: "AI Optimizes",
-    desc: "AI optimizes title, description, and pricing for all 4 platforms",
+    desc: "AI optimizes title, description, and pricing for all 8 platforms",
   },
   {
     num: "03",
@@ -219,7 +219,7 @@ const pricingTiers = [
     desc: "For serious resellers",
     features: [
       "Unlimited listings",
-      "All 4 platforms",
+      "All 8 platforms",
       "Full AI feature suite",
       "Bulk repricing",
       "Priority support",

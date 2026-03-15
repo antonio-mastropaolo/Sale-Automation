@@ -799,7 +799,7 @@ function PlatformsTab() {
             <div className="flex-1">
               <h3 className="font-semibold">Platform Connections</h3>
               <p className="text-sm text-muted-foreground">
-                {connectedCount} of 4 platforms connected
+                {connectedCount} of 8 platforms connected
               </p>
             </div>
             <div className="flex gap-1">
@@ -1161,7 +1161,7 @@ function GeneralTab() {
             <p>
               <span className="font-medium text-foreground">ListBlitz</span> — AI-Powered Cross-Platform Listing Tool
             </p>
-            <p>List once, sell everywhere. Optimized for Depop, Grailed, Poshmark, Mercari, and eBay.</p>
+            <p>List once, sell everywhere. Optimized for Depop, Grailed, Poshmark, Mercari, eBay, Vinted, Facebook Marketplace, and Vestiaire Collective.</p>
             <p className="text-xs">Version 0.1.0</p>
           </div>
         </CardContent>

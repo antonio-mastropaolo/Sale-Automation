@@ -70,6 +70,9 @@ const platformLabel: Record<string, string> = {
   poshmark: "Poshmark",
   mercari: "Mercari",
   ebay: "eBay",
+  vinted: "Vinted",
+  facebook: "Facebook Marketplace",
+  vestiaire: "Vestiaire Collective",
 };
 
 const platformBadgeColor: Record<string, string> = {
@@ -78,6 +81,9 @@ const platformBadgeColor: Record<string, string> = {
   poshmark: "bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-300 dark:border-pink-700",
   mercari: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-700",
   ebay: "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-300 dark:border-yellow-700",
+  vinted: "bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-300 dark:border-teal-700",
+  facebook: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-700",
+  vestiaire: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-700",
 };
 
 // ── Image resolution ────────────────────────────────────────────

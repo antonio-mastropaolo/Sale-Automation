@@ -81,6 +81,21 @@ const bestTimes: {
     times: "Sunday evenings 7-10pm, Thursday 6-9pm",
     icon: "e",
   },
+  {
+    platform: "vinted",
+    times: "Evenings 8-10pm, Sunday mornings (EU time)",
+    icon: "V",
+  },
+  {
+    platform: "facebook",
+    times: "Weekday evenings 5-8pm, Saturday mornings",
+    icon: "F",
+  },
+  {
+    platform: "vestiaire",
+    times: "Weekday afternoons 2-5pm (Paris time)",
+    icon: "VC",
+  },
 ];
 
 /* ── Status badge styles ── */
@@ -131,6 +146,9 @@ export default function SchedulerPage() {
     poshmark: false,
     mercari: false,
     ebay: false,
+    vinted: false,
+    facebook: false,
+    vestiaire: false,
   });
   const [scheduledTime, setScheduledTime] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -233,6 +251,10 @@ export default function SchedulerPage() {
       grailed: false,
       poshmark: false,
       mercari: false,
+      ebay: false,
+      vinted: false,
+      facebook: false,
+      vestiaire: false,
     });
     setScheduledTime("");
   };

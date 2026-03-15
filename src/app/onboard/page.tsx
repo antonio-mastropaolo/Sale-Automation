@@ -47,6 +47,9 @@ const PLATFORMS = [
   { id: "poshmark", name: "Poshmark", color: "#c83264", loginUrl: "https://poshmark.com/login" },
   { id: "mercari", name: "Mercari", color: "#4dc4c0", loginUrl: "https://www.mercari.com/login/" },
   { id: "ebay", name: "eBay", color: "#e53238", loginUrl: "https://signin.ebay.com/" },
+  { id: "vinted", name: "Vinted", color: "#09877e", loginUrl: "https://www.vinted.com/member/login" },
+  { id: "facebook", name: "Facebook Marketplace", color: "#1877f2", loginUrl: "https://www.facebook.com/login" },
+  { id: "vestiaire", name: "Vestiaire Collective", color: "#b8860b", loginUrl: "https://www.vestiairecollective.com/login/" },
 ];
 
 // ═══════════════════════════════════════════════════════════════
@@ -207,7 +210,7 @@ export default function OnboardPage() {
                 <div className="grid grid-cols-3 gap-3">
                   {[
                     { emoji: "📸", label: "AI Listings", desc: "Photo to listing in 10s" },
-                    { emoji: "🚀", label: "5 Platforms", desc: "Depop, Grailed, Poshmark, Mercari, eBay" },
+                    { emoji: "🚀", label: "8 Platforms", desc: "Depop, Grailed, Poshmark, Mercari, eBay, Vinted, Facebook, Vestiaire" },
                     { emoji: "📊", label: "P&L Tracking", desc: "Revenue, profit, margins" },
                   ].map((f) => (
                     <div key={f.label} className="bg-muted/40 rounded-xl p-3 text-center">
@@ -392,7 +395,7 @@ export default function OnboardPage() {
                     ) : (
                       <RefreshCw className="h-3 w-3 mr-1.5" />
                     )}
-                    {checkingSessions ? "Checking..." : `Refresh connections (${connectedCount}/5 connected)`}
+                    {checkingSessions ? "Checking..." : `Refresh connections (${connectedCount}/8 connected)`}
                   </Button>
                 )}
 

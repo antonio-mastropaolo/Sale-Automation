@@ -9,7 +9,7 @@ interface TrendData {
   hotItems: { name: string; priceRange: string; description: string }[];
   sleeperPicks: { name: string; reasoning: string; estimatedROI: string }[];
   seasonalAdvice: string;
-  platformTips: { depop: string; grailed: string; poshmark: string; mercari: string; ebay: string };
+  platformTips: { depop: string; grailed: string; poshmark: string; mercari: string; ebay: string; vinted: string; facebook: string; vestiaire: string };
 }
 
 const fallbackData: TrendData = {
@@ -46,6 +46,9 @@ const fallbackData: TrendData = {
     poshmark: "Contemporary brands and athleisure lead sales. Host virtual Posh Parties and share actively.",
     mercari: "Competitive pricing wins on Mercari. Smart Pricing and promoted listings significantly boost visibility.",
     ebay: "eBay rewards keyword-rich titles and detailed item specifics. Use promoted listings and Best Offer to maximize visibility and close sales faster.",
+    vinted: "Vinted's no-seller-fee model means competitive pricing wins. Focus on clear photos and honest condition descriptions. EU sizing and integrated shipping boost buyer confidence.",
+    facebook: "Facebook Marketplace thrives on local deals. Offer pickup options, respond quickly to messages, and cross-post to Buy/Sell groups for maximum reach.",
+    vestiaire: "Vestiaire Collective buyers expect luxury and authenticity. Include provenance details, serial numbers, and professional photography. Price accounting for authentication fees.",
   },
 };
 
