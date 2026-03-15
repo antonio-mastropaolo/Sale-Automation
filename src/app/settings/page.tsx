@@ -320,12 +320,9 @@ function AIProviderTab() {
                 }`}
               >
                 <p className="font-semibold text-sm">{p.name}</p>
-                {p.defaultModel && (
-                  <p className="text-xs text-muted-foreground mt-0.5 truncate">{p.defaultModel}</p>
-                )}
-                {provider === p.id && (
+                {keyCache[p.id] && (
                   <div className="absolute top-2 right-2">
-                    <CheckCircle2 className="h-4 w-4 text-primary" />
+                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
                   </div>
                 )}
               </button>
@@ -345,7 +342,11 @@ function AIProviderTab() {
                     setKeyEdited(true);
                   }}
                   placeholder={`Enter your ${selectedProvider.name} API key`}
-                  className="h-11 pr-10 font-mono text-xs"
+                  className={`h-11 pr-10 font-mono text-xs ${
+                    apiKey && !keyEdited
+                      ? "border-emerald-500/50 bg-emerald-500/5 focus-visible:ring-emerald-500/30"
+                      : ""
+                  }`}
                 />
                 <button
                   type="button"
@@ -356,10 +357,16 @@ function AIProviderTab() {
                 </button>
               </div>
             </div>
-            <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-              <Key className="h-3 w-3" />
+            <p className={`text-xs flex items-center gap-1.5 ${
+              apiKey && !keyEdited ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"
+            }`}>
+              {apiKey && !keyEdited ? (
+                <CheckCircle2 className="h-3 w-3" />
+              ) : (
+                <Key className="h-3 w-3" />
+              )}
               {!keyEdited && apiKey
-                ? `${selectedProvider.name} API key is set (masked for security)`
+                ? `${selectedProvider.name} API key is set`
                 : `Enter your ${selectedProvider.name} API key — each provider requires its own key`}
             </p>
             {!keyEdited && apiKey && provider !== "openai" && apiKey.startsWith("sk-") && (

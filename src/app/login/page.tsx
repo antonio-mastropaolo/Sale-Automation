@@ -53,11 +53,11 @@ export default function LoginPage() {
   return (
     <div className="fixed inset-0 z-[100] flex min-h-screen bg-[#0d1117]">
       {/* Left branding panel */}
-      <div className="hidden lg:block lg:w-1/2 relative overflow-hidden">
+      <div className="hidden lg:block lg:w-1/2 relative overflow-hidden bg-[#0b1026]">
         <img
           src="/login-bg.png"
           alt="ListBlitz"
-          className="absolute inset-0 w-full h-full object-cover object-[center_30%]"
+          className="absolute inset-0 w-full h-full object-contain"
         />
       </div>
 
