@@ -204,7 +204,6 @@ export default function WorkflowPage() {
                       : "bg-card hover:shadow-md"
                   }`}
                   style={{
-                    ringColor: isSelected ? stage.color : undefined,
                     boxShadow: isSelected ? `0 0 0 2px ${stage.color}` : undefined,
                   }}
                 >
