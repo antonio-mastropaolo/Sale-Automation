@@ -50,32 +50,34 @@ interface ReportData {
   };
   categories: CategorySummary[];
   tests: TestEntry[];
-  suiteBreakdown: {
-    visual: { total: number; passed: number; failed: number; skipped: number };
-    crash: { total: number; passed: number; failed: number; skipped: number };
-  };
 }
 
-// Category labels map
 const CATEGORY_LABELS: Record<string, string> = {
-  A: "Full-page Screenshots",
-  B: "CSS Token Verification",
-  C: "Component Colors",
-  D: "WCAG Contrast",
-  E: "Responsive Layout",
-  F: "Interactive States",
-  G: "Listings API Crash",
-  H: "Single Listing API",
-  I: "Optimize/Publish API",
-  J: "Platform Connect API",
-  K: "Analytics API",
-  L: "AI API Crash",
-  M: "Page Navigation",
-  N: "Form Interaction",
-  O: "HTTP Method Enforcement",
-  P: "Large Payload & Edge Cases",
-  Q: "Performance Benchmarks",
-  R: "Accessibility Audit",
+  A: "Auth — Login / Register / Logout",
+  B: "Auth — Password Reset Flow",
+  C: "Auth — Session & Middleware",
+  D: "Listings — CRUD Operations",
+  E: "Listings — Batch Operations",
+  F: "Listings — Bulk CSV Import",
+  G: "Templates — CRUD",
+  H: "Sales & P/L — Recording & Stats",
+  I: "AI APIs — Optimize / Enhance",
+  J: "AI APIs — Smart List / Trends / Competitor",
+  K: "AI APIs — Price Intel / Health / Negotiate",
+  L: "Settings — Provider & Prompts",
+  M: "Platform Connections",
+  N: "Scheduler — CRUD",
+  O: "Export — CSV Downloads",
+  P: "Page Navigation — All Routes",
+  Q: "Edge Cases & Error Handling",
+  R: "Performance — Response Times",
+  S: "Shipping Calculator",
+  T: "Onboarding Wizard",
+  T1: "Trends — API Response Structure",
+  T2: "Trends — Data Validation",
+  T3: "Trends — Performance",
+  T4: "Trends — Edge Cases",
+  T5: "Trends — Page UI",
 };
 
 class JSONReporter implements Reporter {
@@ -88,7 +90,7 @@ class JSONReporter implements Reporter {
 
   onTestEnd(test: TestCase, result: TestResult) {
     const suiteName = test.parent?.title || "Unknown";
-    const categoryMatch = suiteName.match(/^([A-Z])\s/);
+    const categoryMatch = suiteName.match(/^([A-Z]\d*)\s/);
     const category = categoryMatch ? categoryMatch[1] : "?";
 
     this.tests.push({
@@ -104,7 +106,7 @@ class JSONReporter implements Reporter {
     });
   }
 
-  onEnd(result: FullResult) {
+  onEnd(_result: FullResult) {
     const duration = Date.now() - this.startTime;
 
     const passed = this.tests.filter((t) => t.status === "passed").length;
@@ -112,7 +114,6 @@ class JSONReporter implements Reporter {
     const skipped = this.tests.filter((t) => t.status === "skipped").length;
     const total = this.tests.length;
 
-    // Build category summaries
     const catMap = new Map<string, TestEntry[]>();
     for (const t of this.tests) {
       const arr = catMap.get(t.category) || [];
@@ -134,30 +135,11 @@ class JSONReporter implements Reporter {
     }
     categories.sort((a, b) => a.name.localeCompare(b.name));
 
-    // Suite breakdown
-    const visualTests = this.tests.filter((t) => t.file.includes("palette"));
-    const crashTests = this.tests.filter((t) => t.file.includes("crash"));
-
-    const suiteBreakdown = {
-      visual: {
-        total: visualTests.length,
-        passed: visualTests.filter((t) => t.status === "passed").length,
-        failed: visualTests.filter((t) => t.status === "failed").length,
-        skipped: visualTests.filter((t) => t.status === "skipped").length,
-      },
-      crash: {
-        total: crashTests.length,
-        passed: crashTests.filter((t) => t.status === "passed").length,
-        failed: crashTests.filter((t) => t.status === "failed").length,
-        skipped: crashTests.filter((t) => t.status === "skipped").length,
-      },
-    };
-
     const reportData: ReportData = {
       meta: {
         timestamp: new Date().toISOString(),
         duration,
-        project: "Sale-Automation (CrossList)",
+        project: "CrossList — Sales Automation Hub",
         playwright: "1.58.2",
         nodeVersion: process.version,
         os: `${process.platform} ${process.arch}`,
@@ -172,10 +154,9 @@ class JSONReporter implements Reporter {
       },
       categories,
       tests: this.tests,
-      suiteBreakdown,
     };
 
-    const outDir = path.join(process.cwd(), "test-results");
+    const outDir = path.join(process.cwd(), "docs");
     if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
 
     fs.writeFileSync(

@@ -8,46 +8,64 @@ import {
   PlusCircle,
   BarChart3,
   Settings,
-  Calculator,
-  FileText,
   Moon,
   Sun,
   Zap,
   Camera,
   Radar,
   HelpCircle,
+  DollarSign,
+  FileUp,
+  BookTemplate,
+  Truck,
+  Target,
+  Calendar,
   LogOut,
-  Download,
+  Stethoscope,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { applyTheme, getSavedTheme } from "@/lib/themes";
 
-const menuLinks = [
+const listingLinks = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/listings/smart", label: "Smart List", icon: Camera },
-  { href: "/listings/new", label: "Manual", icon: PlusCircle },
-  { href: "/trends", label: "Trends", icon: Radar },
-  { href: "/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/listings/new", label: "New Listing", icon: PlusCircle },
+  { href: "/bulk-import", label: "Bulk Import", icon: FileUp },
+  { href: "/templates", label: "Templates", icon: BookTemplate },
 ];
 
-const generalLinks = [
+const insightLinks = [
+  { href: "/inventory", label: "Inventory & P/L", icon: DollarSign },
+  { href: "/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/trends", label: "Trends", icon: Radar },
+  { href: "/competitor", label: "Competitor Spy", icon: Target },
+  { href: "/scheduler", label: "Scheduler", icon: Calendar },
+];
+
+const toolLinks = [
+  { href: "/shipping", label: "Shipping", icon: Truck },
+  { href: "/tools", label: "Seller Tools", icon: HelpCircle },
+  { href: "/diagnostics", label: "Diagnostics", icon: Stethoscope },
   { href: "/settings", label: "Settings", icon: Settings },
-  { href: "/tools", label: "Help", icon: HelpCircle },
-  { href: "/report", label: "Test Report", icon: FileText },
 ];
 
 export function Sidebar({ className }: { className?: string }) {
   const pathname = usePathname();
   const [dark, setDark] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem("theme");
-    if (stored === "dark") {
-      setDark(true);
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
+    const isDark = stored === "dark";
+    setDark(isDark);
+    if (isDark) document.documentElement.classList.add("dark");
+    else document.documentElement.classList.remove("dark");
+    applyTheme(getSavedTheme(), isDark);
+
+    const savedCollapsed = localStorage.getItem("sidebar-collapsed");
+    if (savedCollapsed === "true") setCollapsed(true);
   }, []);
 
   const toggleDark = () => {
@@ -55,6 +73,19 @@ export function Sidebar({ className }: { className?: string }) {
       const next = !d;
       document.documentElement.classList.toggle("dark", next);
       localStorage.setItem("theme", next ? "dark" : "light");
+      applyTheme(getSavedTheme(), next);
+      return next;
+    });
+  };
+
+  const toggleCollapse = () => {
+    setCollapsed((c) => {
+      const next = !c;
+      localStorage.setItem("sidebar-collapsed", String(next));
+      // Dispatch in next tick to avoid setState-during-render conflict
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent("sidebar-toggle", { detail: { collapsed: next } }));
+      }, 0);
       return next;
     });
   };
@@ -66,107 +97,99 @@ export function Sidebar({ className }: { className?: string }) {
       <Link
         key={href}
         href={href}
+        title={collapsed ? label : undefined}
         className={cn(
-          "relative flex items-center gap-3 px-4 py-2.5 rounded-xl text-[14px] font-medium transition-all duration-200",
+          "flex items-center rounded-xl transition-all duration-200",
+          collapsed ? "justify-center h-10 w-10 mx-auto" : "gap-2.5 px-3 py-2",
           active
-            ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm nav-active-glow"
-            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            ? "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-md nav-active-glow"
+            : "text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
         )}
       >
-        {active && (
-          <motion.div
-            layoutId="sidebar-active"
-            className="absolute inset-0 rounded-xl bg-sidebar-primary"
-            style={{ zIndex: -1 }}
-            transition={{ type: "spring", stiffness: 350, damping: 30 }}
-          />
-        )}
-        <Icon className="h-[18px] w-[18px] shrink-0" />
-        <span className={active ? "font-semibold" : "font-medium"}>{label}</span>
+        <Icon className={cn("shrink-0", collapsed ? "h-[18px] w-[18px]" : "h-4 w-4")} />
+        {!collapsed && <span className="text-[13px] font-medium truncate">{label}</span>}
       </Link>
     );
   };
 
+  const renderSection = (title: string, links: typeof listingLinks) => (
+    <div>
+      {!collapsed && (
+        <p className="px-3 mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-[var(--muted-foreground)]/60">
+          {title}
+        </p>
+      )}
+      {collapsed && <div className="h-px bg-[var(--sidebar-border)] mx-3 my-1" />}
+      <div className={cn("space-y-0.5", collapsed && "flex flex-col items-center")}>
+        {links.map(renderLink)}
+      </div>
+    </div>
+  );
+
   return (
     <aside
       className={cn(
-        "fixed inset-y-0 left-0 z-50 w-64 bg-sidebar border-r border-sidebar-border flex flex-col",
+        "fixed inset-y-0 left-0 z-50 bg-[var(--sidebar)] border-r border-[var(--sidebar-border)] flex flex-col transition-all duration-300 ease-in-out",
+        collapsed ? "w-16" : "w-56",
         className
       )}
     >
-      {/* Logo */}
-      <div className="flex items-center gap-3 px-5 h-16">
-        <motion.div
-          className="h-9 w-9 rounded-full bg-primary/10 border-2 border-primary/20 flex items-center justify-center"
-          whileHover={{ scale: 1.08 }}
-          transition={{ type: "spring", stiffness: 400, damping: 15 }}
-        >
-          <Zap className="h-4 w-4 text-primary" />
-        </motion.div>
-        <span className="font-bold text-lg tracking-tight text-foreground">
-          CrossList
-        </span>
+      {/* Logo + collapse toggle */}
+      <div className={cn("flex items-center border-b border-[var(--sidebar-border)]", collapsed ? "justify-center h-14" : "justify-between px-4 h-14")}>
+        {!collapsed && (
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="h-8 w-8 rounded-lg shrink-0 flex items-center justify-center" style={{ background: "var(--primary)" }}>
+              <Zap className="h-4 w-4" style={{ color: "var(--primary-foreground)" }} />
+            </div>
+            <div className="min-w-0">
+              <span className="font-bold text-sm tracking-tight text-[var(--foreground)] block truncate">
+                CrossList
+              </span>
+            </div>
+          </div>
+        )}
+        {collapsed && (
+          <div className="h-8 w-8 rounded-lg flex items-center justify-center" style={{ background: "var(--primary)" }}>
+            <Zap className="h-4 w-4" style={{ color: "var(--primary-foreground)" }} />
+          </div>
+        )}
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-3 py-3 space-y-6 overflow-y-auto">
-        <motion.div
-          initial={{ opacity: 0, x: -8 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.3, delay: 0.05 }}
-        >
-          <p className="px-4 mb-2 text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/60">
-            Menu
-          </p>
-          <div className="space-y-0.5">
-            {menuLinks.map(renderLink)}
-          </div>
-        </motion.div>
+      {/* Collapse toggle */}
+      <button
+        onClick={toggleCollapse}
+        className="absolute -right-3 top-[18px] z-50 h-6 w-6 rounded-full border border-[var(--border)] bg-[var(--card)] flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors shadow-sm"
+      >
+        {collapsed ? <PanelLeftOpen className="h-3 w-3" /> : <PanelLeftClose className="h-3 w-3" />}
+      </button>
 
-        <motion.div
-          initial={{ opacity: 0, x: -8 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.3, delay: 0.15 }}
-        >
-          <p className="px-4 mb-2 text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/60">
-            General
-          </p>
-          <div className="space-y-0.5">
-            {generalLinks.map(renderLink)}
-            {/* Dark mode toggle styled as nav item */}
-            <button
-              onClick={toggleDark}
-              className="relative flex items-center gap-3 px-4 py-2.5 rounded-xl text-[14px] font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all w-full"
-            >
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.div
-                  key={dark ? "sun" : "moon"}
-                  initial={{ rotate: -90, opacity: 0, scale: 0.7 }}
-                  animate={{ rotate: 0, opacity: 1, scale: 1 }}
-                  exit={{ rotate: 90, opacity: 0, scale: 0.7 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  {dark ? <Sun className="h-[18px] w-[18px] shrink-0" /> : <Moon className="h-[18px] w-[18px] shrink-0" />}
-                </motion.div>
-              </AnimatePresence>
-              <span className="font-semibold">{dark ? "Light Mode" : "Dark Mode"}</span>
-            </button>
-          </div>
-        </motion.div>
+      {/* Navigation */}
+      <nav className={cn("flex-1 py-3 overflow-y-auto", collapsed ? "px-1" : "px-2", "space-y-3")}>
+        {renderSection("Listings", listingLinks)}
+        {renderSection("Insights", insightLinks)}
+        {renderSection("Tools", toolLinks)}
       </nav>
 
-      {/* Bottom promo card — matches Donezo's "Download Mobile App" card */}
-      <div className="px-3 pb-4">
-        <div className="bg-gradient-to-br from-[oklch(0.28_0.07_155)] to-[oklch(0.36_0.10_155)] rounded-2xl p-4 text-white">
-          <p className="text-sm font-semibold mb-1">Get the Mobile App</p>
-          <p className="text-[11px] text-white/70 leading-relaxed mb-3">
-            Manage listings on the go with our mobile companion.
-          </p>
-          <button className="flex items-center gap-2 bg-white/15 hover:bg-white/25 transition-colors text-white text-xs font-semibold rounded-lg px-3 py-2 w-full justify-center">
-            <Download className="h-3.5 w-3.5" />
-            Download
-          </button>
-        </div>
+      {/* Bottom controls */}
+      <div className={cn("border-t border-[var(--sidebar-border)] py-2", collapsed ? "px-1 flex flex-col items-center gap-1" : "px-3 flex items-center justify-between")}>
+        <button
+          onClick={toggleDark}
+          className="h-8 w-8 flex items-center justify-center rounded-lg text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+          title={dark ? "Light mode" : "Dark mode"}
+        >
+          {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+        </button>
+        <button
+          onClick={() => {
+            fetch("/api/auth/logout", { method: "POST" }).then(() => {
+              window.location.href = "/login";
+            });
+          }}
+          className="h-8 w-8 flex items-center justify-center rounded-lg text-[var(--muted-foreground)] hover:text-red-500 hover:bg-red-500/10 transition-colors"
+          title="Sign out"
+        >
+          <LogOut className="h-4 w-4" />
+        </button>
       </div>
     </aside>
   );

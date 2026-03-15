@@ -76,63 +76,47 @@ function getBrandColor(index: number) {
 
 function LoadingSkeleton() {
   return (
-    <div className="space-y-8">
-      {/* Header skeleton */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-2">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-4 w-64" />
+    <div className="space-y-6 animate-fade-in">
+      {/* Loading header with progress info */}
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <div className="relative mb-6">
+          <div className="h-14 w-14 rounded-2xl flex items-center justify-center" style={{ background: "var(--accent)" }}>
+            <Target className="h-7 w-7 animate-pulse-soft" style={{ color: "var(--primary)" }} />
+          </div>
         </div>
-        <Skeleton className="h-10 w-28" />
+        <h2 className="text-lg font-semibold mb-1">Analyzing Market Trends</h2>
+        <p className="text-sm text-muted-foreground mb-6 max-w-md">
+          AI is scanning resale markets across Depop, Grailed, Poshmark, and Mercari for the latest insights...
+        </p>
+        {/* Animated progress bar */}
+        <div className="w-64 h-1.5 bg-muted rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full"
+            style={{
+              background: "var(--primary)",
+              animation: "loading-bar-progress 2.5s ease-in-out infinite",
+            }}
+          />
+        </div>
+        <p className="text-xs text-muted-foreground mt-3">This may take 10-20 seconds</p>
       </div>
 
-      {/* Categories skeleton */}
-      <div className="space-y-4">
-        <Skeleton className="h-6 w-52" />
-        <div className="flex gap-4 overflow-hidden">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-36 w-56 shrink-0 rounded-xl" />
-          ))}
-        </div>
-      </div>
-
-      {/* Brands skeleton */}
-      <div className="space-y-4">
-        <Skeleton className="h-6 w-44" />
-        <div className="flex gap-4 overflow-hidden">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-40 w-52 shrink-0 rounded-xl" />
-          ))}
-        </div>
-      </div>
-
-      {/* Items skeleton */}
-      <div className="space-y-4">
-        <Skeleton className="h-6 w-36" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-36 rounded-xl" />
-          ))}
-        </div>
-      </div>
-
-      {/* Sleeper picks skeleton */}
-      <div className="space-y-4">
-        <Skeleton className="h-6 w-40" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-44 rounded-xl" />
-          ))}
-        </div>
-      </div>
-
-      {/* Advice + Platform skeleton */}
-      <Skeleton className="h-28 rounded-xl" />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-36 rounded-xl" />
+      {/* Subtle skeleton placeholders below */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 opacity-30">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Skeleton key={i} className="h-28 rounded-xl" />
         ))}
       </div>
+
+      <style>{`
+        @keyframes loading-bar-progress {
+          0% { width: 5%; margin-left: 0%; }
+          30% { width: 45%; margin-left: 5%; }
+          60% { width: 30%; margin-left: 50%; }
+          80% { width: 20%; margin-left: 70%; }
+          100% { width: 5%; margin-left: 95%; }
+        }
+      `}</style>
     </div>
   );
 }

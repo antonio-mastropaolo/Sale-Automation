@@ -1,47 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import OpenAI from "openai";
 import { parseAIJson } from "@/lib/ai-utils";
-
-const client = new OpenAI();
-
-interface TrendCategory {
-  name: string;
-  heat: number;
-  description: string;
-}
-
-interface TrendBrand {
-  name: string;
-  heat: number;
-  description: string;
-}
-
-interface HotItem {
-  name: string;
-  priceRange: string;
-  description: string;
-}
-
-interface SleeperPick {
-  name: string;
-  reasoning: string;
-  estimatedROI: string;
-}
-
-interface PlatformTips {
-  depop: string;
-  grailed: string;
-  poshmark: string;
-  mercari: string;
-}
+import { getAIClient, getPromptText } from "@/lib/settings";
+import { interpolatePrompt } from "@/lib/prompts";
 
 interface TrendData {
-  trendingCategories: TrendCategory[];
-  trendingBrands: TrendBrand[];
-  hotItems: HotItem[];
-  sleeperPicks: SleeperPick[];
+  trendingCategories: { name: string; heat: number; description: string }[];
+  trendingBrands: { name: string; heat: number; description: string }[];
+  hotItems: { name: string; priceRange: string; description: string }[];
+  sleeperPicks: { name: string; reasoning: string; estimatedROI: string }[];
   seasonalAdvice: string;
-  platformTips: PlatformTips;
+  platformTips: { depop: string; grailed: string; poshmark: string; mercari: string };
 }
 
 const fallbackData: TrendData = {
@@ -67,16 +35,16 @@ const fallbackData: TrendData = {
     { name: "Kapital Bandana Patchwork", priceRange: "$200-$450", description: "Unique Japanese streetwear pieces with cult following." },
   ],
   sleeperPicks: [
-    { name: "Vintage Patagonia Snap-T Fleece", reasoning: "Gorpcore trend is pushing all outdoor heritage pieces up. Snap-Ts from the 90s are still underpriced relative to demand.", estimatedROI: "40-60%" },
-    { name: "Issey Miyake Pleats Please", reasoning: "Quiet luxury trend is expanding into avant-garde territory. These pleated pieces are timeless and supply is limited.", estimatedROI: "30-50%" },
-    { name: "Vintage Band Tees (2000s era)", reasoning: "Y2K nostalgia is moving past accessories into graphic tees. 2000s concert tees are the next wave after 90s ones peaked.", estimatedROI: "50-80%" },
+    { name: "Vintage Patagonia Snap-T Fleece", reasoning: "Gorpcore trend is pushing all outdoor heritage pieces up.", estimatedROI: "40-60%" },
+    { name: "Issey Miyake Pleats Please", reasoning: "Quiet luxury trend is expanding into avant-garde territory.", estimatedROI: "30-50%" },
+    { name: "Vintage Band Tees (2000s era)", reasoning: "Y2K nostalgia is moving past accessories into graphic tees.", estimatedROI: "50-80%" },
   ],
-  seasonalAdvice: "Spring transition pieces are about to spike in demand. Light jackets, transitional layering pieces, and spring-weight denim will see increased buyer activity over the next 2-4 weeks. Start sourcing lightweight outerwear and linen pieces now before the rush.",
+  seasonalAdvice: "Spring transition pieces are about to spike in demand. Light jackets, transitional layering pieces, and spring-weight denim will see increased buyer activity over the next 2-4 weeks.",
   platformTips: {
-    depop: "Y2K and vintage streetwear are performing best. Use trending sounds and aesthetic flat-lay photos. Price competitively — Depop buyers are deal-hunters. Refresh listings daily for algorithm boost.",
-    grailed: "Designer and high-end streetwear dominate. Detailed measurements and condition reports drive sales. Archive fashion pieces from Helmut Lang, Raf Simons, and Margiela have the highest sell-through rates.",
-    poshmark: "Contemporary brands and athleisure lead sales. Host virtual Posh Parties and share actively. Lululemon, Free People, and Anthropologie have the fastest sell-through. Bundle discounts drive higher AOV.",
-    mercari: "Competitive pricing wins on Mercari. Electronics, sneakers, and everyday brands perform well. Smart Pricing and promoted listings significantly boost visibility. Fast shipping ratings improve search ranking.",
+    depop: "Y2K and vintage streetwear are performing best. Use trending sounds and aesthetic flat-lay photos.",
+    grailed: "Designer and high-end streetwear dominate. Detailed measurements and condition reports drive sales.",
+    poshmark: "Contemporary brands and athleisure lead sales. Host virtual Posh Parties and share actively.",
+    mercari: "Competitive pricing wins on Mercari. Smart Pricing and promoted listings significantly boost visibility.",
   },
 };
 
@@ -88,42 +56,28 @@ export async function GET(_request: NextRequest) {
       day: "numeric",
     });
 
-    const response = await client.chat.completions.create({
-      model: "gpt-4o",
-      max_tokens: 2048,
-      messages: [
-        {
-          role: "user",
-          content: `You are an expert reselling market analyst specializing in secondhand fashion and goods across Depop, Grailed, Poshmark, and Mercari. Today is ${today}.
+    const template = await getPromptText("trends");
+    const prompt = interpolatePrompt(template, { today });
 
-Based on your knowledge of current resale market trends, provide a comprehensive trend report. Consider recent fashion weeks, social media trends, seasonal shifts, and platform-specific dynamics.
+    const { client, model } = await getAIClient();
 
-Provide the following:
+    // Abort if AI takes longer than 10 seconds — use fallback instead
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10_000);
 
-1. **Top 5 Trending Categories** — what types of items are hottest right now. Include a heat score (1-100) and a short description.
-2. **Top 5 Trending Brands** — which brands are commanding the most demand and premium prices. Include a heat score (1-100) and a short description.
-3. **Top 5 Hot Items/Styles** — specific items or styles that are selling fast right now. Include an estimated resale price range and description.
-4. **3 Sleeper Picks** — undervalued items that are about to trend. Include your reasoning and estimated ROI percentage.
-5. **Seasonal Advice** — what's about to be in demand in the next 2-4 weeks based on seasonal shifts.
-6. **Platform-Specific Tips** — what's performing best on each platform (Depop, Grailed, Poshmark, Mercari) and how to optimize for each.
-
-Respond in JSON format only (no markdown, no code fences):
-{
-  "trendingCategories": [{"name": "...", "heat": 80, "description": "..."}],
-  "trendingBrands": [{"name": "...", "heat": 90, "description": "..."}],
-  "hotItems": [{"name": "...", "priceRange": "$X-$Y", "description": "..."}],
-  "sleeperPicks": [{"name": "...", "reasoning": "...", "estimatedROI": "X%"}],
-  "seasonalAdvice": "...",
-  "platformTips": {"depop": "...", "grailed": "...", "poshmark": "...", "mercari": "..."}
-}`,
-        },
-      ],
-    });
+    const response = await client.chat.completions.create(
+      {
+        model,
+        max_tokens: 2048,
+        messages: [{ role: "user", content: prompt }],
+      },
+      { signal: controller.signal }
+    );
+    clearTimeout(timeout);
 
     const content = response.choices[0]?.message?.content || "";
     const data: TrendData = parseAIJson<TrendData>(content);
 
-    // Validate the structure has all required fields
     if (
       !data.trendingCategories ||
       !data.trendingBrands ||

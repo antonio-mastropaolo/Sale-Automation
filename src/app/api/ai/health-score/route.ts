@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import OpenAI from "openai";
 import { prisma } from "@/lib/db";
 import { parseAIJson } from "@/lib/ai-utils";
-
-const client = new OpenAI();
+import { getAIClient, getPromptText } from "@/lib/settings";
+import { interpolatePrompt } from "@/lib/prompts";
 
 export async function POST(request: NextRequest) {
   let body: Record<string, unknown>;
@@ -30,57 +29,25 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
+  const template = await getPromptText("health_score");
+  const prompt = interpolatePrompt(template, {
+    title: listing.title,
+    description: listing.description,
+    category: listing.category,
+    brand: listing.brand || "Not specified",
+    size: listing.size || "Not specified",
+    condition: listing.condition,
+    price: String(listing.price),
+    photoCount: String(listing.images.length),
+    platforms: listing.platformListings.map((p) => p.platform).join(", ") || "None yet",
+    status: listing.status,
+  });
+
+  const { client, model } = await getAIClient();
   const response = await client.chat.completions.create({
-    model: "gpt-4o",
+    model,
     max_tokens: 1024,
-    messages: [
-      {
-        role: "user",
-        content: `You are an expert reselling consultant who grades marketplace listings. Analyze this listing and provide a detailed health score.
-
-Listing:
-- Title: ${listing.title}
-- Description: ${listing.description}
-- Category: ${listing.category}
-- Brand: ${listing.brand || "Not specified"}
-- Size: ${listing.size || "Not specified"}
-- Condition: ${listing.condition}
-- Price: $${listing.price}
-- Number of photos: ${listing.images.length}
-- Platforms listed on: ${listing.platformListings.map((p) => p.platform).join(", ") || "None yet"}
-- Status: ${listing.status}
-
-Grade this listing on these criteria (each 0-100):
-1. Title Quality (SEO keywords, length, clarity)
-2. Description Quality (detail, appeal, measurements, keywords)
-3. Photo Score (number of photos — ideally 4-8)
-4. Pricing Strategy (is it competitive for the brand/category/condition?)
-5. Platform Coverage (is it on enough platforms?)
-
-Also provide:
-- An overall score (weighted average)
-- 3-5 specific, actionable improvements ranked by impact
-- An estimated "days to sell" prediction
-- A one-line verdict
-
-Respond in JSON only (no markdown):
-{
-  "overall": 75,
-  "scores": {
-    "title": {"score": 80, "feedback": "..."},
-    "description": {"score": 60, "feedback": "..."},
-    "photos": {"score": 40, "feedback": "..."},
-    "pricing": {"score": 85, "feedback": "..."},
-    "platformCoverage": {"score": 25, "feedback": "..."}
-  },
-  "improvements": [
-    {"action": "...", "impact": "high", "detail": "..."}
-  ],
-  "estimatedDaysToSell": 7,
-  "verdict": "..."
-}`,
-      },
-    ],
+    messages: [{ role: "user", content: prompt }],
   });
 
   const text = response.choices[0]?.message?.content || "{}";

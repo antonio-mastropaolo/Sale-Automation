@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import OpenAI from "openai";
 import { parseAIJson } from "@/lib/ai-utils";
-
-const client = new OpenAI();
+import { getAIClient, getPromptText } from "@/lib/settings";
+import { interpolatePrompt } from "@/lib/prompts";
 
 export async function POST(request: NextRequest) {
   let body: Record<string, unknown>;
@@ -16,68 +15,27 @@ export async function POST(request: NextRequest) {
     buyerMessage?: string; minimumPrice?: number; sellerStyle?: string;
   };
 
+  const { client, model } = await getAIClient();
+
   if (action === "draft_response") {
     if (!buyerMessage || !itemTitle) {
       return NextResponse.json({ error: "buyerMessage and itemTitle required" }, { status: 400 });
     }
 
+    const template = await getPromptText("negotiate_response");
+    const prompt = interpolatePrompt(template, {
+      itemTitle,
+      itemPrice: String(itemPrice ?? "Unknown"),
+      itemDescription: itemDescription || "N/A",
+      minimumPrice: String(minimumPrice ?? "No minimum set"),
+      sellerStyle: sellerStyle || "friendly and professional",
+      buyerMessage,
+    });
+
     const response = await client.chat.completions.create({
-      model: "gpt-4o",
+      model,
       max_tokens: 512,
-      messages: [
-        {
-          role: "user",
-          content: `You are an expert reseller's AI assistant helping draft responses to buyer messages. Your goal is to maximize the sale price while keeping the buyer engaged.
-
-Item: ${itemTitle}
-Listed price: $${itemPrice || "Unknown"}
-Description: ${itemDescription || "N/A"}
-Minimum acceptable price: $${minimumPrice || "No minimum set"}
-Seller communication style: ${sellerStyle || "friendly and professional"}
-
-Buyer's message: "${buyerMessage}"
-
-Analyze the buyer's intent and draft 3 response options:
-1. FIRM — Politely hold your price (for lowball offers or when price is fair)
-2. NEGOTIATE — Counter-offer or meet in the middle (for reasonable offers)
-3. ACCEPT — Accept or encourage the sale (for good offers)
-
-For each response, explain the strategy behind it.
-
-Also determine:
-- Is this a serious buyer or a lowballer?
-- What's the buyer's likely maximum price?
-- Best negotiation tactic for this situation
-
-Respond in JSON only (no markdown):
-{
-  "buyerAnalysis": {
-    "intent": "lowball|negotiating|serious|question",
-    "estimatedMaxPrice": 35,
-    "seriousnessScore": 7
-  },
-  "responses": [
-    {
-      "type": "firm",
-      "message": "...",
-      "strategy": "..."
-    },
-    {
-      "type": "negotiate",
-      "message": "...",
-      "strategy": "..."
-    },
-    {
-      "type": "accept",
-      "message": "...",
-      "strategy": "..."
-    }
-  ],
-  "recommendedResponse": "firm|negotiate|accept",
-  "tactic": "..."
-}`,
-        },
-      ],
+      messages: [{ role: "user", content: prompt }],
     });
 
     const text = response.choices[0]?.message?.content || "{}";
@@ -89,22 +47,18 @@ Respond in JSON only (no markdown):
   }
 
   if (action === "answer_question") {
+    const template = await getPromptText("negotiate_question");
+    const prompt = interpolatePrompt(template, {
+      itemTitle: itemTitle || "",
+      itemPrice: String(itemPrice ?? "Unknown"),
+      itemDescription: itemDescription || "N/A",
+      buyerMessage: buyerMessage || "",
+    });
+
     const response = await client.chat.completions.create({
-      model: "gpt-4o",
+      model,
       max_tokens: 256,
-      messages: [
-        {
-          role: "user",
-          content: `You are a helpful seller on a marketplace. A buyer asked a question about your item. Draft a response.
-
-Item: ${itemTitle}
-Price: $${itemPrice || "Unknown"}
-Description: ${itemDescription || "N/A"}
-Buyer's question: "${buyerMessage}"
-
-Write a friendly, helpful response that answers their question and encourages the sale. Keep it concise (2-3 sentences max). Return plain text only, no JSON.`,
-        },
-      ],
+      messages: [{ role: "user", content: prompt }],
     });
 
     return NextResponse.json({

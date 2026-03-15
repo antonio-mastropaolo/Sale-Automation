@@ -16,12 +16,15 @@ model Listing {
   size        String   @default("")
   condition   String   @default("Good")
   price       Float
+  costPrice   Float    @default(0) // what the seller paid (COGS)
   status      String   @default("draft") // draft, active, sold
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   images           ListingImage[]
   platformListings PlatformListing[]
+  sales            Sale[]
+  scheduledPosts   ScheduledPost[]
 }
 
 model ListingImage {
@@ -66,4 +69,107 @@ model AnalyticsEvent {
   recordedAt        DateTime @default(now())
 
   platformListing PlatformListing @relation(fields: [platformListingId], references: [id], onDelete: Cascade)
+}
+
+model Setting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String // JSON-encoded value
+  updatedAt DateTime @updatedAt
+}
+
+model CustomPrompt {
+  id         String   @id @default(uuid())
+  featureKey String   @unique // e.g., "optimize", "smart_list", "price_intel"
+  label      String
+  prompt     String
+  updatedAt  DateTime @updatedAt
+}
+
+// ── New models for automation hub ──────────────────────────────────
+
+model Template {
+  id          String   @id @default(uuid())
+  name        String
+  category    String   @default("")
+  brand       String   @default("")
+  condition   String   @default("Good")
+  description String   @default("")
+  tags        String   @default("") // JSON array as string
+  platforms   String   @default("") // JSON array of target platforms
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Sale {
+  id           String   @id @default(uuid())
+  listingId    String?
+  platform     String
+  title        String
+  soldPrice    Float
+  costPrice    Float    @default(0)
+  shippingCost Float    @default(0)
+  platformFee  Float    @default(0)
+  profit       Float    @default(0)
+  buyerName    String   @default("")
+  soldAt       DateTime @default(now())
+  notes        String   @default("")
+
+  listing Listing? @relation(fields: [listingId], references: [id], onDelete: SetNull)
+}
+
+model ScheduledPost {
+  id          String    @id @default(uuid())
+  listingId   String
+  platform    String
+  scheduledAt DateTime
+  status      String    @default("pending") // pending, published, failed, cancelled
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+}
+
+model ImportJob {
+  id          String    @id @default(uuid())
+  fileName    String
+  totalRows   Int       @default(0)
+  processed   Int       @default(0)
+  errors      Int       @default(0)
+  status      String    @default("pending") // pending, processing, completed, failed
+  errorLog    String    @default("") // JSON array of error messages
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+}
+
+// ── Auth models ─────────────────────────────────────────────────────
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  username     String    @unique
+  passwordHash String
+  role         String    @default("user") // user, admin
+  onboarded    Boolean   @default(false) // has completed onboarding wizard
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  sessions     Session[]
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PasswordReset {
+  id        String   @id @default(uuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
 }

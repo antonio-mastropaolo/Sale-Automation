@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import OpenAI from "openai";
 import { prisma } from "@/lib/db";
 import { parseAIJson } from "@/lib/ai-utils";
-
-const client = new OpenAI();
+import { getAIClient, getPromptText } from "@/lib/settings";
+import { interpolatePrompt } from "@/lib/prompts";
 
 export async function POST(request: NextRequest) {
   let body: Record<string, unknown>;
@@ -15,7 +14,6 @@ export async function POST(request: NextRequest) {
   const { action } = body;
 
   if (action === "analyze") {
-    // Get all active/draft listings
     const listings = await prisma.listing.findMany({
       where: { status: { in: ["draft", "active"] } },
       include: {
@@ -46,50 +44,16 @@ export async function POST(request: NextRequest) {
       })),
     }));
 
+    const template = await getPromptText("reprice");
+    const prompt = interpolatePrompt(template, {
+      inventory: JSON.stringify(listingSummaries, null, 2),
+    });
+
+    const { client, model } = await getAIClient();
     const response = await client.chat.completions.create({
-      model: "gpt-4o",
+      model,
       max_tokens: 2048,
-      messages: [
-        {
-          role: "user",
-          content: `You are an expert reselling pricing strategist. Analyze this inventory and suggest optimal repricing to maximize sell-through and revenue.
-
-Current inventory:
-${JSON.stringify(listingSummaries, null, 2)}
-
-For each listing, determine:
-1. Is the current price optimal?
-2. Should it be raised, lowered, or kept the same?
-3. What's the recommended new price?
-4. Priority of the price change (high/medium/low)
-5. Brief reasoning
-
-Also provide:
-- Overall inventory health assessment
-- Total estimated revenue at current prices vs. optimized prices
-- Which items to prioritize selling first (stale inventory)
-
-Respond in JSON only (no markdown):
-{
-  "suggestions": [
-    {
-      "listingId": "...",
-      "title": "...",
-      "currentPrice": 45,
-      "suggestedPrice": 38,
-      "action": "lower|raise|keep",
-      "priority": "high|medium|low",
-      "reasoning": "...",
-      "estimatedDaysToSell": 5
-    }
-  ],
-  "summary": "...",
-  "currentEstimatedRevenue": 500,
-  "optimizedEstimatedRevenue": 620,
-  "staleItems": ["listingId1", "listingId2"]
-}`,
-        },
-      ],
+      messages: [{ role: "user", content: prompt }],
     });
 
     const text = response.choices[0]?.message?.content || "{}";
@@ -102,7 +66,6 @@ Respond in JSON only (no markdown):
 
   if (action === "apply") {
     const { reprices } = body as { reprices?: unknown };
-    // reprices: [{listingId, newPrice}]
     if (!Array.isArray(reprices)) {
       return NextResponse.json({ error: "reprices array required" }, { status: 400 });
     }
@@ -113,7 +76,6 @@ Respond in JSON only (no markdown):
           where: { id: r.listingId },
           data: { price: r.newPrice },
         });
-        // Also update platform listings
         await prisma.platformListing.updateMany({
           where: { listingId: r.listingId },
           data: { suggestedPrice: r.newPrice },
