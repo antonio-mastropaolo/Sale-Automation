@@ -306,14 +306,22 @@ function AIProviderTab() {
   const testConnection = async () => {
     setTesting(true);
     setTestResult(null);
+    const currentKey = keys[defaultProvider];
+    if (!currentKey) {
+      setTestResult(`Error: No API key for ${selectedProviderObj.name}. Enter a key first.`);
+      setTesting(false);
+      return;
+    }
     try {
-      await save();
       const res = await fetch("/api/settings/test-prompt", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           prompt: "Say 'Connection successful!' in exactly 3 words. Nothing else.",
           variables: {},
+          provider: defaultProvider,
+          apiKey: currentKey,
+          model: model || undefined,
         }),
       });
       const data = await res.json();

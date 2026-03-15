@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAIClient } from "@/lib/settings";
+import { getAIClient, AI_PROVIDERS } from "@/lib/settings";
 import { interpolatePrompt } from "@/lib/prompts";
 import { tokenParams } from "@/lib/ai";
+import OpenAI from "openai";
 
-/** POST — Test a prompt with sample variables and return the AI response */
+/** POST — Test a prompt with sample variables and return the AI response.
+ *  Accepts optional `provider`, `apiKey`, `model` overrides so the user
+ *  can test without saving first. */
 export async function POST(request: NextRequest) {
   let body: Record<string, unknown>;
   try {
@@ -12,7 +15,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { prompt, variables } = body as { prompt?: string; variables?: Record<string, string> };
+  const { prompt, variables, provider: overrideProvider, apiKey: overrideKey, model: overrideModel } =
+    body as {
+      prompt?: string;
+      variables?: Record<string, string>;
+      provider?: string;
+      apiKey?: string;
+      model?: string;
+    };
   if (!prompt) {
     return NextResponse.json({ error: "prompt required" }, { status: 400 });
   }
@@ -20,7 +30,19 @@ export async function POST(request: NextRequest) {
   const interpolated = interpolatePrompt(prompt, variables || {});
 
   try {
-    const { client, model } = await getAIClient();
+    let client: OpenAI;
+    let model: string;
+
+    if (overrideKey && overrideProvider) {
+      // Use the override values directly — no DB read, no save
+      const provDef = AI_PROVIDERS.find((p) => p.id === overrideProvider) || AI_PROVIDERS[0];
+      model = overrideModel || provDef.defaultModel;
+      client = new OpenAI({ apiKey: overrideKey, baseURL: provDef.baseURL });
+    } else {
+      // Fall back to saved settings
+      ({ client, model } = await getAIClient());
+    }
+
     const response = await client.chat.completions.create({
       model,
       ...tokenParams(model, 1024),
