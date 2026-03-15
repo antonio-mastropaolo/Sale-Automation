@@ -2,6 +2,7 @@ import { PlatformAutomation, PlatformListingData } from "./base";
 
 export class DepopAutomation extends PlatformAutomation {
   platform = "depop";
+  platformUrl = "https://www.depop.com";
 
   async publish(data: PlatformListingData): Promise<{ url: string }> {
     const creds = await this.getCredentials();

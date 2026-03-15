@@ -2,6 +2,7 @@ import { PlatformAutomation, PlatformListingData } from "./base";
 
 export class MercariAutomation extends PlatformAutomation {
   platform = "mercari";
+  platformUrl = "https://www.mercari.com";
 
   async publish(data: PlatformListingData): Promise<{ url: string }> {
     const creds = await this.getCredentials();

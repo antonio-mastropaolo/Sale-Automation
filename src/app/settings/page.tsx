@@ -939,6 +939,8 @@ function PlatformsTab() {
   const [credentials, setCredentials] = useState<Record<string, { username: string; password: string }>>({});
   const [showPassword, setShowPassword] = useState<Record<string, boolean>>({});
   const [saving, setSaving] = useState<string | null>(null);
+  const [testingPlatform, setTestingPlatform] = useState<string | null>(null);
+  const [testResults, setTestResults] = useState<Record<string, { success: boolean; message: string; tip?: string }>>({});
 
   const fetchPlatforms = useCallback(() => {
     fetch("/api/platforms/connect")
@@ -977,6 +979,7 @@ function PlatformsTab() {
       return;
     }
     setSaving(platform);
+    setTestResults((prev) => { const next = { ...prev }; delete next[platform]; return next; });
     try {
       const res = await fetch("/api/platforms/connect", {
         method: "POST",
@@ -1004,10 +1007,34 @@ function PlatformsTab() {
         delete next[platform];
         return next;
       });
+      setTestResults((prev) => { const next = { ...prev }; delete next[platform]; return next; });
       fetchPlatforms();
     } catch {
       toast.error("Failed to disconnect");
     }
+  };
+
+  const testConnection = async (platform: string) => {
+    setTestingPlatform(platform);
+    setTestResults((prev) => { const next = { ...prev }; delete next[platform]; return next; });
+    try {
+      const res = await fetch("/api/platforms/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ platform }),
+      });
+      const data = await res.json();
+      setTestResults((prev) => ({ ...prev, [platform]: data }));
+      if (data.success) {
+        toast.success(`${platformInfo[platform]?.name}: Connection verified!`);
+      }
+    } catch {
+      setTestResults((prev) => ({
+        ...prev,
+        [platform]: { success: false, message: "Test request failed", tip: "Check your connection and try again." },
+      }));
+    }
+    setTestingPlatform(null);
   };
 
   const connectedCount = platforms.filter((p) => p.connected).length;
@@ -1061,9 +1088,21 @@ function PlatformsTab() {
                     )}
                   </div>
                   {p.connected && (
-                    <Button variant="outline" size="sm" className="h-7 text-xs text-destructive shrink-0" onClick={() => disconnect(p.platform)}>
-                      Disconnect
-                    </Button>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-xs"
+                        disabled={testingPlatform === p.platform}
+                        onClick={() => testConnection(p.platform)}
+                      >
+                        {testingPlatform === p.platform ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Play className="h-3.5 w-3.5 mr-1" />}
+                        Test
+                      </Button>
+                      <Button variant="outline" size="sm" className="h-7 text-xs text-destructive" onClick={() => disconnect(p.platform)}>
+                        Disconnect
+                      </Button>
+                    </div>
                   )}
                 </div>
 
@@ -1107,6 +1146,25 @@ function PlatformsTab() {
                     {p.connected ? "Update" : "Save"}
                   </Button>
                 </div>
+
+                {/* Test result */}
+                {testResults[p.platform] && (
+                  <div className={`rounded-lg p-3 text-xs flex items-start gap-2 ${
+                    testResults[p.platform].success
+                      ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                      : "bg-red-500/10 text-red-700 dark:text-red-400"
+                  }`}>
+                    {testResults[p.platform].success
+                      ? <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
+                      : <XCircle className="h-4 w-4 shrink-0 mt-0.5" />}
+                    <div>
+                      <p className="font-medium">{testResults[p.platform].message}</p>
+                      {testResults[p.platform].tip && (
+                        <p className="mt-1 opacity-80">{testResults[p.platform].tip}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           );

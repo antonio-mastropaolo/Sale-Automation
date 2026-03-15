@@ -2,6 +2,7 @@ import { PlatformAutomation, PlatformListingData } from "./base";
 
 export class PoshmarkAutomation extends PlatformAutomation {
   platform = "poshmark";
+  platformUrl = "https://poshmark.com";
 
   async publish(data: PlatformListingData): Promise<{ url: string }> {
     const creds = await this.getCredentials();

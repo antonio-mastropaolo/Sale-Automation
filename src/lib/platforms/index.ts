@@ -11,4 +11,4 @@ export const platforms: Record<string, PlatformAutomation> = {
   mercari,
 };
 
-export type { PlatformListingData } from "./base";
+export type { PlatformListingData, TestConnectionResult } from "./base";

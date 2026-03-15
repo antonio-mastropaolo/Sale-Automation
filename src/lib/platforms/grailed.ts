@@ -2,6 +2,7 @@ import { PlatformAutomation, PlatformListingData } from "./base";
 
 export class GrailedAutomation extends PlatformAutomation {
   platform = "grailed";
+  platformUrl = "https://www.grailed.com";
 
   async publish(data: PlatformListingData): Promise<{ url: string }> {
     const creds = await this.getCredentials();
