@@ -52,9 +52,9 @@ export default function LoginPage() {
 
   return (
     <div className="fixed inset-0 z-[100] flex min-h-screen bg-[#f2f2f7] dark:bg-black">
-      {/* Left branding panel — image only, no text overlay */}
-      <div className="hidden lg:flex lg:w-1/2 bg-black items-center justify-center overflow-hidden">
-        <img src="/login-bg.png" alt="ListBlitz" className="w-full h-full object-contain" />
+      {/* Left branding panel — image fills the panel */}
+      <div className="hidden lg:block lg:w-1/2 relative overflow-hidden bg-[#0a0a1a]">
+        <img src="/login-bg.png" alt="ListBlitz" className="absolute inset-0 w-full h-full object-cover object-center" />
       </div>
 
       {/* Right login form */}
