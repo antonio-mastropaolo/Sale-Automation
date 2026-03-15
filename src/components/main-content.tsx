@@ -7,18 +7,11 @@ export function MainContent({ children }: { children: React.ReactNode }) {
   const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
-    // Read initial state
     setCollapsed(localStorage.getItem("sidebar-collapsed") === "true");
     setIsDesktop(window.innerWidth >= 1024);
 
-    // Listen for sidebar toggle (dispatched via setTimeout in sidebar to avoid render conflicts)
-    const onToggle = (e: Event) => {
-      setCollapsed((e as CustomEvent).detail.collapsed);
-    };
-
-    const onResize = () => {
-      setIsDesktop(window.innerWidth >= 1024);
-    };
+    const onToggle = (e: Event) => setCollapsed((e as CustomEvent).detail.collapsed);
+    const onResize = () => setIsDesktop(window.innerWidth >= 1024);
 
     window.addEventListener("sidebar-toggle", onToggle);
     window.addEventListener("resize", onResize);
@@ -28,15 +21,13 @@ export function MainContent({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const ml = isDesktop ? (collapsed ? "4rem" : "14rem") : "0";
-
   return (
     <div
       className="flex flex-1 flex-col overflow-x-hidden transition-all duration-300 ease-in-out"
-      style={{ marginLeft: ml }}
+      style={{ marginLeft: isDesktop ? (collapsed ? "68px" : "220px") : "0" }}
     >
       <main className="flex-1">
-        <div className="w-full px-4 pb-10 pt-16 sm:px-6 sm:pt-16 md:pt-8 lg:px-8 lg:pt-6 2xl:px-12 2xl:pb-12">
+        <div className="w-full px-4 pb-10 pt-16 sm:px-5 sm:pt-14 md:pt-8 lg:px-6 lg:pt-5 xl:px-8 2xl:px-10">
           {children}
         </div>
       </main>

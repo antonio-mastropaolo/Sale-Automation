@@ -96,36 +96,35 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Stats row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {statCards.map(({ label, value, icon: Icon, prefix, change }) => (
-          <div
-            key={label}
-            className="rounded-xl border border-border bg-card p-3 sm:p-4 space-y-1.5 sm:space-y-2"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xs sm:text-[13px] text-muted-foreground">{label}</span>
-              <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground/40" />
-            </div>
-            <div className="flex items-end gap-1.5 sm:gap-2">
-              <span className="text-xl sm:text-2xl font-semibold tracking-tight">
-                {prefix}{typeof value === "number" ? value.toLocaleString() : value}
-              </span>
-              {change && (
-                <span className="text-[10px] sm:text-xs text-emerald-600 dark:text-emerald-400 font-medium mb-0.5 flex items-center gap-0.5">
-                  <TrendingUp className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                  {change}
+      {/* Stats — iOS grouped card */}
+      <div className="rounded-xl bg-card overflow-hidden">
+        <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-[var(--border)]">
+          {statCards.map(({ label, value, icon: Icon, prefix, change }) => (
+            <div key={label} className="p-3 sm:p-4 space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] sm:text-xs text-muted-foreground uppercase tracking-wide">{label}</span>
+                <Icon className="h-3.5 w-3.5 text-[var(--primary)] opacity-60" />
+              </div>
+              <div className="flex items-end gap-1.5">
+                <span className="text-xl sm:text-2xl font-bold tracking-tight">
+                  {prefix}{typeof value === "number" ? value.toLocaleString() : value}
                 </span>
-              )}
+                {change && (
+                  <span className="text-[10px] text-[#34c759] dark:text-[#30d158] font-semibold mb-0.5 flex items-center gap-0.5">
+                    <TrendingUp className="h-2.5 w-2.5" />
+                    {change}
+                  </span>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* Quick actions + Platform stats + Recent activity */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
         {/* Quick Actions */}
-        <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
+        <div className="rounded-xl bg-card p-4 sm:p-5">
           <h3 className="text-sm font-semibold mb-3">Quick Actions</h3>
           <div className="space-y-1">
             {[
@@ -150,7 +149,7 @@ export default function Dashboard() {
         </div>
 
         {/* Platform Stats */}
-        <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
+        <div className="rounded-xl bg-card p-4 sm:p-5">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold">Platforms</h3>
             <Link href="/settings" className="text-[11px] text-primary font-medium hover:underline">
@@ -192,7 +191,7 @@ export default function Dashboard() {
         </div>
 
         {/* Recent Activity */}
-        <div className="rounded-xl border border-border bg-card p-4 sm:p-5 md:col-span-2 xl:col-span-1">
+        <div className="rounded-xl bg-card p-4 sm:p-5 md:col-span-2 xl:col-span-1">
           <h3 className="text-sm font-semibold mb-3">Recent Activity</h3>
           {listings.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
@@ -226,7 +225,7 @@ export default function Dashboard() {
       </div>
 
       {/* Listings Section */}
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <div className="rounded-xl bg-card overflow-hidden">
         {/* Header with search and filter — stacks on mobile */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border-b border-border">
           <h2 className="text-sm font-semibold">Your Listings</h2>
