@@ -51,24 +51,24 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex min-h-screen bg-[#f2f2f7] dark:bg-black">
-      {/* Left branding panel — image fills the panel */}
-      <div className="hidden lg:block lg:w-1/2 relative overflow-hidden bg-[#0a0a1a]">
-        <img src="/login-bg.png" alt="ListBlitz" className="absolute inset-0 w-full h-full object-cover object-center" />
+    <div className="fixed inset-0 z-[100] flex min-h-screen bg-[#0d1117] dark:bg-[#0d1117]">
+      {/* Left branding panel — image centered with top aligned */}
+      <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden bg-[#0a0e1a] items-start justify-center pt-0">
+        <img src="/login-bg.png" alt="ListBlitz" className="w-full h-full object-cover object-top" />
       </div>
 
-      {/* Right login form */}
-      <div className="flex-1 flex items-center justify-center p-6 bg-[#f2f2f7] dark:bg-black">
-        <div className="w-full max-w-md">
+      {/* Right login form — dark theme matching the image */}
+      <div className="flex-1 flex items-center justify-center p-6 bg-[#0d1117]">
+        <div className="w-full max-w-sm">
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center justify-center mb-8">
             <img src="/logo.png" alt="ListBlitz" className="h-14 object-contain" />
           </div>
 
-          <Card className="rounded-2xl">
+          <Card className="rounded-2xl border-white/10 bg-[#161b22] text-white shadow-2xl">
             <CardHeader className="text-center pb-2">
-              <CardTitle className="text-xl font-bold">Welcome back</CardTitle>
-              <CardDescription>Sign in to your ListBlitz account</CardDescription>
+              <CardTitle className="text-xl font-bold text-white">Welcome back</CardTitle>
+              <CardDescription className="text-gray-400">Sign in to your ListBlitz account</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
