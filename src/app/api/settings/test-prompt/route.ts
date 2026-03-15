@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAIClient } from "@/lib/settings";
 import { interpolatePrompt } from "@/lib/prompts";
+import { tokenParams } from "@/lib/ai";
 
 /** POST — Test a prompt with sample variables and return the AI response */
 export async function POST(request: NextRequest) {
@@ -22,7 +23,7 @@ export async function POST(request: NextRequest) {
     const { client, model } = await getAIClient();
     const response = await client.chat.completions.create({
       model,
-      max_tokens: 1024,
+      ...tokenParams(model, 1024),
       messages: [{ role: "user", content: interpolated }],
     });
 

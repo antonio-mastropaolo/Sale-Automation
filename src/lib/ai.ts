@@ -22,11 +22,21 @@ export interface OptimizedListing {
   suggestedPrice: number;
 }
 
+// Models that require max_completion_tokens instead of max_tokens
+const NEW_TOKEN_PARAM_MODELS = /^(gpt-5|o[1-9]|o\d+-)/;
+
+export function tokenParams(model: string, maxTokens: number): Record<string, number> {
+  if (NEW_TOKEN_PARAM_MODELS.test(model)) {
+    return { max_completion_tokens: maxTokens };
+  }
+  return { max_tokens: maxTokens };
+}
+
 async function chat(prompt: string, maxTokens: number = 1024): Promise<string> {
   const { client, model } = await getAIClient();
   const response = await client.chat.completions.create({
     model,
-    max_tokens: maxTokens,
+    ...tokenParams(model, maxTokens),
     messages: [{ role: "user", content: prompt }],
   });
   return response.choices[0]?.message?.content || "";

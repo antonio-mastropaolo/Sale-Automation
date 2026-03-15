@@ -33,11 +33,11 @@ import {
 // ── Constants ───────────────────────────────────────────────
 
 const AI_PROVIDERS = [
-  { id: "openai", name: "OpenAI", models: ["gpt-4o", "gpt-4o-mini", "gpt-4.1", "gpt-4.1-mini"] },
-  { id: "google", name: "Google Gemini", models: ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash"] },
+  { id: "openai", name: "OpenAI", models: ["gpt-5.4", "gpt-5.2", "gpt-5-mini", "gpt-4o", "gpt-4o-mini", "o4-mini"] },
+  { id: "google", name: "Google Gemini", models: ["gemini-3.1-pro-preview", "gemini-2.5-flash", "gemini-2.5-pro"] },
   { id: "groq", name: "Groq", models: ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"] },
   { id: "together", name: "Together AI", models: ["meta-llama/Llama-3.3-70B-Instruct-Turbo"] },
-  { id: "openrouter", name: "OpenRouter", models: ["anthropic/claude-sonnet-4", "openai/gpt-4o"] },
+  { id: "openrouter", name: "OpenRouter", models: ["anthropic/claude-sonnet-4", "openai/gpt-5.4"] },
   { id: "custom", name: "Custom", models: [] },
 ];
 

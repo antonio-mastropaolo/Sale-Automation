@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { parseAIJson } from "@/lib/ai-utils";
 import { getAIClient, getPromptText } from "@/lib/settings";
+import { tokenParams } from "@/lib/ai";
 import { interpolatePrompt } from "@/lib/prompts";
 
 export async function POST(request: NextRequest) {
@@ -46,7 +47,7 @@ export async function POST(request: NextRequest) {
   const { client, model } = await getAIClient();
   const response = await client.chat.completions.create({
     model,
-    max_tokens: 1024,
+    ...tokenParams(model, 1024),
     messages: [{ role: "user", content: prompt }],
   });
 

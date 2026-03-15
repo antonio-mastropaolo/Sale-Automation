@@ -224,6 +224,21 @@ function AIProviderTab() {
     setTesting(true);
     setTestResult(null);
     try {
+      // Auto-save settings first so the test uses the current values
+      const payload: Record<string, string> = {
+        ai_provider: provider,
+        ai_model: model,
+      };
+      if (keyEdited && apiKey) payload.ai_api_key = apiKey;
+      if (provider === "custom" && baseURL) payload.ai_base_url = baseURL;
+
+      await fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ settings: payload }),
+      });
+
+      // Now test
       const res = await fetch("/api/settings/test-prompt", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAIClient } from "@/lib/settings";
+import { tokenParams } from "@/lib/ai";
 import { parseAIJson } from "@/lib/ai-utils";
 
 // ── Fallback product database for when AI is unavailable ──────────
@@ -111,7 +112,7 @@ Be specific — use real product names, real model/SKU numbers, and realistic pr
     const response = await client.chat.completions.create(
       {
         model,
-        max_tokens: 2048,
+        ...tokenParams(model, 2048),
         messages: [{ role: "user", content: prompt }],
       },
       { signal: controller.signal }

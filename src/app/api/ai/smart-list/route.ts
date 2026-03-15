@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { parseAIJson } from "@/lib/ai-utils";
 import { getAIClient, getPromptText } from "@/lib/settings";
+import { tokenParams } from "@/lib/ai";
 
 export async function POST(request: NextRequest) {
   try {
@@ -57,7 +58,7 @@ export async function POST(request: NextRequest) {
 
     const response = await client.chat.completions.create({
       model,
-      max_tokens: 2048,
+      ...tokenParams(model, 2048),
       messages: [
         { role: "system", content: systemPrompt },
         {

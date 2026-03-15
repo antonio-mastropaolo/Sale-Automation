@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAIClient } from "@/lib/settings";
+import { tokenParams } from "@/lib/ai";
 
 /** POST — AI-suggested reply for a buyer message */
 export async function POST(request: NextRequest) {
@@ -26,7 +27,7 @@ export async function POST(request: NextRequest) {
 
     const response = await client.chat.completions.create({
       model,
-      max_tokens: 300,
+      ...tokenParams(model, 300),
       messages: [
         {
           role: "user",

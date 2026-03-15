@@ -18,16 +18,40 @@ export const AI_PROVIDERS: AIProvider[] = [
     id: "openai",
     name: "OpenAI",
     baseURL: "https://api.openai.com/v1",
-    defaultModel: "gpt-4o",
-    models: ["gpt-4o", "gpt-4o-mini", "gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano", "o3-mini"],
+    defaultModel: "gpt-5.4",
+    models: [
+      "gpt-5.4",        // Latest flagship (Mar 2026)
+      "gpt-5.4-pro",    // Pro tier
+      "gpt-5.2",        // Flagship (Dec 2025)
+      "gpt-5.2-pro",    // Pro tier
+      "gpt-5.1",        // Flagship (Nov 2025)
+      "gpt-5",          // Original GPT-5
+      "gpt-5-mini",     // Lightweight
+      "gpt-5-nano",     // Ultra-light
+      "gpt-4o",         // Still excellent
+      "gpt-4o-mini",    // Fast + cheap
+      "gpt-4.1",        // Stable
+      "gpt-4.1-mini",   // Lightweight
+      "gpt-4.1-nano",   // Ultra-light
+      "o4-mini",        // Reasoning (fast)
+      "o3",             // Reasoning (full)
+      "o3-mini",        // Reasoning (light)
+      "o1",             // Reasoning (original)
+    ],
     supportsVision: true,
   },
   {
     id: "google",
     name: "Google Gemini",
     baseURL: "https://generativelanguage.googleapis.com/v1beta/openai",
-    defaultModel: "gemini-2.5-flash",
-    models: ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash"],
+    defaultModel: "gemini-3.1-pro-preview",
+    models: [
+      "gemini-3.1-pro-preview",  // Latest flagship (Feb 2026)
+      "gemini-3.1-flash-lite",   // Ultra-fast, cheap
+      "gemini-2.5-pro",          // Previous flagship
+      "gemini-2.5-flash",        // Fast + balanced
+      "gemini-2.0-flash",        // Stable
+    ],
     supportsVision: true,
   },
   {
@@ -51,7 +75,7 @@ export const AI_PROVIDERS: AIProvider[] = [
     name: "OpenRouter",
     baseURL: "https://openrouter.ai/api/v1",
     defaultModel: "anthropic/claude-sonnet-4",
-    models: ["anthropic/claude-sonnet-4", "anthropic/claude-haiku-4", "openai/gpt-4o", "google/gemini-2.5-flash"],
+    models: ["anthropic/claude-sonnet-4", "anthropic/claude-haiku-4", "openai/gpt-5.4", "google/gemini-3.1-pro-preview"],
     supportsVision: true,
   },
   {

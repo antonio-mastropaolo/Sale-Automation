@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { parseAIJson } from "@/lib/ai-utils";
 import { getAIClient, getPromptText } from "@/lib/settings";
+import { tokenParams } from "@/lib/ai";
 import { interpolatePrompt } from "@/lib/prompts";
 
 interface TrendData {
@@ -72,7 +73,7 @@ export async function GET(_request: NextRequest) {
     const response = await client.chat.completions.create(
       {
         model,
-        max_tokens: 2048,
+        ...tokenParams(model, 2048),
         messages: [{ role: "user", content: prompt }],
       },
       { signal: controller.signal }
