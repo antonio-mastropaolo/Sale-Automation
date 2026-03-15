@@ -36,7 +36,8 @@ export async function POST(request: NextRequest) {
   ];
 
   for (const [key, value] of Object.entries(settings)) {
-    if (!allowedKeys.includes(key)) continue;
+    // Allow workflow_* keys dynamically
+    if (!allowedKeys.includes(key) && !key.startsWith("workflow_")) continue;
     if (typeof value !== "string") continue;
     await setSetting(key, value);
   }

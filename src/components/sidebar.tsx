@@ -38,6 +38,7 @@ const sections = [
     label: "Tools",
     items: [
       { href: "/shipping", label: "Shipping", icon: Truck },
+      { href: "/workflow", label: "AI Pipeline", icon: Zap },
       { href: "/tools", label: "Seller Tools", icon: HelpCircle },
       { href: "/diagnostics", label: "Diagnostics", icon: Stethoscope },
       { href: "/settings", label: "Settings", icon: Settings },
