@@ -39,9 +39,9 @@ export default function LoginPage() {
       toast.success(`Welcome back, ${data.user.username}!`);
 
       if (!data.user.onboarded) {
-        router.push("/onboard");
+        window.location.href = "/onboard";
       } else {
-        router.push("/");
+        window.location.href = "/";
       }
     } catch {
       setError("Something went wrong. Please try again.");
@@ -53,7 +53,7 @@ export default function LoginPage() {
   return (
     <div className="fixed inset-0 z-[100] flex min-h-screen">
       {/* Left branding panel */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[oklch(0.28_0.07_155)] to-[oklch(0.40_0.12_155)] items-center justify-center p-12">
+      <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-12" style={{ background: "linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 60%, #1a1a2e))" }}>
         <div className="max-w-md text-white space-y-8">
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 rounded-full bg-white/15 border-2 border-white/20 flex items-center justify-center">
