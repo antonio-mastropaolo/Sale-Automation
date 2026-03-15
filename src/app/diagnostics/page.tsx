@@ -95,7 +95,7 @@ function defineChecks(): DiagnosticCheck[] {
       const { res, duration } = await timedFetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: "admin@crosslist.io", password: "admin" }),
+        body: JSON.stringify({ email: "admin@listblitz.io", password: "admin" }),
       });
       const data = await res.json().catch(() => null);
       return {
@@ -630,7 +630,7 @@ function defineChecks(): DiagnosticCheck[] {
       const { res, duration } = await timedFetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: "admin@crosslist.io", password: "admin" }),
+        body: JSON.stringify({ email: "admin@listblitz.io", password: "admin" }),
       });
       return {
         status: duration < 300 ? "passed" : duration < 600 ? "warning" : "failed",

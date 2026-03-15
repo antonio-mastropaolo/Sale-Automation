@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate CrossList Codebase Overview PDF."""
+"""Generate ListBlitz Codebase Overview PDF."""
 
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -80,7 +80,7 @@ story = []
 
 # ── Title Page ──
 story.append(Spacer(1, 2 * inch))
-story.append(Paragraph("CrossList", styles["DocTitle"]))
+story.append(Paragraph("ListBlitz", styles["DocTitle"]))
 story.append(Paragraph("Codebase Overview &amp; Architecture Guide", styles["DocSubtitle"]))
 story.append(HRFlowable(width="100%", thickness=2, color=ACCENT, spaceAfter=12))
 story.append(Spacer(1, 0.3 * inch))
@@ -100,7 +100,7 @@ story.append(PageBreak())
 story.append(Paragraph("1. Project Summary", styles["SectionHead"]))
 story.append(HRFlowable(width="100%", thickness=1, color=ACCENT, spaceAfter=10))
 story.append(Paragraph(
-    "CrossList is an AI-powered cross-platform resale automation SaaS application. "
+    "ListBlitz is an AI-powered cross-platform resale automation SaaS application. "
     "Built with Next.js 16, React 19, Prisma ORM with SQLite, and OpenAI GPT-4o, "
     "it helps resellers list products across four major secondhand marketplaces "
     "(Depop, Grailed, Poshmark, Mercari) from a single interface.",

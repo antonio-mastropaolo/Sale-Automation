@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CrossList — AI-Powered Cross-Platform Listing Tool",
+  title: "ListBlitz — AI-Powered Cross-Platform Listing Tool",
   description:
     "List once, sell everywhere. AI-optimized listings for Depop, Grailed, Poshmark, Mercari, and eBay.",
 };

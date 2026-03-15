@@ -371,7 +371,7 @@ export default function ShowcasePage() {
 
           <FadeInUp delay={0.05}>
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-[1.08]">
-              CrossList
+              ListBlitz
               <span className="block mt-1 sm:mt-2 bg-gradient-to-r from-emerald-300 to-green-200 bg-clip-text text-transparent">
                 The AI-Powered Sales
               </span>
@@ -581,7 +581,7 @@ export default function ShowcasePage() {
           <SectionTitle
             eyebrow="Revenue Impact"
             title="Results That Speak for Themselves"
-            subtitle="Resellers using CrossList report transformative improvements across their business."
+            subtitle="Resellers using ListBlitz report transformative improvements across their business."
             light
           />
 
@@ -791,7 +791,7 @@ export default function ShowcasePage() {
           </h2>
           <p className="mt-5 text-base sm:text-lg text-emerald-100/70 max-w-xl mx-auto leading-relaxed">
             Join thousands of resellers who are listing faster, pricing
-            smarter, and selling more with CrossList.
+            smarter, and selling more with ListBlitz.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
@@ -814,7 +814,7 @@ export default function ShowcasePage() {
       {/* ───────── FOOTER ───────── */}
       <footer className="bg-[oklch(0.16_0.03_155)] py-10 px-4 sm:px-8">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-emerald-200/40">
-          <span>&copy; {new Date().getFullYear()} CrossList. All rights reserved.</span>
+          <span>&copy; {new Date().getFullYear()} ListBlitz. All rights reserved.</span>
           <span>
             Built with Next.js, React, and a lot of{" "}
             <span className="text-emerald-400/60">&#x2665;</span>

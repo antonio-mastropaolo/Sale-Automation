@@ -59,7 +59,7 @@ export default function LoginPage() {
             <div className="h-12 w-12 rounded-full bg-white/15 border-2 border-white/20 flex items-center justify-center">
               <Zap className="h-6 w-6 text-white" />
             </div>
-            <span className="font-bold text-3xl tracking-tight">CrossList</span>
+            <span className="font-bold text-3xl tracking-tight">ListBlitz</span>
           </div>
           <h1 className="text-4xl font-bold leading-tight">
             List once,<br />sell everywhere.
@@ -88,13 +88,13 @@ export default function LoginPage() {
             <div className="h-10 w-10 rounded-full bg-primary/10 border-2 border-primary/20 flex items-center justify-center">
               <Zap className="h-5 w-5 text-primary" />
             </div>
-            <span className="font-bold text-2xl tracking-tight text-foreground">CrossList</span>
+            <span className="font-bold text-2xl tracking-tight text-foreground">ListBlitz</span>
           </div>
 
           <Card className="rounded-2xl">
             <CardHeader className="text-center pb-2">
               <CardTitle className="text-xl font-bold">Welcome back</CardTitle>
-              <CardDescription>Sign in to your CrossList account</CardDescription>
+              <CardDescription>Sign in to your ListBlitz account</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">

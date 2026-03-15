@@ -48,7 +48,7 @@ export default function ForgotPasswordPage() {
           <div className="h-10 w-10 rounded-full bg-white/15 border-2 border-white/20 flex items-center justify-center">
             <Zap className="h-5 w-5 text-white" />
           </div>
-          <span className="font-bold text-2xl tracking-tight text-white">CrossList</span>
+          <span className="font-bold text-2xl tracking-tight text-white">ListBlitz</span>
         </div>
 
         <Card className="rounded-2xl">

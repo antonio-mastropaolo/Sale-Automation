@@ -139,7 +139,7 @@ class JSONReporter implements Reporter {
       meta: {
         timestamp: new Date().toISOString(),
         duration,
-        project: "CrossList — Sales Automation Hub",
+        project: "ListBlitz — Sales Automation Hub",
         playwright: "1.58.2",
         nodeVersion: process.version,
         os: `${process.platform} ${process.arch}`,

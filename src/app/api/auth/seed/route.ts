@@ -5,7 +5,7 @@ import { hashPassword } from "@/lib/auth";
 export async function GET() {
   try {
     const existing = await prisma.user.findUnique({
-      where: { email: "admin@crosslist.io" },
+      where: { email: "admin@listblitz.io" },
     });
 
     if (existing) {
@@ -16,7 +16,7 @@ export async function GET() {
 
     await prisma.user.create({
       data: {
-        email: "admin@crosslist.io",
+        email: "admin@listblitz.io",
         username: "admin",
         passwordHash,
         role: "admin",

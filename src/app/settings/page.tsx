@@ -1154,12 +1154,12 @@ function GeneralTab() {
       {/* About */}
       <Card className="border-0 shadow-sm">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">About CrossList</CardTitle>
+          <CardTitle className="text-base">About ListBlitz</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-2 text-sm text-muted-foreground">
             <p>
-              <span className="font-medium text-foreground">CrossList</span> — AI-Powered Cross-Platform Listing Tool
+              <span className="font-medium text-foreground">ListBlitz</span> — AI-Powered Cross-Platform Listing Tool
             </p>
             <p>List once, sell everywhere. Optimized for Depop, Grailed, Poshmark, Mercari, and eBay.</p>
             <p className="text-xs">Version 0.1.0</p>

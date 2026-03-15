@@ -222,7 +222,7 @@ export default function BulkImportPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "crosslist-import-template.csv";
+    a.download = "listblitz-import-template.csv";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

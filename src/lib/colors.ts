@@ -1,5 +1,5 @@
 /**
- * CrossList — Centralized color tokens
+ * ListBlitz — Centralized color tokens
  *
  * All palette-derived Tailwind class strings live here so that every
  * component pulls from one source of truth.

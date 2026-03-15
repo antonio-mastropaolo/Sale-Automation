@@ -40,7 +40,7 @@ export function TopHeader() {
           <div className="h-7 w-7 rounded-lg flex items-center justify-center" style={{ background: "var(--primary)" }}>
             <Zap className="h-3.5 w-3.5" style={{ color: "var(--primary-foreground)" }} />
           </div>
-          <span className="font-bold text-sm tracking-tight">CrossList</span>
+          <span className="font-bold text-sm tracking-tight">ListBlitz</span>
         </div>
       </header>
     </div>

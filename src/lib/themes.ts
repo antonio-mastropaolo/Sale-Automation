@@ -1,5 +1,5 @@
 /**
- * CrossList Theme System
+ * ListBlitz Theme System
  *
  * Each theme defines a primary color for light and dark mode,
  * plus accent background/foreground that complement the primary.
@@ -130,9 +130,9 @@ export function applyTheme(themeId: string, isDark: boolean) {
 
 export function getSavedTheme(): string {
   if (typeof window === "undefined") return DEFAULT_THEME;
-  return localStorage.getItem("crosslist-theme") || DEFAULT_THEME;
+  return localStorage.getItem("listblitz-theme") || DEFAULT_THEME;
 }
 
 export function saveTheme(themeId: string) {
-  localStorage.setItem("crosslist-theme", themeId);
+  localStorage.setItem("listblitz-theme", themeId);
 }

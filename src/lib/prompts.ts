@@ -1,7 +1,7 @@
 /**
  * Default prompts registry.
  *
- * Every AI feature in CrossList has a prompt defined here.
+ * Every AI feature in ListBlitz has a prompt defined here.
  * Users can override any of these via the Prompt Studio in Settings.
  * The featureKey is the unique identifier stored in the CustomPrompt table.
  *

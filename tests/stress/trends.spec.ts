@@ -4,7 +4,7 @@ import { test, expect, type APIRequestContext } from "@playwright/test";
 /*  Shared auth state — seed admin, login, capture session cookie      */
 /* ------------------------------------------------------------------ */
 
-const ADMIN_EMAIL = "admin@crosslist.io";
+const ADMIN_EMAIL = "admin@listblitz.io";
 const ADMIN_PASS = "admin";
 
 let SESSION_COOKIE = "";
@@ -924,7 +924,7 @@ test.describe("T5 Page UI Tests", () => {
     expect(consoleErrors).toEqual([]);
   });
 
-  test("T5-11 page title contains CrossList", async ({ page, context }) => {
+  test("T5-11 page title contains ListBlitz", async ({ page, context }) => {
     await context.addCookies([
       {
         name: "session_token",
@@ -936,7 +936,7 @@ test.describe("T5 Page UI Tests", () => {
     await page.goto("/trends");
     await page.waitForLoadState("networkidle");
     const title = await page.title();
-    expect(title.toLowerCase()).toContain("crosslist");
+    expect(title.toLowerCase()).toContain("listblitz");
   });
 
   test("T5-12 all sections are visible after load", async ({

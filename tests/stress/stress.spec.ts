@@ -5,7 +5,7 @@ import { test, expect, type APIRequestContext } from "@playwright/test";
 /* ------------------------------------------------------------------ */
 
 const BASE = "http://localhost:3000";
-const ADMIN_EMAIL = "admin@crosslist.io";
+const ADMIN_EMAIL = "admin@listblitz.io";
 const ADMIN_PASS = "admin";
 
 let SESSION_COOKIE = "";
