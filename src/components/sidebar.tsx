@@ -89,7 +89,7 @@ export function Sidebar({ className }: { className?: string }) {
       className,
     )}>
       {/* Header */}
-      <div className={cn("flex items-center justify-center shrink-0 border-b border-[var(--sidebar-border)] overflow-hidden", collapsed ? "h-[56px] p-1" : "h-[90px] p-0")}>
+      <div className={cn("flex items-center justify-center shrink-0 border-b border-[var(--sidebar-border)] overflow-hidden", collapsed ? "h-[56px] p-1" : "h-[90px] p-0 bg-[#0a0a0a] rounded-b-xl")}>
         <img
           src={collapsed ? "/logo.png" : "/logo-full.png"}
           alt="ListBlitz"
