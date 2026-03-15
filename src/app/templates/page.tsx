@@ -134,11 +134,11 @@ export default function TemplatesPage() {
     <div className="space-y-6">
       {/* Header */}
       <FadeInUp>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold">Templates</h1>
-            <p className="text-muted-foreground text-sm">
-              Save reusable templates to speed up listing creation
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">Templates</h1>
+            <p className="text-muted-foreground text-xs sm:text-sm mt-0.5">
+              Pre-filled listing blueprints — fill in the [BRACKETS] and publish in seconds
             </p>
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -163,6 +163,22 @@ export default function TemplatesPage() {
           </Dialog>
         </div>
       </FadeInUp>
+
+      {/* How templates work */}
+      <div className="rounded-xl bg-card p-4 sm:p-5">
+        <h3 className="text-sm font-semibold mb-2">How templates work</h3>
+        <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+          Templates are pre-written listing descriptions with placeholder fields in <code className="bg-muted px-1.5 py-0.5 rounded text-[11px]">[BRACKETS]</code>.
+          Click &quot;Use Template&quot; to start a new listing with the template pre-filled — just replace the brackets with your item&apos;s details and you&apos;re ready to publish across all 8 platforms.
+        </p>
+        <div className="flex flex-wrap gap-2 text-[11px]">
+          <span className="bg-muted px-2 py-1 rounded-md">[BRAND] = item brand</span>
+          <span className="bg-muted px-2 py-1 rounded-md">[SIZE] = size info</span>
+          <span className="bg-muted px-2 py-1 rounded-md">[COLOR] = colorway</span>
+          <span className="bg-muted px-2 py-1 rounded-md">[MODEL] = model name</span>
+          <span className="bg-muted px-2 py-1 rounded-md">___&quot; = measurements</span>
+        </div>
+      </div>
 
       {/* Empty State */}
       {templates.length === 0 ? (
