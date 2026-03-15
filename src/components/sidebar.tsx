@@ -89,8 +89,12 @@ export function Sidebar({ className }: { className?: string }) {
       className,
     )}>
       {/* Header */}
-      <div className={cn("flex items-center justify-center shrink-0 border-b border-[var(--sidebar-border)] overflow-hidden", collapsed ? "h-[56px] p-1" : "h-[70px] p-0")}>
-        <img src="/logo.png" alt="ListBlitz" className={cn("object-contain", collapsed ? "h-10" : "w-full h-full p-2")} />
+      <div className={cn("flex items-center justify-center shrink-0 border-b border-[var(--sidebar-border)] overflow-hidden", collapsed ? "h-[56px] p-1" : "h-[90px] p-0")}>
+        <img
+          src={collapsed ? "/logo.png" : "/logo-full.png"}
+          alt="ListBlitz"
+          className={cn("object-contain", collapsed ? "h-10" : "w-full h-full px-3 py-2")}
+        />
       </div>
 
       {/* Collapse toggle */}

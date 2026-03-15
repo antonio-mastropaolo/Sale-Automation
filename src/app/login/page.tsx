@@ -66,7 +66,7 @@ export default function LoginPage() {
         <div className="w-full max-w-sm">
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center justify-center mb-8">
-            <img src="/logo.png" alt="ListBlitz" className="h-14 object-contain" />
+            <img src="/logo-full.png" alt="ListBlitz" className="h-16 object-contain" />
           </div>
 
           <Card className="rounded-2xl border-white/10 bg-[#161b22] text-white shadow-2xl">
