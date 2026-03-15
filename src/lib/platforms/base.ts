@@ -32,7 +32,12 @@ export abstract class PlatformAutomation {
     try {
       return JSON.parse(decrypt(cred.encryptedData));
     } catch {
-      return null;
+      // Fallback: try base64 decoding (used when crypto was unavailable during save)
+      try {
+        return JSON.parse(Buffer.from(cred.encryptedData, "base64").toString("utf8"));
+      } catch {
+        return null;
+      }
     }
   }
 

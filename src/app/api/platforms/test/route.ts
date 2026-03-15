@@ -46,8 +46,14 @@ export async function POST(request: NextRequest) {
 
   // For platforms without automation classes: decrypt + reachability check
   try {
-    const { decrypt } = await import("@/lib/crypto");
-    const data = JSON.parse(decrypt(cred.encryptedData));
+    let data: Record<string, string>;
+    try {
+      const { decrypt } = await import("@/lib/crypto");
+      data = JSON.parse(decrypt(cred.encryptedData));
+    } catch {
+      // Fallback: base64 decoding
+      data = JSON.parse(Buffer.from(cred.encryptedData, "base64").toString("utf8"));
+    }
     if (!data.username || !data.password) {
       return NextResponse.json({
         success: false,
