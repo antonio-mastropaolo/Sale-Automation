@@ -107,9 +107,9 @@ const CATEGORY_ORDER = ["listing", "pricing", "analytics", "trends", "negotiatio
 const platformInfo = Object.fromEntries(
   Object.entries(platformBranding).map(([k, v]) => [
     k,
-    { name: v.label, color: v.color, bg: v.bg, icon: v.icon },
+    { name: v.label, color: v.color, bg: v.bg, icon: v.icon, logo: v.logo },
   ])
-) as Record<string, { name: string; color: string; bg: string; icon: string }>;
+) as Record<string, { name: string; color: string; bg: string; icon: string; logo: string }>;
 
 // ═══════════════════════════════════════════════════════════════════
 // MAIN PAGE
@@ -227,8 +227,15 @@ function AIProviderTab() {
   const selectedProviderObj = AI_PROVIDERS.find((p) => p.id === defaultProvider) || AI_PROVIDERS[0];
   // Which router (if any) has a key set
   const activeRouter = AI_ROUTERS.find((r) => !!keys[r.id]);
-  // Models available for routing (from the active router)
-  const routerModels = activeRouter?.models || [];
+  // All configured providers (with keys)
+  const configuredProviders = AI_PROVIDERS.filter((p) => !!keys[p.id]);
+  // Routing is available when: a router is configured OR 2+ direct provider keys are set
+  const canRoute = !!activeRouter || configuredProviders.length >= 2;
+  // All models available for routing — from router if available, else from all configured providers
+  const routableModels = activeRouter
+    ? activeRouter.models
+    : configuredProviders.flatMap((p) => p.models);
+  const routingSource = activeRouter ? activeRouter.name : `${configuredProviders.length} providers`;
 
   const updateKey = (pid: string, value: string) => {
     setKeys((prev) => ({ ...prev, [pid]: value }));
@@ -438,26 +445,26 @@ function AIProviderTab() {
             {/* ─── RIGHT: Routing Panel (fixed height) ─── */}
             <div className="w-[340px] shrink-0 hidden lg:block h-[540px]">
               <div className={`rounded-xl border-2 h-full flex flex-col transition-all ${
-                activeRouter ? "border-primary/30 bg-gradient-to-b from-primary/5 to-transparent" : "border-dashed border-border bg-muted/20"
+                canRoute ? "border-primary/30 bg-gradient-to-b from-primary/5 to-transparent" : "border-dashed border-border bg-muted/20"
               }`}>
                 {/* Header */}
                 <div className="p-4 border-b border-border/50 shrink-0">
                   <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-lg ${activeRouter ? "bg-primary/10" : "bg-muted/50"}`}>
-                      <Lightbulb className={`h-4 w-4 ${activeRouter ? "text-primary" : "text-muted-foreground"}`} />
+                    <div className={`p-2 rounded-lg ${canRoute ? "bg-primary/10" : "bg-muted/50"}`}>
+                      <Lightbulb className={`h-4 w-4 ${canRoute ? "text-primary" : "text-muted-foreground"}`} />
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-semibold">Model Routing</p>
                       <p className="text-[11px] text-muted-foreground">
-                        {activeRouter ? `Via ${activeRouter.name}` : "Requires an AI Router"}
+                        {canRoute ? `Via ${routingSource}` : "Set 2+ provider keys or add a router"}
                       </p>
                     </div>
                   </div>
                 </div>
 
                 <div className="p-4 flex-1 overflow-y-auto">
-                  {!activeRouter ? (
-                    /* ── No router configured ── */
+                  {!canRoute ? (
+                    /* ── Not enough providers ── */
                     <div className="text-center py-8 space-y-3">
                       <div className="h-12 w-12 rounded-xl bg-muted/50 flex items-center justify-center mx-auto">
                         <Brain className="h-6 w-6 text-muted-foreground/40" />
@@ -468,12 +475,12 @@ function AIProviderTab() {
                           All stages use your default provider (<span className="font-medium text-foreground/60">{selectedProviderObj.name}</span>).
                         </p>
                         <p className="text-xs text-muted-foreground/70 mt-3 max-w-[240px] mx-auto leading-relaxed">
-                          Add an <span className="font-medium text-foreground/60">OpenRouter</span> or <span className="font-medium text-foreground/60">LiteLLM</span> key to unlock per-stage routing — one key, many models.
+                          Add a second provider key or an <span className="font-medium text-foreground/60">AI Router</span> to unlock per-stage model routing.
                         </p>
                       </div>
                     </div>
                   ) : (
-                    /* ── Router configured — show routing options ── */
+                    /* ── Routing available ── */
                     <div className="space-y-4">
                       {/* Mode toggle */}
                       <div className="grid grid-cols-2 gap-2">
@@ -503,26 +510,40 @@ function AIProviderTab() {
                         /* ── Fixed: pick one model ── */
                         <div className="space-y-3">
                           <div>
-                            <p className="text-xs font-semibold">Router Model</p>
+                            <p className="text-xs font-semibold">Global Model</p>
                             <p className="text-[10px] text-muted-foreground mt-0.5">
-                              All pipeline stages will use this model via {activeRouter.name}.
+                              All pipeline stages will use this model.
                             </p>
                           </div>
-                          <div className="space-y-1">
-                            {routerModels.map((m) => (
+                          <div className="space-y-1 max-h-[280px] overflow-y-auto pr-1">
+                            {!activeRouter && configuredProviders.map((p) => (
+                              <p key={p.id} className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mt-2 first:mt-0 mb-1">{p.name}</p>
+                            ))}
+                            {activeRouter ? routableModels.map((m) => (
                               <button
                                 key={m}
                                 onClick={() => setModel(m)}
                                 className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left transition-all text-xs ${
-                                  model === m
-                                    ? "bg-primary/10 border border-primary/30 font-medium"
-                                    : "bg-muted/30 hover:bg-muted/50"
+                                  model === m ? "bg-primary/10 border border-primary/30 font-medium" : "bg-muted/30 hover:bg-muted/50"
                                 }`}
                               >
                                 {model === m && <Check className="h-3 w-3 text-primary shrink-0" />}
                                 <span className="font-mono truncate">{m}</span>
                               </button>
-                            ))}
+                            )) : configuredProviders.flatMap((p) =>
+                              p.models.map((m) => (
+                                <button
+                                  key={`${p.id}-${m}`}
+                                  onClick={() => { setModel(m); setAsDefault(p.id); }}
+                                  className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left transition-all text-xs ${
+                                    model === m ? "bg-primary/10 border border-primary/30 font-medium" : "bg-muted/30 hover:bg-muted/50"
+                                  }`}
+                                >
+                                  {model === m && <Check className="h-3 w-3 text-primary shrink-0" />}
+                                  <span className="font-mono truncate">{m}</span>
+                                </button>
+                              ))
+                            )}
                           </div>
                         </div>
                       ) : (
@@ -531,7 +552,7 @@ function AIProviderTab() {
                           <div>
                             <p className="text-xs font-semibold">Per-Stage Assignment</p>
                             <p className="text-[10px] text-muted-foreground mt-0.5">
-                              Pick the best model for each pipeline stage via {activeRouter.name}.
+                              Pick the best model for each pipeline stage.
                             </p>
                           </div>
                           <div className="space-y-2">
@@ -547,7 +568,7 @@ function AIProviderTab() {
                                   className="w-full h-7 rounded-md border border-border bg-background px-2 text-[11px] font-mono"
                                 >
                                   <option value="">Use default ({model || selectedProviderObj.defaultModel})</option>
-                                  {routerModels.map((m) => (
+                                  {routableModels.map((m) => (
                                     <option key={m} value={m}>{m}</option>
                                   ))}
                                 </select>
@@ -1027,9 +1048,7 @@ function PlatformsTab() {
               <CardContent className="py-4 space-y-3">
                 {/* Platform header row */}
                 <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl ${info.bg} ${info.color} flex items-center justify-center font-bold text-sm shrink-0`}>
-                    {info.icon}
-                  </div>
+                  <img src={info.logo} alt={info.name} className="w-10 h-10 rounded-xl shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold">{info.name}</p>
                     {p.connected ? (

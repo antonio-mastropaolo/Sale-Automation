@@ -47,6 +47,7 @@ export const platformBranding: Record<
     border: string;
     accent: string;
     icon: string;
+    logo: string;
   }
 > = {
   depop: {
@@ -56,6 +57,7 @@ export const platformBranding: Record<
     border: "border-orange-200 dark:border-orange-800",
     accent: "bg-orange-500",
     icon: "D",
+    logo: "/platforms/depop.svg",
   },
   grailed: {
     label: "Grailed",
@@ -64,6 +66,7 @@ export const platformBranding: Record<
     border: "border-slate-200 dark:border-slate-700",
     accent: "bg-slate-600",
     icon: "G",
+    logo: "/platforms/grailed.svg",
   },
   poshmark: {
     label: "Poshmark",
@@ -72,6 +75,7 @@ export const platformBranding: Record<
     border: "border-pink-200 dark:border-pink-800",
     accent: "bg-pink-500",
     icon: "P",
+    logo: "/platforms/poshmark.svg",
   },
   mercari: {
     label: "Mercari",
@@ -80,6 +84,7 @@ export const platformBranding: Record<
     border: "border-blue-200 dark:border-blue-800",
     accent: "bg-blue-500",
     icon: "M",
+    logo: "/platforms/mercari.svg",
   },
   ebay: {
     label: "eBay",
@@ -88,6 +93,7 @@ export const platformBranding: Record<
     border: "border-yellow-200 dark:border-yellow-800",
     accent: "bg-yellow-500",
     icon: "e",
+    logo: "/platforms/ebay.svg",
   },
   vinted: {
     label: "Vinted",
@@ -96,6 +102,7 @@ export const platformBranding: Record<
     border: "border-teal-200 dark:border-teal-800",
     accent: "bg-teal-500",
     icon: "V",
+    logo: "/platforms/vinted.svg",
   },
   facebook: {
     label: "Facebook Marketplace",
@@ -104,6 +111,7 @@ export const platformBranding: Record<
     border: "border-blue-200 dark:border-blue-800",
     accent: "bg-blue-500",
     icon: "F",
+    logo: "/platforms/facebook.svg",
   },
   vestiaire: {
     label: "Vestiaire Collective",
@@ -112,6 +120,7 @@ export const platformBranding: Record<
     border: "border-amber-200 dark:border-amber-800",
     accent: "bg-amber-500",
     icon: "VC",
+    logo: "/platforms/vestiaire.svg",
   },
 };
 
