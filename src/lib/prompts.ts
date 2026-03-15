@@ -482,25 +482,65 @@ Return only valid JSON, no markdown.`,
     category: "trends",
     prompt: `You are an expert reselling market analyst specializing in secondhand fashion and goods across Depop, Grailed, Poshmark, Mercari, eBay, Vinted, Facebook Marketplace, and Vestiaire Collective. Today is {{today}}.
 
-Based on your knowledge of current resale market trends, provide a comprehensive trend report. Consider recent fashion weeks, social media trends, seasonal shifts, and platform-specific dynamics.
+Based on your knowledge of current resale market trends, provide a rich, actionable trend report. Consider recent fashion weeks, social media trends, seasonal shifts, and platform-specific dynamics.
 
-Provide the following:
+For EACH item in every section, provide deep detail — a reseller should be able to act on this without further research.
 
-1. **Top 10-20 Trending Categories** — what types of items are hottest right now. Include a heat score (1-100) and a short description. Provide at least 10, up to 20.
-2. **Top 10-20 Trending Brands** — which brands are commanding the most demand and premium prices. Include a heat score (1-100) and a short description. Provide at least 10, up to 20.
-3. **Top 10-20 Hot Items/Styles** — specific items or styles that are selling fast right now. Include an estimated resale price range and description. Provide at least 10, up to 20.
-4. **5-10 Sleeper Picks** — undervalued items that are about to trend. Include your reasoning and estimated ROI percentage.
-5. **Seasonal Advice** — what's about to be in demand in the next 2-4 weeks based on seasonal shifts.
-6. **Platform-Specific Tips** — what's performing best on each platform (Depop, Grailed, Poshmark, Mercari, eBay, Vinted, Facebook Marketplace, Vestiaire Collective) and how to optimize for each.
-
-Respond in JSON format only (no markdown, no code fences):
+Provide 8 items per section. Respond in JSON format only (no markdown, no code fences):
 {
-  "trendingCategories": [{"name": "...", "heat": 80, "description": "..."}],
-  "trendingBrands": [{"name": "...", "heat": 90, "description": "..."}],
-  "hotItems": [{"name": "...", "priceRange": "$X-$Y", "description": "..."}],
-  "sleeperPicks": [{"name": "...", "reasoning": "...", "estimatedROI": "X%"}],
-  "seasonalAdvice": "...",
-  "platformTips": {"depop": "...", "grailed": "...", "poshmark": "...", "mercari": "...", "ebay": "...", "vinted": "...", "facebook": "...", "vestiaire": "..."}
+  "marketSummary": "2-3 sentence overview of the current resale market state",
+  "trendingCategories": [{
+    "name": "...", "heat": 80, "description": "One-line summary",
+    "whyTrending": "2-3 sentence explanation of trend drivers",
+    "priceRange": {"low": 30, "high": 120},
+    "competitionLevel": "low|medium|high",
+    "sellThroughRate": "X% within Y days",
+    "bestPlatforms": ["platform1", "platform2"],
+    "peakTiming": "When this category sells best",
+    "sourcingTips": ["tip1", "tip2"],
+    "targetBuyer": "Who buys this",
+    "relatedKeywords": ["keyword1", "keyword2"],
+    "riskLevel": "low|medium|high",
+    "trendDirection": "rising|peaking|stable|declining"
+  }],
+  "trendingBrands": [{
+    "name": "...", "heat": 90, "description": "One-line summary",
+    "topSellingItems": ["item1", "item2", "item3"],
+    "avgResalePrice": "$X",
+    "priceAppreciation": "+X% over last 3 months",
+    "bestPlatforms": ["platform1", "platform2"],
+    "competitionLevel": "low|medium|high",
+    "sellThroughRate": "X% within Y days",
+    "sourcingTips": ["tip1", "tip2"],
+    "targetBuyer": "Who buys this brand",
+    "authenticityNotes": "Tips on spotting fakes",
+    "relatedBrands": ["brand1", "brand2"]
+  }],
+  "hotItems": [{
+    "name": "...", "priceRange": "$X-$Y", "description": "One-line summary",
+    "bestPlatforms": [{"platform": "...", "avgPrice": "$X", "sellSpeed": "Y days"}],
+    "competitionLevel": "low|medium|high",
+    "sellThroughRate": "X% within Y days",
+    "sourcingTips": ["tip1", "tip2"],
+    "listingTips": "How to photograph and describe for max conversion",
+    "pricingStrategy": "Price high and drop, or competitive from day 1",
+    "targetBuyer": "Who buys this",
+    "seasonality": "When it sells best",
+    "relatedItems": ["item1", "item2"],
+    "trendDirection": "rising|peaking|stable|declining"
+  }],
+  "sleeperPicks": [{
+    "name": "...", "reasoning": "Why this is undervalued",
+    "estimatedROI": "X%",
+    "currentAvgPrice": "$X",
+    "projectedPrice": "$Y",
+    "timeframe": "2-4 weeks",
+    "bestPlatforms": ["platform1", "platform2"],
+    "sourcingTips": ["tip1", "tip2"],
+    "riskLevel": "low|medium|high",
+    "catalysts": ["What will drive the price up"]
+  }],
+  "seasonalAdvice": "..."
 }`,
     variables: ["today"],
     sampleVars: { today: new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) },

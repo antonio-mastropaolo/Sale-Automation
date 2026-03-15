@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect, useState, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   TrendingUp,
@@ -15,75 +13,135 @@ import {
   RefreshCw,
   Loader2,
   Target,
-  Lightbulb,
   ChevronDown,
   ChevronUp,
+  ArrowUpRight,
+  ArrowDownRight,
+  ArrowRight,
+  Minus,
+  ShieldCheck,
+  DollarSign,
+  Users,
+  Search,
+  ShoppingBag,
+  Clock,
+  AlertTriangle,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
-import {
-  platformBranding,
-  heatColor as getHeatColorFn,
-  brandGradient,
-} from "@/lib/colors";
+import { heatColor as getHeatColorFn, brandGradient } from "@/lib/colors";
+
+// ── Types ──
 
 interface TrendCategory {
-  name: string;
-  heat: number;
-  description: string;
+  name: string; heat: number; description: string;
+  whyTrending?: string; priceRange?: { low: number; high: number };
+  competitionLevel?: string; sellThroughRate?: string;
+  bestPlatforms?: string[]; peakTiming?: string;
+  sourcingTips?: string[]; targetBuyer?: string;
+  relatedKeywords?: string[]; riskLevel?: string;
+  trendDirection?: string;
 }
 
 interface TrendBrand {
-  name: string;
-  heat: number;
-  description: string;
+  name: string; heat: number; description: string;
+  topSellingItems?: string[]; avgResalePrice?: string;
+  priceAppreciation?: string; bestPlatforms?: string[];
+  competitionLevel?: string; sellThroughRate?: string;
+  sourcingTips?: string[]; targetBuyer?: string;
+  authenticityNotes?: string; relatedBrands?: string[];
 }
 
 interface HotItem {
-  name: string;
-  priceRange: string;
-  description: string;
+  name: string; priceRange: string; description: string;
+  bestPlatforms?: { platform: string; avgPrice: string; sellSpeed: string }[];
+  competitionLevel?: string; sellThroughRate?: string;
+  sourcingTips?: string[]; listingTips?: string;
+  pricingStrategy?: string; targetBuyer?: string;
+  seasonality?: string; relatedItems?: string[];
+  trendDirection?: string;
 }
 
 interface SleeperPick {
-  name: string;
-  reasoning: string;
-  estimatedROI: string;
-}
-
-interface PlatformTips {
-  depop: string;
-  grailed: string;
-  poshmark: string;
-  mercari: string;
-  ebay: string;
-  vinted: string;
-  facebook: string;
-  vestiaire: string;
+  name: string; reasoning: string; estimatedROI: string;
+  currentAvgPrice?: string; projectedPrice?: string;
+  timeframe?: string; bestPlatforms?: string[];
+  sourcingTips?: string[]; riskLevel?: string;
+  catalysts?: string[];
 }
 
 interface TrendData {
+  marketSummary: string;
   trendingCategories: TrendCategory[];
   trendingBrands: TrendBrand[];
   hotItems: HotItem[];
   sleeperPicks: SleeperPick[];
   seasonalAdvice: string;
-  platformTips: PlatformTips;
 }
 
-const platformConfig = platformBranding;
+// ── Helpers ──
 
-function getHeatColor(heat: number) {
-  return getHeatColorFn(heat);
+function getHeatColor(heat: number) { return getHeatColorFn(heat); }
+function getBrandColor(index: number) { return brandGradient(index); }
+
+const DIRECTION_ICONS: Record<string, { icon: typeof ArrowUpRight; color: string; label: string }> = {
+  rising: { icon: ArrowUpRight, color: "text-emerald-500", label: "Rising" },
+  peaking: { icon: Flame, color: "text-orange-500", label: "Peaking" },
+  stable: { icon: Minus, color: "text-blue-500", label: "Stable" },
+  declining: { icon: ArrowDownRight, color: "text-red-500", label: "Declining" },
+};
+
+const COMPETITION_COLORS: Record<string, string> = {
+  low: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+  medium: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+  high: "bg-red-500/10 text-red-600 dark:text-red-400",
+};
+
+const RISK_COLORS = COMPETITION_COLORS;
+
+function DirectionBadge({ direction }: { direction?: string }) {
+  const d = DIRECTION_ICONS[direction || "stable"] || DIRECTION_ICONS.stable;
+  const Icon = d.icon;
+  return (
+    <span className={`inline-flex items-center gap-0.5 text-[10px] font-medium ${d.color}`}>
+      <Icon className="h-3 w-3" /> {d.label}
+    </span>
+  );
 }
 
-function getBrandColor(index: number) {
-  return brandGradient(index);
+function CompetitionBadge({ level }: { level?: string }) {
+  const cls = COMPETITION_COLORS[level || "medium"] || COMPETITION_COLORS.medium;
+  return <Badge variant="outline" className={`text-[9px] px-1.5 py-0 ${cls}`}>{level || "medium"}</Badge>;
 }
+
+function PlatformPills({ platforms }: { platforms?: string[] }) {
+  if (!platforms?.length) return null;
+  return (
+    <div className="flex gap-1 flex-wrap">
+      {platforms.slice(0, 4).map((p) => (
+        <span key={p} className="text-[9px] bg-muted px-1.5 py-0.5 rounded font-medium capitalize">{p}</span>
+      ))}
+    </div>
+  );
+}
+
+function DetailRow({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+        {icon}
+        {label}
+      </div>
+      <div className="text-xs leading-relaxed">{children}</div>
+    </div>
+  );
+}
+
+// ── Loading ──
 
 function LoadingSkeleton() {
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Loading header with progress info */}
       <div className="flex flex-col items-center justify-center py-16 text-center">
         <div className="relative mb-6">
           <div className="h-14 w-14 rounded-2xl flex items-center justify-center" style={{ background: "var(--accent)" }}>
@@ -92,60 +150,35 @@ function LoadingSkeleton() {
         </div>
         <h2 className="text-lg font-semibold mb-1">Analyzing Market Trends</h2>
         <p className="text-sm text-muted-foreground mb-6 max-w-md">
-          AI is scanning resale markets across Depop, Grailed, Poshmark, Mercari, eBay, Vinted, Facebook Marketplace, and Vestiaire Collective for the latest insights...
+          AI is scanning resale markets for the latest insights...
         </p>
-        {/* Animated progress bar */}
         <div className="w-64 h-1.5 bg-muted rounded-full overflow-hidden">
-          <div
-            className="h-full rounded-full"
-            style={{
-              background: "var(--primary)",
-              animation: "loading-bar-progress 2.5s ease-in-out infinite",
-            }}
-          />
+          <div className="h-full rounded-full" style={{ background: "var(--primary)", animation: "loading-bar-progress 2.5s ease-in-out infinite" }} />
         </div>
-        <p className="text-xs text-muted-foreground mt-3">This may take 10-20 seconds</p>
+        <p className="text-xs text-muted-foreground mt-3">This may take 15-30 seconds</p>
       </div>
-
-      {/* Subtle skeleton placeholders below */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 opacity-30">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Skeleton key={i} className="h-28 rounded-xl" />
-        ))}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 opacity-30">
+        {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-xl" />)}
       </div>
-
-      <style>{`
-        @keyframes loading-bar-progress {
-          0% { width: 5%; margin-left: 0%; }
-          30% { width: 45%; margin-left: 5%; }
-          60% { width: 30%; margin-left: 50%; }
-          80% { width: 20%; margin-left: 70%; }
-          100% { width: 5%; margin-left: 95%; }
-        }
-      `}</style>
+      <style>{`@keyframes loading-bar-progress { 0% { width: 5%; margin-left: 0%; } 30% { width: 45%; margin-left: 5%; } 60% { width: 30%; margin-left: 50%; } 80% { width: 20%; margin-left: 70%; } 100% { width: 5%; margin-left: 95%; } }`}</style>
     </div>
   );
 }
 
-// ── Reusable section: shows 5 in a grid, expandable to all (up to 20) ──
+// ── Generic expandable section ──
 
 function TrendSection<T>({
-  title,
-  subtitle,
-  icon,
-  items,
-  renderItem,
-  defaultCount = 5,
+  title, subtitle, icon, items, renderCard, renderDetail, defaultCount = 8,
 }: {
-  title: string;
-  subtitle?: string;
-  icon: React.ReactNode;
+  title: string; subtitle?: string; icon: React.ReactNode;
   items: T[];
-  renderItem: (item: T, index: number) => React.ReactNode;
+  renderCard: (item: T, index: number, isExpanded: boolean) => React.ReactNode;
+  renderDetail: (item: T, index: number) => React.ReactNode;
   defaultCount?: number;
 }) {
-  const [expanded, setExpanded] = useState(false);
-  const visible = expanded ? items : items.slice(0, defaultCount);
+  const [showAll, setShowAll] = useState(false);
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+  const visible = showAll ? items : items.slice(0, defaultCount);
   const hasMore = items.length > defaultCount;
 
   return (
@@ -160,186 +193,81 @@ function TrendSection<T>({
           {subtitle && <p className="text-xs text-muted-foreground mt-0.5 ml-7">{subtitle}</p>}
         </div>
         {hasMore && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 text-xs gap-1 text-muted-foreground"
-            onClick={() => setExpanded(!expanded)}
-          >
-            {expanded ? (
-              <><ChevronUp className="h-3 w-3" /> Show top {defaultCount}</>
-            ) : (
-              <><ChevronDown className="h-3 w-3" /> Show all {items.length}</>
-            )}
+          <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 text-muted-foreground" onClick={() => setShowAll(!showAll)}>
+            {showAll ? <><ChevronUp className="h-3 w-3" /> Show top {defaultCount}</> : <><ChevronDown className="h-3 w-3" /> Show all {items.length}</>}
           </Button>
         )}
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
         {visible.map((item, i) => (
-          <div key={i}>{renderItem(item, i)}</div>
+          <div key={i} className={`${expandedIndex === i ? "col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-4" : ""}`}>
+            <div onClick={() => setExpandedIndex(expandedIndex === i ? null : i)} className="cursor-pointer">
+              {renderCard(item, i, expandedIndex === i)}
+            </div>
+            {expandedIndex === i && (
+              <div className="mt-2 rounded-xl bg-card border border-border p-4 sm:p-5 animate-fade-in">
+                <div className="flex justify-end mb-2">
+                  <button onClick={(e) => { e.stopPropagation(); setExpandedIndex(null); }} className="text-muted-foreground hover:text-foreground">
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+                {renderDetail(item, i)}
+              </div>
+            )}
+          </div>
         ))}
       </div>
     </section>
   );
 }
 
-interface PlatformTrendData {
-  trendingCategories: TrendCategory[];
-  trendingBrands: TrendBrand[];
-  hotItems: HotItem[];
-  sleeperPicks: SleeperPick[];
-  platformStrategy?: string;
-}
+// ── Page ──
 
 export default function TrendsPage() {
   const [data, setData] = useState<TrendData | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState("all");
-
-  // Per-platform cached data
-  const [platformData, setPlatformData] = useState<Record<string, PlatformTrendData>>({});
-  const [platformLoading, setPlatformLoading] = useState(false);
 
   const fetchTrends = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
     else setLoading(true);
-
     try {
       const res = await fetch("/api/ai/trends");
-      if (!res.ok) throw new Error("Failed to fetch trends");
-      const result = await res.json();
-      setData(result);
-      if (isRefresh) toast.success("Trends refreshed with latest data");
-    } catch {
-      toast.error("Failed to load trend data");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
+      if (!res.ok) throw new Error();
+      setData(await res.json());
+      if (isRefresh) toast.success("Trends refreshed");
+    } catch { toast.error("Failed to load trend data"); }
+    finally { setLoading(false); setRefreshing(false); }
   }, []);
 
-  useEffect(() => {
-    fetchTrends();
-  }, [fetchTrends]);
+  useEffect(() => { fetchTrends(); }, [fetchTrends]);
 
-  // Track fetched platforms to avoid duplicate calls
-  const fetchedRef = useRef<Set<string>>(new Set());
-
-  const handleTabChange = async (tab: string) => {
-    setActiveTab(tab);
-    if (tab === "all") return;
-    if (fetchedRef.current.has(tab)) return; // already fetched
-    fetchedRef.current.add(tab);
-    setPlatformLoading(true);
-    try {
-      const res = await fetch(`/api/ai/trends/platform?p=${tab}`);
-      const result = await res.json();
-      if (result.trendingCategories?.length > 0 || result.trendingBrands?.length > 0) {
-        setPlatformData((prev) => ({ ...prev, [tab]: result }));
-      }
-    } catch {
-      // Remove from cache so user can retry
-      fetchedRef.current.delete(tab);
-    }
-    setPlatformLoading(false);
-  };
-
-  // Active data — use platform-specific if available, else generic
-  const activeData = activeTab !== "all" && platformData[activeTab]
-    ? platformData[activeTab]
-    : data;
-
-  if (loading || !data) {
-    return <LoadingSkeleton />;
-  }
-
-  const platformKeys = Object.keys(data.platformTips || {});
-  const activePlatformTip = activeTab !== "all" ? (data.platformTips as unknown as Record<string, string>)[activeTab] : null;
-  const activePlatformConfig = activeTab !== "all" ? platformConfig[activeTab] : null;
+  if (loading || !data) return <LoadingSkeleton />;
 
   return (
     <div className="space-y-5 animate-fade-in">
-      {/* ── Header ── */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">Trend Radar</h1>
-          <p className="text-muted-foreground text-xs sm:text-sm mt-0.5">AI-powered market intelligence across 8 platforms</p>
+          <p className="text-muted-foreground text-xs sm:text-sm mt-0.5">AI-powered market intelligence</p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => fetchTrends(true)}
-          disabled={refreshing}
-          className="h-8 text-xs gap-1.5"
-        >
+        <Button variant="outline" size="sm" onClick={() => fetchTrends(true)} disabled={refreshing} className="h-8 text-xs gap-1.5">
           {refreshing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
           Refresh
         </Button>
       </div>
 
-      {/* ── Platform Tabs ── */}
-      <div className="flex flex-wrap gap-1.5">
-        <button
-          onClick={() => handleTabChange("all")}
-          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-            activeTab === "all"
-              ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
-              : "bg-muted text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          All Platforms
-        </button>
-        {platformKeys.map((p) => {
-          const config = platformConfig[p];
-          if (!config) return null;
-          return (
-            <button
-              key={p}
-              onClick={() => handleTabChange(p)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
-                activeTab === p
-                  ? `${config.bg} ${config.color} font-semibold`
-                  : "bg-muted text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <span className={`w-4 h-4 rounded text-[9px] font-bold flex items-center justify-center ${activeTab === p ? "" : config.bg + " " + config.color}`}>
-                {config.icon || config.label.charAt(0)}
-              </span>
-              {config.label}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* ── Platform-specific tip banner ── */}
-      {activeTab !== "all" && activePlatformTip && activePlatformConfig && (
-        <div className={`rounded-xl p-4 ${activePlatformConfig.bg} border ${activePlatformConfig.border}`}>
+      {/* Market Pulse */}
+      {data.marketSummary && (
+        <div className="rounded-xl bg-card p-4 border-l-4" style={{ borderLeftColor: "var(--primary)" }}>
           <div className="flex items-start gap-3">
-            <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm shrink-0 ${activePlatformConfig.color} ${activePlatformConfig.bg}`}>
-              {activePlatformConfig.icon || activePlatformConfig.label.charAt(0)}
-            </div>
+            <TrendingUp className="h-5 w-5 shrink-0 mt-0.5" style={{ color: "var(--primary)" }} />
             <div>
-              <h3 className={`text-sm font-semibold ${activePlatformConfig.color}`}>
-                {activePlatformConfig.label} — What&apos;s Working Now
-              </h3>
-              <p className="text-sm text-muted-foreground leading-relaxed mt-1">{activePlatformTip}</p>
+              <h3 className="text-sm font-semibold mb-1">Market Pulse</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{data.marketSummary}</p>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Platform-specific loading / strategy */}
-      {activeTab !== "all" && platformLoading && !platformData[activeTab] && (
-        <div className="rounded-xl bg-card p-6 text-center">
-          <Loader2 className="h-5 w-5 animate-spin mx-auto mb-2" style={{ color: "var(--primary)" }} />
-          <p className="text-sm text-muted-foreground">Loading {activePlatformConfig?.label}-specific trends...</p>
-        </div>
-      )}
-      {activeTab !== "all" && platformData[activeTab]?.platformStrategy && (
-        <div className="rounded-xl bg-card p-4">
-          <p className="text-xs font-semibold text-muted-foreground mb-1">Platform Strategy</p>
-          <p className="text-sm leading-relaxed">{platformData[activeTab].platformStrategy}</p>
         </div>
       )}
 
@@ -347,8 +275,8 @@ export default function TrendsPage() {
       <TrendSection
         title="Trending Categories"
         icon={<Flame className="h-5 w-5 text-orange-500" />}
-        items={activeData?.trendingCategories || []}
-        renderItem={(cat) => {
+        items={data.trendingCategories}
+        renderCard={(cat) => {
           const heat = getHeatColor(cat.heat);
           return (
             <div className="rounded-xl bg-card p-4 space-y-2.5 card-hover">
@@ -360,17 +288,51 @@ export default function TrendsPage() {
                 <div className={`h-full rounded-full ${heat.bar}`} style={{ width: `${cat.heat}%` }} />
               </div>
               <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">{cat.description}</p>
+              <div className="flex items-center justify-between gap-2">
+                <DirectionBadge direction={cat.trendDirection} />
+                <CompetitionBadge level={cat.competitionLevel} />
+              </div>
             </div>
           );
         }}
+        renderDetail={(cat) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <DetailRow icon={<Flame className="h-3.5 w-3.5 text-orange-500" />} label="Why It's Trending">
+              <p>{cat.whyTrending || cat.description}</p>
+            </DetailRow>
+            <DetailRow icon={<DollarSign className="h-3.5 w-3.5 text-emerald-500" />} label="Pricing">
+              <p>Range: ${cat.priceRange?.low || "?"} – ${cat.priceRange?.high || "?"}</p>
+              <p className="text-muted-foreground">Sell-through: {cat.sellThroughRate || "N/A"}</p>
+            </DetailRow>
+            <DetailRow icon={<ShoppingBag className="h-3.5 w-3.5 text-primary" />} label="Sourcing Tips">
+              <ul className="list-disc list-inside space-y-0.5">{cat.sourcingTips?.map((t, i) => <li key={i}>{t}</li>) || <li>No tips available</li>}</ul>
+            </DetailRow>
+            <DetailRow icon={<Users className="h-3.5 w-3.5 text-blue-500" />} label="Target Buyer">
+              <p>{cat.targetBuyer || "General resale buyers"}</p>
+            </DetailRow>
+            <DetailRow icon={<Target className="h-3.5 w-3.5 text-primary" />} label="Best Platforms">
+              <PlatformPills platforms={cat.bestPlatforms} />
+            </DetailRow>
+            <DetailRow icon={<Clock className="h-3.5 w-3.5 text-amber-500" />} label="Peak Timing">
+              <p>{cat.peakTiming || "Year-round"}</p>
+            </DetailRow>
+            {cat.relatedKeywords?.length ? (
+              <div className="sm:col-span-2">
+                <DetailRow icon={<Search className="h-3.5 w-3.5 text-muted-foreground" />} label="SEO Keywords">
+                  <div className="flex flex-wrap gap-1">{cat.relatedKeywords.map((k, i) => <Badge key={i} variant="outline" className="text-[10px]">{k}</Badge>)}</div>
+                </DetailRow>
+              </div>
+            ) : null}
+          </div>
+        )}
       />
 
       {/* ── Trending Brands ── */}
       <TrendSection
         title="Trending Brands"
         icon={<TrendingUp className="h-5 w-5 text-primary" />}
-        items={activeData?.trendingBrands || []}
-        renderItem={(brand, idx) => {
+        items={data.trendingBrands}
+        renderCard={(brand, idx) => {
           const heat = getHeatColor(brand.heat);
           return (
             <div className="rounded-xl bg-card p-4 space-y-2.5 card-hover">
@@ -382,31 +344,91 @@ export default function TrendsPage() {
                   <h3 className="font-semibold text-[13px] truncate">{brand.name}</h3>
                   <span className={`text-[10px] font-bold ${heat.text}`}>{heat.label} {brand.heat}</span>
                 </div>
-              </div>
-              <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                <div className={`h-full rounded-full ${heat.bar}`} style={{ width: `${brand.heat}%` }} />
+                {brand.priceAppreciation && (
+                  <Badge className="bg-emerald-500/10 text-emerald-600 border-0 text-[10px] shrink-0">{brand.priceAppreciation}</Badge>
+                )}
               </div>
               <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">{brand.description}</p>
+              <PlatformPills platforms={brand.bestPlatforms} />
             </div>
           );
         }}
+        renderDetail={(brand) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <DetailRow icon={<DollarSign className="h-3.5 w-3.5 text-emerald-500" />} label="Pricing & Performance">
+              <p>Avg resale: {brand.avgResalePrice || "N/A"}</p>
+              <p>Appreciation: {brand.priceAppreciation || "N/A"}</p>
+              <p className="text-muted-foreground">Sell-through: {brand.sellThroughRate || "N/A"}</p>
+            </DetailRow>
+            <DetailRow icon={<Zap className="h-3.5 w-3.5 text-orange-500" />} label="Top Selling Items">
+              <ul className="list-disc list-inside space-y-0.5">{brand.topSellingItems?.map((t, i) => <li key={i}>{t}</li>) || <li>N/A</li>}</ul>
+            </DetailRow>
+            <DetailRow icon={<ShoppingBag className="h-3.5 w-3.5 text-primary" />} label="Sourcing Tips">
+              <ul className="list-disc list-inside space-y-0.5">{brand.sourcingTips?.map((t, i) => <li key={i}>{t}</li>) || <li>N/A</li>}</ul>
+            </DetailRow>
+            <DetailRow icon={<ShieldCheck className="h-3.5 w-3.5 text-amber-500" />} label="Authenticity Notes">
+              <p>{brand.authenticityNotes || "No specific notes"}</p>
+            </DetailRow>
+            <DetailRow icon={<Users className="h-3.5 w-3.5 text-blue-500" />} label="Target Buyer">
+              <p>{brand.targetBuyer || "General"}</p>
+            </DetailRow>
+            <DetailRow icon={<Target className="h-3.5 w-3.5 text-primary" />} label="Best Platforms">
+              <PlatformPills platforms={brand.bestPlatforms} />
+              {brand.relatedBrands?.length ? <p className="text-muted-foreground mt-1">Also stock: {brand.relatedBrands.join(", ")}</p> : null}
+            </DetailRow>
+          </div>
+        )}
       />
 
       {/* ── Hot Items ── */}
       <TrendSection
         title="Hot Items"
         icon={<Zap className="h-5 w-5 text-orange-500" />}
-        items={activeData?.hotItems || []}
-        renderItem={(item, idx) => (
+        items={data.hotItems}
+        renderCard={(item) => (
           <div className="rounded-xl bg-card p-4 space-y-2.5 card-hover">
             <div className="flex items-start justify-between gap-2">
               <h3 className="font-semibold text-[13px] leading-tight">{item.name}</h3>
               <Badge className="bg-primary text-primary-foreground border-0 text-[10px] font-bold shrink-0">{item.priceRange}</Badge>
             </div>
             <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">{item.description}</p>
-            <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-              <Flame className="h-3 w-3 text-orange-400" />#{idx + 1} trending
+            <div className="flex items-center justify-between">
+              <DirectionBadge direction={item.trendDirection} />
+              <CompetitionBadge level={item.competitionLevel} />
             </div>
+          </div>
+        )}
+        renderDetail={(item) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <DetailRow icon={<Target className="h-3.5 w-3.5 text-primary" />} label="Platform Breakdown">
+              {item.bestPlatforms?.length ? (
+                <div className="space-y-1">
+                  {item.bestPlatforms.map((p, i) => (
+                    <div key={i} className="flex items-center justify-between bg-muted/30 rounded-lg px-2.5 py-1.5">
+                      <span className="font-medium capitalize">{p.platform}</span>
+                      <span className="text-muted-foreground">{p.avgPrice} avg &middot; {p.sellSpeed}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : <p>No platform data</p>}
+            </DetailRow>
+            <DetailRow icon={<DollarSign className="h-3.5 w-3.5 text-emerald-500" />} label="Pricing Strategy">
+              <p>{item.pricingStrategy || "Price competitively"}</p>
+              <p className="text-muted-foreground mt-1">Sell-through: {item.sellThroughRate || "N/A"}</p>
+            </DetailRow>
+            <DetailRow icon={<ShoppingBag className="h-3.5 w-3.5 text-primary" />} label="Sourcing Tips">
+              <ul className="list-disc list-inside space-y-0.5">{item.sourcingTips?.map((t, i) => <li key={i}>{t}</li>) || <li>N/A</li>}</ul>
+            </DetailRow>
+            <DetailRow icon={<Search className="h-3.5 w-3.5 text-muted-foreground" />} label="Listing Tips">
+              <p>{item.listingTips || "Use clear photos and detailed descriptions"}</p>
+            </DetailRow>
+            <DetailRow icon={<Users className="h-3.5 w-3.5 text-blue-500" />} label="Target Buyer">
+              <p>{item.targetBuyer || "General"}</p>
+            </DetailRow>
+            <DetailRow icon={<Clock className="h-3.5 w-3.5 text-amber-500" />} label="Seasonality">
+              <p>{item.seasonality || "Year-round"}</p>
+              {item.relatedItems?.length ? <p className="text-muted-foreground mt-1">Related: {item.relatedItems.join(", ")}</p> : null}
+            </DetailRow>
           </div>
         )}
       />
@@ -416,16 +438,41 @@ export default function TrendsPage() {
         title="Sleeper Picks"
         subtitle="Undervalued items about to trend — get ahead of the curve"
         icon={<Gem className="h-5 w-5 text-emerald-500" />}
-        items={activeData?.sleeperPicks || []}
-        defaultCount={5}
-        renderItem={(pick) => (
+        items={data.sleeperPicks}
+        renderCard={(pick) => (
           <div className="rounded-xl bg-card p-4 space-y-2.5 card-hover relative overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-500 to-teal-500" />
             <div className="flex items-start justify-between gap-2">
               <h3 className="font-semibold text-[13px]">{pick.name}</h3>
               <Badge className="bg-emerald-500 border-0 text-white text-[10px] font-bold shrink-0">+{pick.estimatedROI}</Badge>
             </div>
-            <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-3">{pick.reasoning}</p>
+            <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">{pick.reasoning}</p>
+            <div className="flex items-center justify-between">
+              {pick.timeframe && <span className="text-[10px] text-muted-foreground flex items-center gap-0.5"><Clock className="h-3 w-3" /> {pick.timeframe}</span>}
+              {pick.riskLevel && <Badge variant="outline" className={`text-[9px] px-1.5 py-0 ${RISK_COLORS[pick.riskLevel] || ""}`}>{pick.riskLevel} risk</Badge>}
+            </div>
+          </div>
+        )}
+        renderDetail={(pick) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <DetailRow icon={<DollarSign className="h-3.5 w-3.5 text-emerald-500" />} label="Price Trajectory">
+              <p>Current: {pick.currentAvgPrice || "N/A"}</p>
+              <p>Projected: {pick.projectedPrice || "N/A"}</p>
+              <p className="font-medium text-emerald-600 dark:text-emerald-400">ROI: +{pick.estimatedROI}</p>
+              <p className="text-muted-foreground">Timeframe: {pick.timeframe || "N/A"}</p>
+            </DetailRow>
+            <DetailRow icon={<AlertTriangle className="h-3.5 w-3.5 text-amber-500" />} label="Catalysts & Risk">
+              {pick.catalysts?.length ? (
+                <ul className="list-disc list-inside space-y-0.5">{pick.catalysts.map((c, i) => <li key={i}>{c}</li>)}</ul>
+              ) : <p>No specific catalysts identified</p>}
+              <p className="text-muted-foreground mt-1">Risk: <span className="capitalize">{pick.riskLevel || "medium"}</span></p>
+            </DetailRow>
+            <DetailRow icon={<ShoppingBag className="h-3.5 w-3.5 text-primary" />} label="Sourcing Tips">
+              <ul className="list-disc list-inside space-y-0.5">{pick.sourcingTips?.map((t, i) => <li key={i}>{t}</li>) || <li>N/A</li>}</ul>
+            </DetailRow>
+            <DetailRow icon={<Target className="h-3.5 w-3.5 text-primary" />} label="Best Platforms">
+              <PlatformPills platforms={pick.bestPlatforms} />
+            </DetailRow>
           </div>
         )}
       />
@@ -436,41 +483,10 @@ export default function TrendsPage() {
           <Calendar className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" />
           <div>
             <h3 className="text-sm font-semibold mb-1">Seasonal Forecast</h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">{data?.seasonalAdvice || ""}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">{data.seasonalAdvice}</p>
           </div>
         </div>
       </div>
-
-      {/* ── All Platform Tips (only on "All" tab) ── */}
-      {activeTab === "all" && (
-        <div className="space-y-3">
-          <h3 className="text-sm font-semibold flex items-center gap-2">
-            <Target className="h-4 w-4" style={{ color: "var(--primary)" }} />
-            Platform Intelligence
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-            {(Object.entries(data.platformTips as unknown as Record<string, string>)).map(([platform, tip]) => {
-              const config = platformConfig[platform];
-              if (!config) return null;
-              return (
-                <button
-                  key={platform}
-                  onClick={() => handleTabChange(platform)}
-                  className="text-left rounded-xl bg-card p-4 card-hover space-y-2"
-                >
-                  <div className="flex items-center gap-2">
-                    <div className={`w-7 h-7 rounded-md ${config.bg} ${config.color} flex items-center justify-center font-bold text-[10px]`}>
-                      {config.icon || config.label.charAt(0)}
-                    </div>
-                    <span className={`text-xs font-semibold ${config.color}`}>{config.label}</span>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-3">{tip}</p>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
