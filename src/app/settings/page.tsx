@@ -17,8 +17,6 @@ import {
 } from "@/components/ui/dialog";
 import {
   Loader2,
-  Link2,
-  Unlink,
   Shield,
   CheckCircle2,
   XCircle,
@@ -47,6 +45,7 @@ import { THEMES as THEME_MAP, applyTheme as applyThemeFromLib, saveTheme as save
 interface PlatformStatus {
   platform: string;
   connected: boolean;
+  username: string | null;
   updatedAt: string | null;
 }
 
@@ -795,25 +794,28 @@ function PromptCard({
 // TAB 3 — PLATFORMS
 // ═══════════════════════════════════════════════════════════════════
 
-// Platform connection methods
-const PLATFORM_CONNECTION: Record<string, { method: "extension" | "oauth"; loginUrl: string; description: string }> = {
-  depop: { method: "extension", loginUrl: "https://www.depop.com/login/", description: "Log in to Depop in your browser. The ListBlitz extension will detect your session." },
-  grailed: { method: "extension", loginUrl: "https://www.grailed.com/users/sign_in", description: "Log in to Grailed in your browser. The extension detects your session automatically." },
-  poshmark: { method: "extension", loginUrl: "https://poshmark.com/login", description: "Log in to Poshmark in your browser. The extension handles the connection." },
-  mercari: { method: "extension", loginUrl: "https://www.mercari.com/login/", description: "Log in to Mercari in your browser. Extension detects your session." },
-  ebay: { method: "extension", loginUrl: "https://signin.ebay.com/", description: "Log in to eBay in your browser. The extension detects your session." },
-  vinted: { method: "extension", loginUrl: "https://www.vinted.com/member/login", description: "Log in to Vinted in your browser. Extension detects your session." },
-  facebook: { method: "extension", loginUrl: "https://www.facebook.com/marketplace/", description: "Log in to Facebook in your browser. The extension detects your session." },
-  vestiaire: { method: "extension", loginUrl: "https://www.vestiairecollective.com/login/", description: "Log in to Vestiaire Collective in your browser. Extension detects your session." },
-};
-
 function PlatformsTab() {
   const [platforms, setPlatforms] = useState<PlatformStatus[]>([]);
+  const [credentials, setCredentials] = useState<Record<string, { username: string; password: string }>>({});
+  const [showPassword, setShowPassword] = useState<Record<string, boolean>>({});
+  const [saving, setSaving] = useState<string | null>(null);
 
   const fetchPlatforms = useCallback(() => {
     fetch("/api/platforms/connect")
       .then((r) => r.json())
-      .then(setPlatforms)
+      .then((data: PlatformStatus[]) => {
+        setPlatforms(data);
+        // Pre-fill usernames for connected platforms
+        setCredentials((prev) => {
+          const next = { ...prev };
+          for (const p of data) {
+            if (p.connected && p.username && !next[p.platform]) {
+              next[p.platform] = { username: p.username, password: "" };
+            }
+          }
+          return next;
+        });
+      })
       .catch(() => {});
   }, []);
 
@@ -821,34 +823,35 @@ function PlatformsTab() {
     fetchPlatforms();
   }, [fetchPlatforms]);
 
-  const openLogin = (platform: string) => {
-    const conn = PLATFORM_CONNECTION[platform];
-    if (conn) {
-      window.open(conn.loginUrl, "_blank");
-      toast.success(`Opening ${platformInfo[platform]?.name}. Log in, then come back and click "Check Connection".`);
-    }
+  const updateCred = (platform: string, field: "username" | "password", value: string) => {
+    setCredentials((prev) => ({
+      ...prev,
+      [platform]: { username: prev[platform]?.username || "", password: prev[platform]?.password || "", [field]: value },
+    }));
   };
 
-  const checkConnection = async (platform: string) => {
-    // Try to detect via extension
-    try {
-      const { checkPlatformSession } = await import("@/lib/extension");
-      const result = await checkPlatformSession(platform);
-      if (result.connected) {
-        // Save to DB so it persists
-        await fetch("/api/platforms/connect", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ platform, username: "extension-session", password: "detected" }),
-        });
-        toast.success(`${platformInfo[platform]?.name} connected via extension!`);
-        fetchPlatforms();
-        return;
-      }
-    } catch {
-      // Extension not available
+  const saveCredentials = async (platform: string) => {
+    const cred = credentials[platform];
+    if (!cred?.username || !cred?.password) {
+      toast.error("Both username and password are required");
+      return;
     }
-    toast.error(`Could not detect ${platformInfo[platform]?.name} session. Make sure you're logged in and the extension is installed.`);
+    setSaving(platform);
+    try {
+      const res = await fetch("/api/platforms/connect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ platform, username: cred.username, password: cred.password }),
+      });
+      if (!res.ok) throw new Error();
+      toast.success(`${platformInfo[platform]?.name} credentials saved`);
+      // Clear password from local state after saving (it's stored encrypted server-side)
+      setCredentials((prev) => ({ ...prev, [platform]: { username: cred.username, password: "" } }));
+      fetchPlatforms();
+    } catch {
+      toast.error("Failed to save credentials");
+    }
+    setSaving(null);
   };
 
   const disconnect = async (platform: string) => {
@@ -856,6 +859,11 @@ function PlatformsTab() {
     try {
       await fetch(`/api/platforms/connect?platform=${platform}`, { method: "DELETE" });
       toast.success(`Disconnected from ${platformInfo[platform]?.name}`);
+      setCredentials((prev) => {
+        const next = { ...prev };
+        delete next[platform];
+        return next;
+      });
       fetchPlatforms();
     } catch {
       toast.error("Failed to disconnect");
@@ -866,7 +874,7 @@ function PlatformsTab() {
 
   return (
     <div className="space-y-4 pt-2">
-      {/* How it works */}
+      {/* Header */}
       <Card className="border-0 shadow-sm">
         <CardContent className="pt-5">
           <div className="flex items-center gap-4 mb-3">
@@ -881,12 +889,8 @@ function PlatformsTab() {
             </div>
           </div>
           <div className="rounded-xl bg-muted/30 p-3 text-xs text-muted-foreground space-y-1">
-            <p className="font-medium text-foreground">How connecting works:</p>
-            <p>1. Install the ListBlitz Chrome extension</p>
-            <p>2. Click &quot;Log In&quot; to open the marketplace in a new tab</p>
-            <p>3. Sign in to your account on that marketplace</p>
-            <p>4. Come back here and click &quot;Check Connection&quot;</p>
-            <p>5. The extension detects your session — no passwords stored</p>
+            <p>Enter your marketplace username and password for each platform you sell on.</p>
+            <p>Credentials are encrypted with AES-256 and only used when publishing listings.</p>
           </div>
         </CardContent>
       </Card>
@@ -896,9 +900,13 @@ function PlatformsTab() {
         {platforms.map((p) => {
           const info = platformInfo[p.platform];
           if (!info) return null;
+          const cred = credentials[p.platform] || { username: "", password: "" };
+          const isSaving = saving === p.platform;
+
           return (
             <Card key={p.platform} className="border-0 shadow-sm">
-              <CardContent className="py-3">
+              <CardContent className="py-4 space-y-3">
+                {/* Platform header row */}
                 <div className="flex items-center gap-3">
                   <div className={`w-10 h-10 rounded-xl ${info.bg} ${info.color} flex items-center justify-center font-bold text-sm shrink-0`}>
                     {info.icon}
@@ -906,30 +914,60 @@ function PlatformsTab() {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold">{info.name}</p>
                     {p.connected ? (
-                      <p className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+                      <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                         <CheckCircle2 className="h-3 w-3" />
-                        Connected via extension
+                        Connected{p.username && p.username !== "extension-session" ? ` as ${p.username}` : ""}
                       </p>
                     ) : (
                       <p className="text-xs text-muted-foreground">Not connected</p>
                     )}
                   </div>
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    {p.connected ? (
-                      <Button variant="outline" size="sm" className="h-7 text-xs text-destructive" onClick={() => disconnect(p.platform)}>
-                        Disconnect
-                      </Button>
-                    ) : (
-                      <>
-                        <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => openLogin(p.platform)}>
-                          Log In
-                        </Button>
-                        <Button size="sm" className="h-7 text-xs" onClick={() => checkConnection(p.platform)}>
-                          Check
-                        </Button>
-                      </>
-                    )}
+                  {p.connected && (
+                    <Button variant="outline" size="sm" className="h-7 text-xs text-destructive shrink-0" onClick={() => disconnect(p.platform)}>
+                      Disconnect
+                    </Button>
+                  )}
+                </div>
+
+                {/* Credential fields */}
+                <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2 items-end">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Username / Email</Label>
+                    <Input
+                      value={cred.username}
+                      onChange={(e) => updateCred(p.platform, "username", e.target.value)}
+                      placeholder={`${info.name} username`}
+                      className="h-9 text-sm"
+                    />
                   </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Password</Label>
+                    <div className="relative">
+                      <Input
+                        type={showPassword[p.platform] ? "text" : "password"}
+                        value={cred.password}
+                        onChange={(e) => updateCred(p.platform, "password", e.target.value)}
+                        placeholder={p.connected ? "Saved — enter new to update" : `${info.name} password`}
+                        className="h-9 text-sm pr-9"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((prev) => ({ ...prev, [p.platform]: !prev[p.platform] }))}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        {showPassword[p.platform] ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                      </button>
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    className="h-9 text-xs"
+                    disabled={isSaving || !cred.username || !cred.password}
+                    onClick={() => saveCredentials(p.platform)}
+                  >
+                    {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5 mr-1" />}
+                    {p.connected ? "Update" : "Save"}
+                  </Button>
                 </div>
               </CardContent>
             </Card>

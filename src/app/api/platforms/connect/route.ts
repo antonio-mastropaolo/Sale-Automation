@@ -6,21 +6,37 @@ const ALL_PLATFORMS = ["depop", "grailed", "poshmark", "mercari", "ebay", "vinte
 export async function GET() {
   try {
     const credentials = await prisma.platformCredential.findMany();
-    const connected = credentials.map((c) => ({
-      platform: c.platform,
-      connected: true,
-      updatedAt: c.updatedAt,
-    }));
+    const connected = await Promise.all(
+      credentials.map(async (c) => {
+        let username: string | null = null;
+        try {
+          const { decrypt } = await import("@/lib/crypto");
+          const data = JSON.parse(decrypt(c.encryptedData));
+          username = data.username || null;
+        } catch {
+          try {
+            const data = JSON.parse(Buffer.from(c.encryptedData, "base64").toString("utf8"));
+            username = data.username || null;
+          } catch { /* ignore */ }
+        }
+        return {
+          platform: c.platform,
+          connected: true,
+          username,
+          updatedAt: c.updatedAt,
+        };
+      })
+    );
 
     const result = ALL_PLATFORMS.map((p) => {
       const existing = connected.find((c) => c.platform === p);
-      return existing || { platform: p, connected: false, updatedAt: null };
+      return existing || { platform: p, connected: false, username: null, updatedAt: null };
     });
 
     return NextResponse.json(result);
   } catch (err) {
     console.error("Platform GET error:", err);
-    return NextResponse.json(ALL_PLATFORMS.map((p) => ({ platform: p, connected: false, updatedAt: null })));
+    return NextResponse.json(ALL_PLATFORMS.map((p) => ({ platform: p, connected: false, username: null, updatedAt: null })));
   }
 }
 
