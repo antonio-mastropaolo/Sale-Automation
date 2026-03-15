@@ -36,9 +36,8 @@ export function TopHeader() {
           </SheetContent>
         </Sheet>
 
-        <div className="flex items-center gap-2">
-          <img src="/logo.png" alt="ListBlitz" className="h-7 object-contain" />
-          <span className="font-bold text-sm tracking-tight">ListBlitz</span>
+        <div className="flex items-center">
+          <img src="/logo.png" alt="ListBlitz" className="h-[22px] object-contain" />
         </div>
       </header>
     </div>
