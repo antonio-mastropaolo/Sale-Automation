@@ -183,10 +183,23 @@ function TrendSection<T>({
   );
 }
 
+interface PlatformTrendData {
+  trendingCategories: TrendCategory[];
+  trendingBrands: TrendBrand[];
+  hotItems: HotItem[];
+  sleeperPicks: SleeperPick[];
+  platformStrategy?: string;
+}
+
 export default function TrendsPage() {
   const [data, setData] = useState<TrendData | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [activeTab, setActiveTab] = useState("all");
+
+  // Per-platform cached data
+  const [platformData, setPlatformData] = useState<Record<string, PlatformTrendData>>({});
+  const [platformLoading, setPlatformLoading] = useState(false);
 
   const fetchTrends = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -210,7 +223,32 @@ export default function TrendsPage() {
     fetchTrends();
   }, [fetchTrends]);
 
-  const [activeTab, setActiveTab] = useState("all");
+  // Fetch platform-specific trends when tab changes
+  const fetchPlatformTrends = useCallback(async (platform: string) => {
+    if (platform === "all" || platformData[platform]) return; // cached or "all"
+    setPlatformLoading(true);
+    try {
+      const res = await fetch(`/api/ai/trends/platform?p=${platform}`);
+      const result = await res.json();
+      // Only use if we got real data
+      if (result.trendingCategories?.length > 0 || result.trendingBrands?.length > 0) {
+        setPlatformData((prev) => ({ ...prev, [platform]: result }));
+      }
+    } catch {
+      // silent — fall back to generic data
+    }
+    setPlatformLoading(false);
+  }, [platformData]);
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    if (tab !== "all") fetchPlatformTrends(tab);
+  };
+
+  // Active data — use platform-specific if available, else generic
+  const activeData = activeTab !== "all" && platformData[activeTab]
+    ? platformData[activeTab]
+    : data;
 
   if (loading || !data) {
     return <LoadingSkeleton />;
@@ -243,7 +281,7 @@ export default function TrendsPage() {
       {/* ── Platform Tabs ── */}
       <div className="flex flex-wrap gap-1.5">
         <button
-          onClick={() => setActiveTab("all")}
+          onClick={() => handleTabChange("all")}
           className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
             activeTab === "all"
               ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
@@ -258,7 +296,7 @@ export default function TrendsPage() {
           return (
             <button
               key={p}
-              onClick={() => setActiveTab(p)}
+              onClick={() => handleTabChange(p)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
                 activeTab === p
                   ? `${config.bg} ${config.color} font-semibold`
@@ -291,11 +329,25 @@ export default function TrendsPage() {
         </div>
       )}
 
+      {/* Platform-specific loading / strategy */}
+      {activeTab !== "all" && platformLoading && !platformData[activeTab] && (
+        <div className="rounded-xl bg-card p-6 text-center">
+          <Loader2 className="h-5 w-5 animate-spin mx-auto mb-2" style={{ color: "var(--primary)" }} />
+          <p className="text-sm text-muted-foreground">Loading {activePlatformConfig?.label}-specific trends...</p>
+        </div>
+      )}
+      {activeTab !== "all" && platformData[activeTab]?.platformStrategy && (
+        <div className="rounded-xl bg-card p-4">
+          <p className="text-xs font-semibold text-muted-foreground mb-1">Platform Strategy</p>
+          <p className="text-sm leading-relaxed">{platformData[activeTab].platformStrategy}</p>
+        </div>
+      )}
+
       {/* ── Trending Categories ── */}
       <TrendSection
         title="Trending Categories"
         icon={<Flame className="h-5 w-5 text-orange-500" />}
-        items={data.trendingCategories}
+        items={activeData?.trendingCategories || []}
         renderItem={(cat) => {
           const heat = getHeatColor(cat.heat);
           return (
@@ -317,7 +369,7 @@ export default function TrendsPage() {
       <TrendSection
         title="Trending Brands"
         icon={<TrendingUp className="h-5 w-5 text-primary" />}
-        items={data.trendingBrands}
+        items={activeData?.trendingBrands || []}
         renderItem={(brand, idx) => {
           const heat = getHeatColor(brand.heat);
           return (
@@ -344,7 +396,7 @@ export default function TrendsPage() {
       <TrendSection
         title="Hot Items"
         icon={<Zap className="h-5 w-5 text-orange-500" />}
-        items={data.hotItems}
+        items={activeData?.hotItems || []}
         renderItem={(item, idx) => (
           <div className="rounded-xl bg-card p-4 space-y-2.5 card-hover">
             <div className="flex items-start justify-between gap-2">
@@ -364,7 +416,7 @@ export default function TrendsPage() {
         title="Sleeper Picks"
         subtitle="Undervalued items about to trend — get ahead of the curve"
         icon={<Gem className="h-5 w-5 text-emerald-500" />}
-        items={data.sleeperPicks}
+        items={activeData?.sleeperPicks || []}
         defaultCount={5}
         renderItem={(pick) => (
           <div className="rounded-xl bg-card p-4 space-y-2.5 card-hover relative overflow-hidden">
@@ -384,7 +436,7 @@ export default function TrendsPage() {
           <Calendar className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" />
           <div>
             <h3 className="text-sm font-semibold mb-1">Seasonal Forecast</h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">{data.seasonalAdvice}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">{data?.seasonalAdvice || ""}</p>
           </div>
         </div>
       </div>
@@ -403,7 +455,7 @@ export default function TrendsPage() {
               return (
                 <button
                   key={platform}
-                  onClick={() => setActiveTab(platform)}
+                  onClick={() => handleTabChange(platform)}
                   className="text-left rounded-xl bg-card p-4 card-hover space-y-2"
                 >
                   <div className="flex items-center gap-2">

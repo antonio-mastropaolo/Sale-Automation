@@ -52,28 +52,18 @@ export default function LoginPage() {
 
   return (
     <div className="fixed inset-0 z-[100] flex min-h-screen bg-[#f2f2f7] dark:bg-black">
-      {/* Left branding panel — hardcoded dark gradient, no CSS variable bleed */}
-      <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-12" style={{ background: "linear-gradient(135deg, #0f766e, #134e4a)" }}>
-        <div className="max-w-md text-white space-y-6">
-          <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="ListBlitz" className="h-12 object-contain" />
-          </div>
-          <h1 className="text-4xl font-bold leading-tight">
-            List once,<br />sell everywhere.
+      {/* Left branding panel — custom image */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+        <img src="/login-bg.png" alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-black/10" />
+        <div className="relative z-10 flex flex-col justify-end p-10">
+          <img src="/logo.png" alt="ListBlitz" className="h-10 object-contain object-left mb-4" />
+          <h1 className="text-3xl font-bold text-white leading-tight mb-2">
+            List once, sell everywhere.
           </h1>
-          <p className="text-white/60 text-base leading-relaxed">
-            AI-powered cross-platform listing tool. Optimize your listings, track analytics, and grow your reselling business across 8 marketplaces.
+          <p className="text-white/70 text-sm leading-relaxed max-w-md">
+            AI-powered cross-platform listing across Depop, Grailed, Poshmark, Mercari, eBay, Vinted, Facebook &amp; Vestiaire.
           </p>
-          <div className="flex flex-wrap gap-2 pt-2">
-            {["Depop", "Grailed", "Poshmark", "Mercari", "eBay", "Vinted", "Facebook", "Vestiaire"].map((p) => (
-              <span
-                key={p}
-                className="bg-white/10 border border-white/15 rounded-lg px-2.5 py-1 text-[11px] font-medium"
-              >
-                {p}
-              </span>
-            ))}
-          </div>
         </div>
       </div>
 
