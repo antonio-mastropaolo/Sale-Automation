@@ -63,32 +63,15 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Check platform reachability
-    const url = PLATFORM_URLS[platform];
-    if (url) {
-      try {
-        const res = await fetch(url, { method: "HEAD", signal: AbortSignal.timeout(10000) });
-        if (!res.ok && res.status >= 500) {
-          return NextResponse.json({
-            success: false,
-            message: `${platform} appears to be down`,
-            errorCode: "platform_down",
-            tip: "The platform may be experiencing issues. Try again later.",
-          });
-        }
-      } catch {
-        return NextResponse.json({
-          success: false,
-          message: `Could not reach ${platform}`,
-          errorCode: "network_error",
-          tip: "Check your server's internet connection or try again later.",
-        });
-      }
-    }
-
+    // Platforms without automation classes don't support direct login verification
+    const platformNames: Record<string, string> = {
+      ebay: "eBay", vinted: "Vinted", facebook: "Facebook Marketplace", vestiaire: "Vestiaire Collective",
+    };
+    const name = platformNames[platform] || platform;
     return NextResponse.json({
       success: true,
-      message: `Credentials valid and ${platform} is reachable`,
+      message: `Credentials securely stored for ${name}`,
+      tip: `Direct login verification is not yet available for ${name}. Your credentials will be used at publish time.`,
     });
   } catch {
     return NextResponse.json({

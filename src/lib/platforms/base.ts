@@ -56,6 +56,7 @@ export abstract class PlatformAutomation {
     });
   }
 
+  /** Validate stored credentials. Subclasses should override to attempt real login. */
   async testConnection(): Promise<TestConnectionResult> {
     const creds = await this.getCredentials();
     if (!creds) {
@@ -64,16 +65,8 @@ export abstract class PlatformAutomation {
     if (!creds.username || !creds.password) {
       return { success: false, message: "Username or password is empty", errorCode: "invalid_credentials", tip: "Both fields are required. Re-enter your credentials and save." };
     }
-    // Check platform is reachable
-    try {
-      const res = await fetch(this.platformUrl, { method: "HEAD", signal: AbortSignal.timeout(10000) });
-      if (!res.ok && res.status >= 500) {
-        return { success: false, message: `${this.platform} appears to be down (HTTP ${res.status})`, errorCode: "platform_down", tip: "The platform may be experiencing issues. Try again later." };
-      }
-      return { success: true, message: `Credentials saved and ${this.platform} is reachable` };
-    } catch {
-      return { success: false, message: `Could not reach ${this.platform}`, errorCode: "network_error", tip: "Check your server's internet connection or try again later." };
-    }
+    // Default: credentials stored correctly
+    return { success: true, message: `Credentials securely stored for ${this.platform}` };
   }
 
   abstract publish(data: PlatformListingData): Promise<{ url: string }>;
