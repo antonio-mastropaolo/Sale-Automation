@@ -42,7 +42,7 @@ import {
 import { toast } from "sonner";
 import { useHelp } from "@/components/help-context";
 import { platformBranding } from "@/lib/colors";
-import { THEMES as THEME_MAP, applyTheme as applyThemeFromLib, saveTheme as saveThemeToStorage, getSavedTheme as getSavedThemeFromStorage } from "@/lib/themes";
+import { THEMES as THEME_MAP, applyTheme as applyThemeFromLib, saveTheme as saveThemeToStorage, getSavedTheme as getSavedThemeFromStorage, DESIGN_STYLES, applyDesignStyle, saveDesignStyle, getSavedDesignStyle } from "@/lib/themes";
 
 // ── Types ───────────────────────────────────────────────────────────
 
@@ -1191,6 +1191,7 @@ function GeneralTab() {
   const [currency, setCurrency] = useState("USD");
   const [listingExpiry, setListingExpiry] = useState("30");
   const [themeColor, setThemeColor] = useState("teal");
+  const [designStyle, setDesignStyle] = useState("ios");
 
   useEffect(() => {
     fetch("/api/settings")
@@ -1201,6 +1202,7 @@ function GeneralTab() {
         if (data.currency) setCurrency(data.currency);
         if (data.listing_expiry_days) setListingExpiry(data.listing_expiry_days);
         setThemeColor(getSavedThemeFromStorage());
+        setDesignStyle(getSavedDesignStyle());
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -1288,6 +1290,51 @@ function GeneralTab() {
                   )}
                 </div>
                 <span className="text-[10px] text-muted-foreground font-medium">{theme.label}</span>
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Design Style */}
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Settings2 className="h-5 w-5 text-primary" />
+            Design Style
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground mb-4">
+            Choose a UI design language that changes how the entire app looks and feels
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {DESIGN_STYLES.map((style) => (
+              <button
+                key={style.id}
+                onClick={() => {
+                  setDesignStyle(style.id);
+                  const isDark = document.documentElement.classList.contains("dark");
+                  applyDesignStyle(style.id, isDark);
+                  saveDesignStyle(style.id);
+                }}
+                className={`relative rounded-xl border-2 p-3 text-left transition-all ${
+                  designStyle === style.id
+                    ? "border-primary bg-primary/5 shadow-sm"
+                    : "border-transparent bg-muted/30 hover:bg-muted/50"
+                }`}
+              >
+                <div
+                  className="h-8 w-full rounded-lg mb-2"
+                  style={{ background: style.preview }}
+                />
+                <p className="text-sm font-semibold">{style.label}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">{style.description}</p>
+                {designStyle === style.id && (
+                  <div className="absolute top-2 right-2">
+                    <Check className="h-4 w-4 text-primary" />
+                  </div>
+                )}
               </button>
             ))}
           </div>

@@ -10,7 +10,7 @@ import {
   MessageCircle, FlaskConical,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { applyTheme, getSavedTheme } from "@/lib/themes";
+import { applyTheme, getSavedTheme, applyDesignStyle, getSavedDesignStyle } from "@/lib/themes";
 
 const sections = [
   {
@@ -61,6 +61,7 @@ export function Sidebar({ className }: { className?: string }) {
     if (d) document.documentElement.classList.add("dark");
     else document.documentElement.classList.remove("dark");
     applyTheme(getSavedTheme(), d);
+    applyDesignStyle(getSavedDesignStyle(), d);
     if (localStorage.getItem("sidebar-collapsed") === "true") setCollapsed(true);
     // Check admin status
     fetch("/api/auth/me").then((r) => r.json()).then((data) => {
@@ -75,6 +76,7 @@ export function Sidebar({ className }: { className?: string }) {
       document.documentElement.classList.toggle("dark", next);
       localStorage.setItem("theme", next ? "dark" : "light");
       applyTheme(getSavedTheme(), next);
+      applyDesignStyle(getSavedDesignStyle(), next);
       return next;
     });
   };

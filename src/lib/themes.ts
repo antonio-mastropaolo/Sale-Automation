@@ -136,3 +136,186 @@ export function getSavedTheme(): string {
 export function saveTheme(themeId: string) {
   localStorage.setItem("listblitz-theme", themeId);
 }
+
+// ── Design Styles (full palette overrides, mainly dark mode) ──
+
+export interface DesignStyle {
+  id: string;
+  label: string;
+  description: string;
+  preview: string; // gradient for preview swatch
+  dark: {
+    background: string;
+    card: string;
+    cardForeground: string;
+    popover: string;
+    secondary: string;
+    secondaryForeground: string;
+    muted: string;
+    mutedForeground: string;
+    border: string;
+    input: string;
+    sidebar: string;
+    sidebarForeground: string;
+    sidebarBorder: string;
+  };
+  light: {
+    background: string;
+    card: string;
+    secondary: string;
+    muted: string;
+    mutedForeground: string;
+    border: string;
+    sidebar: string;
+    sidebarBorder: string;
+  };
+}
+
+export const DESIGN_STYLES: DesignStyle[] = [
+  {
+    id: "flat",
+    label: "Flat",
+    description: "Clean, minimal, bold colors",
+    preview: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)",
+    dark: {
+      background: "#0f0f0f", card: "#1a1a1a", cardForeground: "#fafafa",
+      popover: "#1a1a1a", secondary: "#262626", secondaryForeground: "#e5e5e5",
+      muted: "#262626", mutedForeground: "#a3a3a3", border: "rgba(255,255,255,0.08)",
+      input: "#262626", sidebar: "rgba(15,15,15,0.95)", sidebarForeground: "#a3a3a3",
+      sidebarBorder: "rgba(255,255,255,0.06)",
+    },
+    light: {
+      background: "#fafafa", card: "#ffffff", secondary: "#f0f0f0",
+      muted: "#f0f0f0", mutedForeground: "#737373", border: "rgba(0,0,0,0.06)",
+      sidebar: "rgba(250,250,250,0.9)", sidebarBorder: "rgba(0,0,0,0.04)",
+    },
+  },
+  {
+    id: "material",
+    label: "Material",
+    description: "Google's layered paper design",
+    preview: "linear-gradient(135deg, #121212 0%, #1e1e1e 50%, #2d2d2d 100%)",
+    dark: {
+      background: "#121212", card: "#1e1e1e", cardForeground: "#e0e0e0",
+      popover: "#2d2d2d", secondary: "#2d2d2d", secondaryForeground: "#e0e0e0",
+      muted: "#2d2d2d", mutedForeground: "#9e9e9e", border: "rgba(255,255,255,0.12)",
+      input: "#2d2d2d", sidebar: "rgba(18,18,18,0.98)", sidebarForeground: "#9e9e9e",
+      sidebarBorder: "rgba(255,255,255,0.08)",
+    },
+    light: {
+      background: "#fafafa", card: "#ffffff", secondary: "#f5f5f5",
+      muted: "#eeeeee", mutedForeground: "#757575", border: "rgba(0,0,0,0.08)",
+      sidebar: "rgba(255,255,255,0.95)", sidebarBorder: "rgba(0,0,0,0.06)",
+    },
+  },
+  {
+    id: "glass",
+    label: "Glassmorphism",
+    description: "Frosted glass with blur effects",
+    preview: "linear-gradient(135deg, rgba(15,23,42,0.8) 0%, rgba(30,41,59,0.6) 100%)",
+    dark: {
+      background: "#0a0a0f", card: "rgba(30,30,45,0.6)", cardForeground: "#e2e8f0",
+      popover: "rgba(30,30,45,0.8)", secondary: "rgba(50,50,70,0.4)", secondaryForeground: "#cbd5e1",
+      muted: "rgba(50,50,70,0.3)", mutedForeground: "#94a3b8", border: "rgba(148,163,184,0.1)",
+      input: "rgba(50,50,70,0.4)", sidebar: "rgba(10,10,15,0.7)", sidebarForeground: "#94a3b8",
+      sidebarBorder: "rgba(148,163,184,0.08)",
+    },
+    light: {
+      background: "#f0f4f8", card: "rgba(255,255,255,0.7)", secondary: "rgba(241,245,249,0.6)",
+      muted: "rgba(226,232,240,0.5)", mutedForeground: "#64748b", border: "rgba(0,0,0,0.06)",
+      sidebar: "rgba(255,255,255,0.6)", sidebarBorder: "rgba(0,0,0,0.04)",
+    },
+  },
+  {
+    id: "neumorphic",
+    label: "Neumorphism",
+    description: "Soft extruded surfaces",
+    preview: "linear-gradient(145deg, #1a1a2e 0%, #25253d 100%)",
+    dark: {
+      background: "#1a1a2e", card: "#1f1f35", cardForeground: "#e0def4",
+      popover: "#25253d", secondary: "#25253d", secondaryForeground: "#e0def4",
+      muted: "#25253d", mutedForeground: "#908caa", border: "rgba(255,255,255,0.04)",
+      input: "#25253d", sidebar: "rgba(26,26,46,0.95)", sidebarForeground: "#908caa",
+      sidebarBorder: "rgba(255,255,255,0.03)",
+    },
+    light: {
+      background: "#e8e8ef", card: "#e8e8ef", secondary: "#dfdfe6",
+      muted: "#dfdfe6", mutedForeground: "#6e6a86", border: "rgba(0,0,0,0.04)",
+      sidebar: "rgba(232,232,239,0.9)", sidebarBorder: "rgba(0,0,0,0.03)",
+    },
+  },
+  {
+    id: "ios",
+    label: "Apple HIG",
+    description: "iOS-style clarity and depth",
+    preview: "linear-gradient(135deg, #000000 0%, #1c1c1e 100%)",
+    dark: {
+      background: "#000000", card: "#1c1c1e", cardForeground: "#ffffff",
+      popover: "#2c2c2e", secondary: "#2c2c2e", secondaryForeground: "#e5e5ea",
+      muted: "#2c2c2e", mutedForeground: "#8e8e93", border: "rgba(255,255,255,0.1)",
+      input: "#2c2c2e", sidebar: "rgba(0,0,0,0.8)", sidebarForeground: "#8e8e93",
+      sidebarBorder: "rgba(255,255,255,0.08)",
+    },
+    light: {
+      background: "#f2f2f7", card: "#ffffff", secondary: "#e5e5ea",
+      muted: "#e5e5ea", mutedForeground: "#8e8e93", border: "rgba(0,0,0,0.08)",
+      sidebar: "rgba(242,242,247,0.8)", sidebarBorder: "rgba(0,0,0,0.06)",
+    },
+  },
+  {
+    id: "midnight",
+    label: "Midnight",
+    description: "Deep navy, premium feel",
+    preview: "linear-gradient(135deg, #0b1120 0%, #162240 100%)",
+    dark: {
+      background: "#0b1120", card: "#0f1729", cardForeground: "#e2e8f0",
+      popover: "#162240", secondary: "#162240", secondaryForeground: "#cbd5e1",
+      muted: "#162240", mutedForeground: "#64748b", border: "rgba(99,130,184,0.12)",
+      input: "#162240", sidebar: "rgba(11,17,32,0.95)", sidebarForeground: "#64748b",
+      sidebarBorder: "rgba(99,130,184,0.08)",
+    },
+    light: {
+      background: "#f8fafc", card: "#ffffff", secondary: "#f1f5f9",
+      muted: "#e2e8f0", mutedForeground: "#64748b", border: "rgba(0,0,0,0.06)",
+      sidebar: "rgba(248,250,252,0.9)", sidebarBorder: "rgba(0,0,0,0.04)",
+    },
+  },
+];
+
+export const DEFAULT_DESIGN_STYLE = "ios";
+
+export function applyDesignStyle(styleId: string, isDark: boolean) {
+  const style = DESIGN_STYLES.find((s) => s.id === styleId) || DESIGN_STYLES.find((s) => s.id === DEFAULT_DESIGN_STYLE)!;
+  const root = document.documentElement;
+  const palette = isDark ? style.dark : style.light;
+
+  root.style.setProperty("--background", palette.background);
+  root.style.setProperty("--card", palette.card);
+  if ("cardForeground" in palette) root.style.setProperty("--card-foreground", (palette as DesignStyle["dark"]).cardForeground);
+  root.style.setProperty("--secondary", palette.secondary);
+  if ("secondaryForeground" in palette) root.style.setProperty("--secondary-foreground", (palette as DesignStyle["dark"]).secondaryForeground);
+  root.style.setProperty("--muted", palette.muted);
+  root.style.setProperty("--muted-foreground", palette.mutedForeground);
+  root.style.setProperty("--border", palette.border);
+  if ("input" in palette) root.style.setProperty("--input", (palette as DesignStyle["dark"]).input);
+  if ("popover" in palette) root.style.setProperty("--popover", (palette as DesignStyle["dark"]).popover);
+  root.style.setProperty("--sidebar", palette.sidebar);
+  if ("sidebarForeground" in palette) root.style.setProperty("--sidebar-foreground", (palette as DesignStyle["dark"]).sidebarForeground);
+  root.style.setProperty("--sidebar-border", palette.sidebarBorder);
+
+  // Glassmorphism: add backdrop-blur to cards
+  if (styleId === "glass") {
+    root.style.setProperty("--card-blur", "blur(20px)");
+  } else {
+    root.style.setProperty("--card-blur", "none");
+  }
+}
+
+export function getSavedDesignStyle(): string {
+  if (typeof window === "undefined") return DEFAULT_DESIGN_STYLE;
+  return localStorage.getItem("listblitz-design-style") || DEFAULT_DESIGN_STYLE;
+}
+
+export function saveDesignStyle(styleId: string) {
+  localStorage.setItem("listblitz-design-style", styleId);
+}
