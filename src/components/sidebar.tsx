@@ -202,34 +202,21 @@ export function Sidebar({ className }: { className?: string }) {
         })}
       </nav>
 
-      {/* Bottom — theme + sign out + resize */}
-      <div className={cn(
-        "shrink-0 border-t-2 border-[var(--sidebar-border)] py-3 flex items-center gap-1.5",
-        compact ? "px-1.5 flex-col" : "px-2"
-      )}>
+      {/* Bottom — theme, sign out, resize — stacked with dividers */}
+      <div className="shrink-0 border-t border-[var(--sidebar-border)] flex flex-col">
         <button onClick={toggleDark} title={dark ? "Light mode" : "Dark mode"}
-          className={cn(
-            "h-[38px] rounded-[10px] flex items-center justify-center gap-2 text-amber-500 bg-amber-500/10 hover:bg-amber-500 hover:text-white transition-colors",
-            compact ? "w-[42px]" : "flex-1"
-          )}>
+          className="h-[44px] flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--sidebar-accent)] transition-colors">
           {dark ? <Sun className="h-[18px] w-[18px]" /> : <Moon className="h-[18px] w-[18px]" />}
-          {!compact && <span className="text-[12px] font-medium">{dark ? "Light" : "Dark"}</span>}
         </button>
+        <div className="h-px bg-[var(--sidebar-border)]" />
         <button onClick={() => { fetch("/api/auth/logout", { method: "POST" }).then(() => { window.location.href = "/login"; }); }} title="Sign out"
-          className={cn(
-            "h-[38px] rounded-[10px] flex items-center justify-center gap-2 text-red-400 bg-red-500/10 hover:bg-red-500 hover:text-white transition-colors",
-            compact ? "w-[42px]" : "flex-1"
-          )}>
+          className="h-[44px] flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--destructive)] hover:bg-red-500/10 transition-colors">
           <LogOut className="h-[18px] w-[18px]" />
-          {!compact && <span className="text-[12px] font-medium">Exit</span>}
         </button>
+        <div className="h-px bg-[var(--sidebar-border)]" />
         <button onClick={toggleCompact} title={compact ? "Expand sidebar" : "Compact sidebar"}
-          className={cn(
-            "h-[38px] rounded-[10px] flex items-center justify-center gap-2 text-[var(--primary)] bg-[var(--sidebar-accent)] hover:bg-[var(--primary)] hover:text-white transition-colors",
-            compact ? "w-[42px]" : "flex-1"
-          )}>
+          className="h-[44px] flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--primary)] hover:bg-[var(--sidebar-accent)] transition-colors">
           <Columns2 className="h-[18px] w-[18px]" />
-          {!compact && <span className="text-[12px] font-medium">Resize</span>}
         </button>
       </div>
     </aside>
