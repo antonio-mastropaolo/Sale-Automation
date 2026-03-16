@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Menu, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,6 +13,14 @@ import { Sidebar } from "@/components/sidebar";
 
 export function TopHeader() {
   const [open, setOpen] = useState(false);
+  const [dark, setDark] = useState(false);
+
+  useEffect(() => {
+    setDark(document.documentElement.classList.contains("dark"));
+    const observer = new MutationObserver(() => setDark(document.documentElement.classList.contains("dark")));
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <div className="lg:hidden">
@@ -37,7 +45,7 @@ export function TopHeader() {
         </Sheet>
 
         <div className="flex items-center">
-          <img src="/logo-full.png" alt="ListBlitz" className="h-8 sm:h-9 object-contain" />
+          <img src={dark ? "/logo-full-dark.png" : "/logo-full.png"} alt="ListBlitz" className="h-8 sm:h-9 object-contain" />
         </div>
       </header>
     </div>
