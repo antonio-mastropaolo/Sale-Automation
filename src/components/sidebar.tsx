@@ -111,9 +111,6 @@ export function Sidebar({ className }: { className?: string }) {
 
   const isSectionFolded = (section: typeof sections[number]) => {
     if (!section.collapsible) return false;
-    // Auto-expand if a child route is active
-    const hasActiveChild = section.items.some(({ href }) => isActive(href));
-    if (hasActiveChild) return false;
     return !!foldedSections[section.label];
   };
 
