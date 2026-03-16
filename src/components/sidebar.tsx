@@ -60,8 +60,8 @@ export function Sidebar({ className }: { className?: string }) {
     setDark(d);
     if (d) document.documentElement.classList.add("dark");
     else document.documentElement.classList.remove("dark");
-    applyTheme(getSavedTheme(), d);
-    applyDesignStyle(getSavedDesignStyle(), d);
+    applyDesignStyle(getSavedDesignStyle(), d); // base palette first
+    applyTheme(getSavedTheme(), d); // accent color on top
     if (localStorage.getItem("sidebar-collapsed") === "true") setCollapsed(true);
     // Check admin status
     fetch("/api/auth/me").then((r) => r.json()).then((data) => {
@@ -75,8 +75,8 @@ export function Sidebar({ className }: { className?: string }) {
       const next = !d;
       document.documentElement.classList.toggle("dark", next);
       localStorage.setItem("theme", next ? "dark" : "light");
-      applyTheme(getSavedTheme(), next);
-      applyDesignStyle(getSavedDesignStyle(), next);
+      applyDesignStyle(getSavedDesignStyle(), next); // base palette first
+      applyTheme(getSavedTheme(), next); // accent color on top
       return next;
     });
   };

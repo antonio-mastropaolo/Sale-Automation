@@ -1316,6 +1316,7 @@ function GeneralTab() {
                   setDesignStyle(style.id);
                   const isDark = document.documentElement.classList.contains("dark");
                   applyDesignStyle(style.id, isDark);
+                  applyThemeFromLib(getSavedThemeFromStorage(), isDark); // re-apply accent on top
                   saveDesignStyle(style.id);
                 }}
                 className={`relative rounded-xl border-2 p-3 text-left transition-all ${
