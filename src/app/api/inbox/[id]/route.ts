@@ -73,6 +73,28 @@ export async function POST(
     },
   });
 
+  // Also send to the platform via automation backend (best-effort)
+  if ((sender || "seller") === "seller") {
+    const AUTOMATION_API = process.env.AUTOMATION_API_URL || "http://localhost:8000";
+    try {
+      // If this is a live conversation (has a platform conversation ID), relay the message
+      const convIdParts = id.split("-");
+      const platformConvId = convIdParts.length > 2 ? convIdParts.slice(2).join("-") : id;
+
+      await fetch(
+        `${AUTOMATION_API}/v2/messages/${conversation.platform}/${platformConvId}?user_id=default-user`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: content }),
+          signal: AbortSignal.timeout(15000),
+        }
+      );
+    } catch {
+      // Automation backend unavailable — message saved locally only
+    }
+  }
+
   return NextResponse.json(message, { status: 201 });
 }
 

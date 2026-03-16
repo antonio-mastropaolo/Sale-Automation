@@ -387,9 +387,9 @@ export default function TrendsPage() {
         items={data.hotItems}
         renderCard={(item) => (
           <div className="rounded-xl bg-card p-4 space-y-2.5 card-hover">
-            <div className="flex items-start justify-between gap-2">
-              <h3 className="font-semibold text-[13px] leading-tight">{item.name}</h3>
-              <Badge className="bg-primary text-primary-foreground border-0 text-[10px] font-bold shrink-0">{item.priceRange}</Badge>
+            <div className="flex items-start justify-between gap-3">
+              <h3 className="font-semibold text-[13px] leading-tight min-w-0 line-clamp-2">{item.name}</h3>
+              <Badge className="bg-primary text-primary-foreground border-0 text-[10px] font-bold shrink-0 whitespace-nowrap">{item.priceRange}</Badge>
             </div>
             <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">{item.description}</p>
             <div className="flex items-center justify-between">

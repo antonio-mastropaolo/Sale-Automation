@@ -10,7 +10,7 @@ export class GrailedAutomation extends PlatformAutomation {
     const creds = (await this.getCredentials())!;
 
     try {
-      // Grailed uses a GraphQL/REST API for authentication
+      // Grailed uses a REST API for authentication
       const res = await fetch("https://www.grailed.com/api/sign_in", {
         method: "POST",
         headers: {
@@ -43,11 +43,15 @@ export class GrailedAutomation extends PlatformAutomation {
     }
   }
 
-  async publish(data: PlatformListingData): Promise<{ url: string }> {
-    const creds = await this.getCredentials();
-    if (!creds) throw new Error("Grailed credentials not configured");
-    console.log(`[Grailed] Would publish: ${data.title} at $${data.price}`);
-    return { url: `https://www.grailed.com/listings/placeholder-${Date.now()}` };
+  // publish() is inherited from base — proxies to FastAPI v2 backend
+  // which uses GrailedBrowserConnector (Playwright headless)
+
+  protected buildAuthPayload(creds: Record<string, string>) {
+    return {
+      platform: "grailed",
+      auth_type: "cookies" as const,
+      cookies: { _grailed_session: creds.password, email: creds.username },
+    };
   }
 }
 

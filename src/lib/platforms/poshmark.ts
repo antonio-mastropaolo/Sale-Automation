@@ -10,7 +10,6 @@ export class PoshmarkAutomation extends PlatformAutomation {
     const creds = (await this.getCredentials())!;
 
     try {
-      // Poshmark has a known API endpoint for login
       const res = await fetch("https://poshmark.com/api/login", {
         method: "POST",
         headers: {
@@ -31,30 +30,32 @@ export class PoshmarkAutomation extends PlatformAutomation {
         let detail = "";
         try { const body = await res.json(); detail = body.error?.message || body.error || ""; } catch { /* ignore */ }
         const lower = (typeof detail === "string" ? detail : "").toLowerCase();
-
         if (lower.includes("verify") || lower.includes("captcha")) {
-          return { success: false, message: "Poshmark requires verification", errorCode: "two_factor", tip: "Log in to Poshmark on your phone first to complete any verification, then test again." };
+          return { success: false, message: "Poshmark requires verification", errorCode: "two_factor", tip: "Log in to Poshmark on your phone first to complete verification." };
         }
-        return { success: false, message: "Poshmark rejected your credentials", errorCode: "invalid_credentials", tip: "Check your username/email and password. If you signed up with Google/Facebook, set a password in Poshmark settings." };
+        return { success: false, message: "Poshmark rejected your credentials", errorCode: "invalid_credentials", tip: "Check your username/email and password." };
       }
       if (status === 429) {
-        return { success: false, message: "Too many login attempts on Poshmark", errorCode: "network_error", tip: "Wait a few minutes before testing again." };
+        return { success: false, message: "Too many login attempts on Poshmark", errorCode: "network_error", tip: "Wait a few minutes." };
       }
-      return { success: false, message: `Poshmark returned HTTP ${status}`, errorCode: "platform_down", tip: "Poshmark may be experiencing issues." };
+      return { success: false, message: `Poshmark returned HTTP ${status}`, errorCode: "platform_down" };
     } catch (err) {
       const msg = err instanceof Error ? err.message : "";
       if (msg.includes("abort") || msg.includes("timeout")) {
-        return { success: false, message: "Poshmark login timed out", errorCode: "network_error", tip: "Try again in a moment." };
+        return { success: false, message: "Poshmark login timed out", errorCode: "network_error", tip: "Try again." };
       }
-      return { success: false, message: "Could not reach Poshmark", errorCode: "network_error", tip: "Check your internet connection." };
+      return { success: false, message: "Could not reach Poshmark", errorCode: "network_error" };
     }
   }
 
-  async publish(data: PlatformListingData): Promise<{ url: string }> {
-    const creds = await this.getCredentials();
-    if (!creds) throw new Error("Poshmark credentials not configured");
-    console.log(`[Poshmark] Would publish: ${data.title} at $${data.price}`);
-    return { url: `https://poshmark.com/listing/placeholder-${Date.now()}` };
+  // publish() inherited — proxies to FastAPI PoshmarkBrowserConnector
+
+  protected buildAuthPayload(creds: Record<string, string>) {
+    return {
+      platform: "poshmark",
+      auth_type: "cookies" as const,
+      cookies: { _poshmark_session: creds.password, email: creds.username },
+    };
   }
 }
 

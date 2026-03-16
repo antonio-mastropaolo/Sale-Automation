@@ -1,7 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
-/** GET — List all conversations, optionally filtered by platform or status */
+const AUTOMATION_API = process.env.AUTOMATION_API_URL || "http://localhost:8000";
+
+interface AutomationConversation {
+  id: string;
+  platform: string;
+  listing_id?: string;
+  listing_title?: string;
+  buyer_name: string;
+  last_message: string;
+  last_activity: string;
+  unread_count: number;
+}
+
+/** GET — List all conversations: merge Prisma DB + live platform messages */
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const platform = searchParams.get("platform");
@@ -11,7 +24,8 @@ export async function GET(request: NextRequest) {
   if (platform) where.platform = platform;
   if (status) where.status = status;
 
-  const conversations = await prisma.conversation.findMany({
+  // 1) Fetch local conversations from Prisma
+  const localConversations = await prisma.conversation.findMany({
     where,
     include: { messages: { orderBy: { createdAt: "desc" }, take: 1 } },
     orderBy: { lastMessageAt: "desc" },
@@ -19,7 +33,59 @@ export async function GET(request: NextRequest) {
 
   const unreadCount = await prisma.conversation.count({ where: { unread: true } });
 
-  return NextResponse.json({ conversations, unreadCount });
+  // 2) Fetch live conversations from the automation backend
+  let liveConversations: AutomationConversation[] = [];
+  try {
+    const platformFilter = platform ? `/${platform}/conversations` : "/inbox";
+    const res = await fetch(
+      `${AUTOMATION_API}/v2/messages${platformFilter}?user_id=default-user`,
+      { signal: AbortSignal.timeout(10000), next: { revalidate: 30 } }
+    );
+    if (res.ok) {
+      const data = await res.json();
+      liveConversations = Array.isArray(data) ? data : [];
+    }
+  } catch {
+    // Automation backend unavailable — just use local data
+  }
+
+  // 3) Merge: deduplicate by platform+buyer_name combo
+  const seen = new Set(
+    localConversations.map((c) => `${c.platform}:${c.buyerName}`)
+  );
+
+  const mergedLive = liveConversations
+    .filter((c) => !seen.has(`${c.platform}:${c.buyer_name}`))
+    .map((c) => ({
+      id: `live-${c.platform}-${c.id}`,
+      platform: c.platform,
+      buyerName: c.buyer_name,
+      buyerUsername: "",
+      listingId: c.listing_id || null,
+      listingTitle: c.listing_title || "",
+      lastMessage: c.last_message,
+      lastMessageAt: c.last_activity ? new Date(c.last_activity) : new Date(),
+      unread: c.unread_count > 0,
+      status: "active",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      messages: [],
+      _source: "automation" as const,
+    }));
+
+  const allConversations = [
+    ...localConversations.map((c) => ({ ...c, _source: "local" as const })),
+    ...mergedLive,
+  ].sort((a, b) => {
+    const aTime = new Date(a.lastMessageAt).getTime();
+    const bTime = new Date(b.lastMessageAt).getTime();
+    return bTime - aTime;
+  });
+
+  return NextResponse.json({
+    conversations: allConversations,
+    unreadCount: unreadCount + liveConversations.filter((c) => c.unread_count > 0).length,
+  });
 }
 
 /** POST — Create a new conversation (or add message to existing) */
