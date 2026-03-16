@@ -125,13 +125,25 @@ export function Sidebar({ className }: { className?: string }) {
       className,
     )}>
       {/* Header */}
-      <div className={cn("shrink-0 border-b border-[var(--sidebar-border)] overflow-hidden flex items-center", collapsed ? "h-[56px] justify-center p-1" : "h-[56px] px-4", dark ? "bg-[#0d1117]" : "bg-white")}>
+      <div className={cn("shrink-0 border-b border-[var(--sidebar-border)] overflow-hidden flex items-center", collapsed ? "h-[56px] justify-center p-1" : "h-[56px] px-4")}>
         <img
-          src={collapsed ? "/logo.png" : dark ? "/logo-full-dark.png" : "/logo-full.png"}
+          src={collapsed ? "/logo.png" : "/logo-full.png"}
           alt="ListBlitz"
-          className={collapsed ? "h-8 w-8 object-contain" : "h-7 max-w-[160px] object-contain object-left"}
+          className={cn(
+            collapsed ? "h-8 w-8 object-contain" : "h-7 max-w-[160px] object-contain object-left",
+            dark && "brightness-[1.8] contrast-[1.1]"
+          )}
         />
       </div>
+
+      {/* Collapse toggle pill — always visible on sidebar edge */}
+      <button
+        onClick={toggleCollapse}
+        className="absolute -right-[13px] top-[28px] z-50 h-[26px] w-[26px] rounded-full bg-[var(--card)] border border-[var(--border)] flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--primary)] hover:border-[var(--primary)] transition-colors shadow-sm"
+        title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+      >
+        {collapsed ? <PanelLeftOpen className="h-3 w-3" /> : <PanelLeftClose className="h-3 w-3" />}
+      </button>
 
       {/* Nav */}
       <nav className={cn("flex-1 overflow-y-auto py-2", collapsed ? "px-1.5" : "px-2")}>
@@ -196,18 +208,13 @@ export function Sidebar({ className }: { className?: string }) {
         })}
       </nav>
 
-      {/* Bottom toolbar — visually separated from nav */}
+      {/* Bottom toolbar — theme + logout only (collapse is on the edge pill) */}
       <div className={cn(
         "shrink-0 border-t-2 border-[var(--sidebar-border)]",
-        collapsed ? "px-1.5 py-2 flex flex-row items-center justify-center gap-0.5" : "px-2 py-2 flex flex-col gap-0.5"
+        collapsed ? "px-1.5 py-2 flex flex-row items-center justify-center gap-1" : "px-2 py-2 flex flex-col gap-0.5"
       )}>
         {collapsed ? (
-          /* Collapsed: horizontal row of small, distinctly styled icon buttons */
           <>
-            <button onClick={toggleCollapse} title="Expand sidebar"
-              className="h-[30px] w-[30px] rounded-full flex items-center justify-center text-[var(--primary)] bg-[var(--sidebar-accent)] hover:bg-[var(--primary)] hover:text-white transition-colors">
-              <PanelLeftOpen className="h-3.5 w-3.5" />
-            </button>
             <button onClick={toggleDark} title={dark ? "Light mode" : "Dark mode"}
               className="h-[30px] w-[30px] rounded-full flex items-center justify-center text-amber-500 bg-amber-500/10 hover:bg-amber-500 hover:text-white transition-colors">
               {dark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
@@ -218,13 +225,7 @@ export function Sidebar({ className }: { className?: string }) {
             </button>
           </>
         ) : (
-          /* Expanded: labeled rows */
           <>
-            <button onClick={toggleCollapse}
-              className="flex items-center gap-2.5 px-2.5 py-[6px] rounded-[8px] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--sidebar-accent)] transition-colors">
-              <PanelLeftClose className="h-[15px] w-[15px] shrink-0" />
-              <span className="text-[12px]">Collapse</span>
-            </button>
             <button onClick={toggleDark}
               className="flex items-center gap-2.5 px-2.5 py-[6px] rounded-[8px] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--sidebar-accent)] transition-colors">
               {dark ? <Sun className="h-[15px] w-[15px] shrink-0 text-amber-500" /> : <Moon className="h-[15px] w-[15px] shrink-0 text-amber-500" />}
