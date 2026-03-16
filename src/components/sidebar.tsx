@@ -155,13 +155,13 @@ export function Sidebar({ className }: { className?: string }) {
       </div>
 
       {/* Nav */}
-      <nav className={cn("flex-1 overflow-y-auto py-2", compact ? "px-1.5" : "px-2")}>
+      <nav className={cn("flex-1 overflow-y-auto py-1.5", compact ? "px-1.5" : "px-2")}>
         {sections.map((section) => {
           const folded = isSectionFolded(section);
           const visibleItems = section.items.filter(({ href }) => !ADMIN_ONLY_PATHS.includes(href) || isAdmin);
 
           return (
-            <div key={section.label} className="mb-3">
+            <div key={section.label} className="mb-1.5">
               {!compact && (
                 section.collapsible ? (
                   <button
@@ -182,7 +182,7 @@ export function Sidebar({ className }: { className?: string }) {
                   </p>
                 )
               )}
-              {compact && <div className="h-px bg-[var(--sidebar-border)] mx-2 my-1.5" />}
+              {compact && <div className="h-px bg-[var(--sidebar-border)] mx-2 my-1" />}
               <div
                 className={cn(
                   "overflow-hidden transition-all duration-200",
@@ -200,7 +200,7 @@ export function Sidebar({ className }: { className?: string }) {
                       title={compact ? label : undefined}
                       className={cn(
                         "flex items-center rounded-[10px] transition-all duration-150",
-                        compact ? "justify-center h-[38px] w-[38px]" : "gap-2.5 px-2.5 py-[7px]",
+                        compact ? "justify-center h-[34px] w-[34px]" : "gap-2.5 px-2.5 py-[5px]",
                         active
                           ? "bg-[var(--sidebar-accent)] text-[var(--sidebar-accent-foreground)] font-semibold"
                           : "text-[var(--sidebar-foreground)] hover:bg-[var(--sidebar-accent)] hover:text-[var(--sidebar-accent-foreground)]"
