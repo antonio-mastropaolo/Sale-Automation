@@ -245,7 +245,12 @@ export default function LoginPage() {
         <div className="w-full max-w-xs">
           {/* Logo + heading */}
           <div className="text-center mb-8">
-            <img src="/logo-full-dark.png" alt="ListBlitz.io" className="h-10 object-contain mx-auto mb-3" />
+            <div className="flex items-center justify-center gap-2.5 mb-3">
+              <Rocket className="h-7 w-7 text-[#5b9bd5] drop-shadow-[0_0_8px_rgba(91,155,213,0.4)]" />
+              <span className="text-2xl font-bold tracking-tight">
+                <span className="text-[#a0aec0]">List</span><span className="text-[#5b9bd5]">Blitz</span><span className="text-[#718096]">.io</span>
+              </span>
+            </div>
             <p className="text-sm text-[#8899aa]">Access your dashboard</p>
           </div>
 
