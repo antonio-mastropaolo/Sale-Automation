@@ -141,7 +141,7 @@ describe("A. Themes Registry Integrity", () => {
 
 describe("B. Design Styles Registry Integrity", () => {
   it("B01: DESIGN_STYLES is a non-empty array", () => { expect(DESIGN_STYLES.length).toBeGreaterThan(0); });
-  it("B02: has exactly 6 styles", () => { expect(DESIGN_STYLES).toHaveLength(6); });
+  it("B02: has exactly 12 styles", () => { expect(DESIGN_STYLES).toHaveLength(12); });
   it("B03: DEFAULT_DESIGN_STYLE exists", () => { expect(DESIGN_STYLES.find((s) => s.id === DEFAULT_DESIGN_STYLE)).toBeDefined(); });
   it("B04: DEFAULT_DESIGN_STYLE is 'ios'", () => { expect(DEFAULT_DESIGN_STYLE).toBe("ios"); });
 
@@ -197,7 +197,7 @@ describe("B. Design Styles Registry Integrity", () => {
 
   it("B36: no prototype pollution", () => { DESIGN_STYLES.forEach((s) => expect(s.hasOwnProperty("id")).toBe(true)); });
   it("B37: spread preserves", () => { const copy = { ...DESIGN_STYLES[0] }; expect(copy.id).toBe(DESIGN_STYLES[0].id); });
-  it("B38: array spread preserves length", () => { expect([...DESIGN_STYLES]).toHaveLength(6); });
+  it("B38: array spread preserves length", () => { expect([...DESIGN_STYLES]).toHaveLength(12); });
 
   // Dark palette specific keys
   DARK_KEYS.forEach((key, i) => {
@@ -213,9 +213,31 @@ describe("B. Design Styles Registry Integrity", () => {
     });
   });
 
-  it("B60: style order is stable", () => {
-    expect(DESIGN_STYLES.map((s) => s.id)).toEqual(["flat", "material", "glass", "neumorphic", "ios", "midnight"]);
+  it("B60: first 6 styles order is stable", () => {
+    expect(DESIGN_STYLES.slice(0, 6).map((s) => s.id)).toEqual(["flat", "material", "glass", "neumorphic", "ios", "midnight"]);
   });
+
+  // New styles exist
+  it("B61: dracula exists", () => { expect(DESIGN_STYLES.find((s) => s.id === "dracula")).toBeDefined(); });
+  it("B62: nord exists", () => { expect(DESIGN_STYLES.find((s) => s.id === "nord")).toBeDefined(); });
+  it("B63: solarized exists", () => { expect(DESIGN_STYLES.find((s) => s.id === "solarized")).toBeDefined(); });
+  it("B64: monokai exists", () => { expect(DESIGN_STYLES.find((s) => s.id === "monokai")).toBeDefined(); });
+  it("B65: catppuccin exists", () => { expect(DESIGN_STYLES.find((s) => s.id === "catppuccin")).toBeDefined(); });
+  it("B66: rosepine exists", () => { expect(DESIGN_STYLES.find((s) => s.id === "rosepine")).toBeDefined(); });
+
+  it("B67: dracula label", () => { expect(DESIGN_STYLES.find((s) => s.id === "dracula")!.label).toBe("Dracula"); });
+  it("B68: nord label", () => { expect(DESIGN_STYLES.find((s) => s.id === "nord")!.label).toBe("Nord"); });
+  it("B69: solarized label", () => { expect(DESIGN_STYLES.find((s) => s.id === "solarized")!.label).toBe("Solarized"); });
+  it("B70: monokai label", () => { expect(DESIGN_STYLES.find((s) => s.id === "monokai")!.label).toBe("Monokai"); });
+  it("B71: catppuccin label", () => { expect(DESIGN_STYLES.find((s) => s.id === "catppuccin")!.label).toBe("Catppuccin"); });
+  it("B72: rosepine label", () => { expect(DESIGN_STYLES.find((s) => s.id === "rosepine")!.label).toBe("Rose Pine"); });
+
+  it("B73: dracula dark bg", () => { expect(DESIGN_STYLES.find((s) => s.id === "dracula")!.dark.background).toBe("#282a36"); });
+  it("B74: nord dark bg", () => { expect(DESIGN_STYLES.find((s) => s.id === "nord")!.dark.background).toBe("#2e3440"); });
+  it("B75: solarized dark bg", () => { expect(DESIGN_STYLES.find((s) => s.id === "solarized")!.dark.background).toBe("#002b36"); });
+  it("B76: monokai dark bg", () => { expect(DESIGN_STYLES.find((s) => s.id === "monokai")!.dark.background).toBe("#272822"); });
+  it("B77: catppuccin dark bg", () => { expect(DESIGN_STYLES.find((s) => s.id === "catppuccin")!.dark.background).toBe("#1e1e2e"); });
+  it("B78: rosepine dark bg", () => { expect(DESIGN_STYLES.find((s) => s.id === "rosepine")!.dark.background).toBe("#191724"); });
 });
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -292,8 +314,8 @@ describe("F. Style Metadata", () => {
 // ═══════════════════════════════════════════════════════════════════════
 
 describe("G. Uniqueness & Cross-References", () => {
-  it("G01: style IDs unique", () => { expect(new Set(styleIds).size).toBe(6); });
-  it("G02: style labels unique", () => { expect(new Set(DESIGN_STYLES.map((s) => s.label)).size).toBe(6); });
+  it("G01: style IDs unique", () => { expect(new Set(styleIds).size).toBe(12); });
+  it("G02: style labels unique", () => { expect(new Set(DESIGN_STYLES.map((s) => s.label)).size).toBe(12); });
   it("G03: style IDs don't overlap with theme IDs", () => {
     styleIds.forEach((sid) => expect(themeIds).not.toContain(sid));
   });
@@ -311,8 +333,8 @@ describe("G. Uniqueness & Cross-References", () => {
   it("G09: no style has empty dark palette", () => { DESIGN_STYLES.forEach((s) => expect(Object.values(s.dark).every(Boolean)).toBe(true)); });
   it("G10: no style has empty light palette", () => { DESIGN_STYLES.forEach((s) => expect(Object.values(s.light).every(Boolean)).toBe(true)); });
 
-  it("G11: previews are unique", () => { expect(new Set(DESIGN_STYLES.map((s) => s.preview)).size).toBe(6); });
-  it("G12: descriptions are unique", () => { expect(new Set(DESIGN_STYLES.map((s) => s.description)).size).toBe(6); });
+  it("G11: previews are unique", () => { expect(new Set(DESIGN_STYLES.map((s) => s.preview)).size).toBe(12); });
+  it("G12: descriptions are unique", () => { expect(new Set(DESIGN_STYLES.map((s) => s.description)).size).toBe(12); });
 
   // 18 more cross-checks
   it("G13: flat dark bg is #0f0f0f", () => { expect(DESIGN_STYLES.find((s) => s.id === "flat")!.dark.background).toBe("#0f0f0f"); });
@@ -381,7 +403,7 @@ describe("H. Getter Functions", () => {
 // ═══════════════════════════════════════════════════════════════════════
 
 describe("I. Serialization", () => {
-  it("I01: DESIGN_STYLES JSON roundtrip", () => { expect(JSON.parse(JSON.stringify(DESIGN_STYLES))).toHaveLength(6); });
+  it("I01: DESIGN_STYLES JSON roundtrip", () => { expect(JSON.parse(JSON.stringify(DESIGN_STYLES))).toHaveLength(12); });
   it("I02: THEMES JSON roundtrip", () => { expect(Object.keys(JSON.parse(JSON.stringify(THEMES)))).toHaveLength(10); });
   it("I03: single style serializes", () => { expect(() => JSON.stringify(DESIGN_STYLES[0])).not.toThrow(); });
   it("I04: dark palette serializes", () => { expect(() => JSON.stringify(DESIGN_STYLES[0].dark)).not.toThrow(); });
@@ -425,15 +447,17 @@ describe("J. Performance", () => {
 
 describe("K. Edge Cases", () => {
   it("K01: empty array filter returns 0", () => { expect([].filter((s: DesignStyle) => s.id === "x")).toHaveLength(0); });
-  it("K02: spreading DESIGN_STYLES preserves length", () => { expect([...DESIGN_STYLES]).toHaveLength(6); });
+  it("K02: spreading DESIGN_STYLES preserves length", () => { expect([...DESIGN_STYLES]).toHaveLength(12); });
   it("K03: Object.keys on THEMES returns correct count", () => { expect(Object.keys(THEMES)).toHaveLength(10); });
   it("K04: Object.values on THEMES returns correct count", () => { expect(Object.values(THEMES)).toHaveLength(10); });
   it("K05: no circular references in styles", () => { expect(() => JSON.stringify(DESIGN_STYLES)).not.toThrow(); });
   it("K06: no circular references in themes", () => { expect(() => JSON.stringify(THEMES)).not.toThrow(); });
   it("K07: DESIGN_STYLES[0] is flat", () => { expect(DESIGN_STYLES[0].id).toBe("flat"); });
   it("K08: DESIGN_STYLES[5] is midnight", () => { expect(DESIGN_STYLES[5].id).toBe("midnight"); });
+  it("K11: DESIGN_STYLES[6] is dracula", () => { expect(DESIGN_STYLES[6].id).toBe("dracula"); });
+  it("K12: DESIGN_STYLES[11] is rosepine", () => { expect(DESIGN_STYLES[11].id).toBe("rosepine"); });
   it("K09: filtering by unknown returns empty", () => { expect(DESIGN_STYLES.filter((s) => s.id === "nope")).toHaveLength(0); });
-  it("K10: map preserves length", () => { expect(DESIGN_STYLES.map((s) => s.id)).toHaveLength(6); });
+  it("K10: map preserves length", () => { expect(DESIGN_STYLES.map((s) => s.id)).toHaveLength(12); });
 });
 
 describe("L. Theme-Style Interaction", () => {
@@ -445,7 +469,7 @@ describe("L. Theme-Style Interaction", () => {
       });
     });
   });
-  it("L02: 60 valid combinations exist", () => { expect(themeIds.length * styleIds.length).toBe(60); });
+  it("L02: 120 valid combinations exist", () => { expect(themeIds.length * styleIds.length).toBe(120); });
   it("L03: default combo is teal + ios", () => { expect(DEFAULT_THEME).toBe("teal"); expect(DEFAULT_DESIGN_STYLE).toBe("ios"); });
   it("L04: theme colors don't conflict with style bg", () => {
     themeEntries.forEach(([, t]) => {
@@ -454,9 +478,9 @@ describe("L. Theme-Style Interaction", () => {
       });
     });
   });
-  it("L05: all 6 styles have distinct dark identities", () => {
+  it("L05: all 12 styles have distinct dark identities", () => {
     const signatures = DESIGN_STYLES.map((s) => `${s.dark.background}|${s.dark.card}`);
-    expect(new Set(signatures).size).toBe(6);
+    expect(new Set(signatures).size).toBe(12);
   });
 });
 
@@ -467,16 +491,16 @@ describe("M. Determinism", () => {
   it("M02: 1000 reads of THEMES.teal.light", () => {
     for (let i = 0; i < 1000; i++) expect(THEMES.teal.light).toBe("#0d9488");
   });
-  it("M03: style order never changes", () => {
+  it("M03: first 6 style order never changes", () => {
     for (let i = 0; i < 100; i++) {
-      expect(DESIGN_STYLES.map((s) => s.id)).toEqual(["flat", "material", "glass", "neumorphic", "ios", "midnight"]);
+      expect(DESIGN_STYLES.slice(0, 6).map((s) => s.id)).toEqual(["flat", "material", "glass", "neumorphic", "ios", "midnight"]);
     }
   });
   it("M04: theme count stable", () => {
     for (let i = 0; i < 100; i++) expect(Object.keys(THEMES).length).toBe(10);
   });
   it("M05: style count stable", () => {
-    for (let i = 0; i < 100; i++) expect(DESIGN_STYLES.length).toBe(6);
+    for (let i = 0; i < 100; i++) expect(DESIGN_STYLES.length).toBe(12);
   });
 });
 
