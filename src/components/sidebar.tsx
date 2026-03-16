@@ -7,7 +7,7 @@ import {
   LayoutDashboard, PlusCircle, BarChart3, Settings, Moon, Sun, Zap,
   Camera, Radar, HelpCircle, DollarSign, FileUp, BookTemplate,
   Truck, Target, Calendar, LogOut, Stethoscope, PanelLeftClose, PanelLeftOpen,
-  MessageCircle,
+  MessageCircle, FlaskConical,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { applyTheme, getSavedTheme } from "@/lib/themes";
@@ -41,6 +41,7 @@ const sections = [
       { href: "/workflow", label: "AI Pipeline", icon: Zap },
       { href: "/tools", label: "Seller Tools", icon: HelpCircle },
       { href: "/diagnostics", label: "Diagnostics", icon: Stethoscope },
+      { href: "/diagnostics/tests", label: "Test Suite", icon: FlaskConical },
       { href: "/settings", label: "Settings", icon: Settings },
     ],
   },
