@@ -578,15 +578,19 @@ function AIProviderTab() {
                           </div>
                         </div>
                       )}
-
-                      {/* Save routing */}
-                      <Button onClick={save} disabled={saving} size="sm" className="w-full h-9 text-xs">
-                        {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Save className="h-3.5 w-3.5 mr-1.5" />}
-                        Save Routing
-                      </Button>
                     </div>
                   )}
                 </div>
+
+                {/* Save routing — pinned outside scroll area */}
+                {canRoute && (
+                  <div className="p-4 pt-3 border-t border-border shrink-0">
+                    <Button onClick={save} disabled={saving} size="sm" className="w-full h-9 text-xs">
+                      {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Save className="h-3.5 w-3.5 mr-1.5" />}
+                      Save Routing
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
