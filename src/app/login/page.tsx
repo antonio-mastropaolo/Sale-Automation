@@ -80,13 +80,6 @@ export default function LoginPage() {
 
         {/* Center content */}
         <div className="relative z-10 text-center px-12 max-w-lg">
-          {/* Animated rocket */}
-          <div className="mb-8 animate-float">
-            <div className="relative inline-block">
-              <img src="/login-bg.png" alt="" className="h-32 object-contain drop-shadow-[0_0_40px_rgba(59,130,246,0.3)]" />
-            </div>
-          </div>
-
           {/* Tagline */}
           <h2 className="text-4xl font-bold text-white tracking-tight mb-4 animate-fade-up">
             List once.
@@ -156,10 +149,7 @@ export default function LoginPage() {
         <div className="w-full max-w-xs">
           {/* Logo + heading */}
           <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-2 mb-3">
-              <Rocket className="h-6 w-6 text-[#5b9bd5]" />
-              <span className="text-xl font-bold text-white tracking-tight">ListBlitz.io</span>
-            </div>
+            <img src="/logo-full-dark.png" alt="ListBlitz.io" className="h-12 object-contain mx-auto mb-3" />
             <p className="text-sm text-[#8899aa]">Access your dashboard</p>
           </div>
 
