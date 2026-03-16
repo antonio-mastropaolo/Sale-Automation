@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { MainContent } from "@/components/main-content";
 import { HelpProvider } from "@/components/help-context";
 import { HelpAssistant } from "@/components/help-assistant";
+import { Footer } from "@/components/footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,6 +41,7 @@ export default function RootLayout({
             <MainContent>
               <TopHeader />
               {children}
+              <Footer />
             </MainContent>
           </div>
           <HelpAssistant />
