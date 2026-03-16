@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import {
   LayoutDashboard, PlusCircle, BarChart3, Settings, Moon, Sun, Zap,
   Camera, Radar, HelpCircle, DollarSign, FileUp, BookTemplate,
-  Truck, Target, Calendar, LogOut, Stethoscope, PanelLeftClose, PanelLeftOpen,
+  Truck, Target, Calendar, LogOut, Stethoscope,
   MessageCircle, FlaskConical, ChevronDown,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -55,7 +55,6 @@ const ADMIN_ONLY_PATHS = ["/diagnostics", "/diagnostics/tests"];
 export function Sidebar({ className }: { className?: string }) {
   const pathname = usePathname();
   const [dark, setDark] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [foldedSections, setFoldedSections] = useState<Record<string, boolean>>({});
 
@@ -66,7 +65,6 @@ export function Sidebar({ className }: { className?: string }) {
     else document.documentElement.classList.remove("dark");
     applyDesignStyle(getSavedDesignStyle(), d); // base palette first
     applyTheme(getSavedTheme(), d); // accent color on top
-    if (localStorage.getItem("sidebar-collapsed") === "true") setCollapsed(true);
     // Restore folded sections
     try {
       const saved = localStorage.getItem("sidebar-folded");
@@ -86,15 +84,6 @@ export function Sidebar({ className }: { className?: string }) {
       localStorage.setItem("theme", next ? "dark" : "light");
       applyDesignStyle(getSavedDesignStyle(), next); // base palette first
       applyTheme(getSavedTheme(), next); // accent color on top
-      return next;
-    });
-  };
-
-  const toggleCollapse = () => {
-    setCollapsed((c) => {
-      const next = !c;
-      localStorage.setItem("sidebar-collapsed", String(next));
-      setTimeout(() => window.dispatchEvent(new CustomEvent("sidebar-toggle", { detail: { collapsed: next } })), 0);
       return next;
     });
   };
@@ -119,67 +108,53 @@ export function Sidebar({ className }: { className?: string }) {
 
   return (
     <aside className={cn(
-      "fixed inset-y-0 left-0 z-50 flex flex-col transition-all duration-300 ease-in-out",
+      "fixed inset-y-0 left-0 z-50 flex flex-col w-[220px]",
       "bg-[var(--sidebar)] glass border-r border-[var(--sidebar-border)]",
-      collapsed ? "w-[68px]" : "w-[220px]",
       className,
     )}>
       {/* Header */}
-      <div className={cn("shrink-0 border-b border-[var(--sidebar-border)] overflow-hidden flex items-center", collapsed ? "h-[56px] justify-center p-1" : "h-[56px] px-4")}>
+      <div className="shrink-0 h-[56px] border-b border-[var(--sidebar-border)] overflow-hidden flex items-center px-4">
         <img
-          src={collapsed ? "/logo.png" : "/logo-full.png"}
+          src="/logo-full.png"
           alt="ListBlitz"
           className={cn(
-            collapsed ? "h-8 w-8 object-contain" : "h-7 max-w-[160px] object-contain object-left",
+            "h-7 max-w-[160px] object-contain object-left",
             dark && "brightness-[1.8] contrast-[1.1]"
           )}
         />
       </div>
 
-      {/* Collapse toggle pill — always visible on sidebar edge */}
-      <button
-        onClick={toggleCollapse}
-        className="absolute -right-[13px] top-[28px] z-50 h-[26px] w-[26px] rounded-full bg-[var(--card)] border border-[var(--border)] flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--primary)] hover:border-[var(--primary)] transition-colors shadow-sm"
-        title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-      >
-        {collapsed ? <PanelLeftOpen className="h-3 w-3" /> : <PanelLeftClose className="h-3 w-3" />}
-      </button>
-
       {/* Nav */}
-      <nav className={cn("flex-1 overflow-y-auto py-2", collapsed ? "px-1.5" : "px-2")}>
+      <nav className="flex-1 overflow-y-auto py-2 px-2">
         {sections.map((section) => {
           const folded = isSectionFolded(section);
           const visibleItems = section.items.filter(({ href }) => !ADMIN_ONLY_PATHS.includes(href) || isAdmin);
 
           return (
             <div key={section.label} className="mb-3">
-              {!collapsed && (
-                section.collapsible ? (
-                  <button
-                    onClick={() => toggleFold(section.label)}
-                    className="flex items-center justify-between w-full px-3 mb-1 group"
-                  >
-                    <span className="text-[11px] font-medium uppercase tracking-wide text-[var(--muted-foreground)] group-hover:text-[var(--sidebar-accent-foreground)] transition-colors">
-                      {section.label}
-                    </span>
-                    <ChevronDown className={cn(
-                      "h-3 w-3 text-[var(--muted-foreground)] transition-transform duration-200",
-                      folded && "-rotate-90"
-                    )} />
-                  </button>
-                ) : (
-                  <p className="px-3 mb-1 text-[11px] font-medium uppercase tracking-wide text-[var(--muted-foreground)]">
+              {section.collapsible ? (
+                <button
+                  onClick={() => toggleFold(section.label)}
+                  className="flex items-center justify-between w-full px-3 mb-1 group"
+                >
+                  <span className="text-[11px] font-medium uppercase tracking-wide text-[var(--muted-foreground)] group-hover:text-[var(--sidebar-accent-foreground)] transition-colors">
                     {section.label}
-                  </p>
-                )
+                  </span>
+                  <ChevronDown className={cn(
+                    "h-3 w-3 text-[var(--muted-foreground)] transition-transform duration-200",
+                    folded && "-rotate-90"
+                  )} />
+                </button>
+              ) : (
+                <p className="px-3 mb-1 text-[11px] font-medium uppercase tracking-wide text-[var(--muted-foreground)]">
+                  {section.label}
+                </p>
               )}
-              {collapsed && <div className="h-px bg-[var(--sidebar-border)] mx-2 my-1.5" />}
               <div
                 className={cn(
                   "space-y-[2px] overflow-hidden transition-all duration-200",
-                  collapsed && "flex flex-col items-center",
-                  !collapsed && folded && "max-h-0 opacity-0",
-                  !collapsed && !folded && "max-h-[500px] opacity-100",
+                  folded && "max-h-0 opacity-0",
+                  !folded && "max-h-[500px] opacity-100",
                 )}
               >
                 {visibleItems.map(({ href, label, icon: Icon }) => {
@@ -188,17 +163,15 @@ export function Sidebar({ className }: { className?: string }) {
                     <Link
                       key={href}
                       href={href}
-                      title={collapsed ? label : undefined}
                       className={cn(
-                        "flex items-center rounded-[10px] transition-all duration-150",
-                        collapsed ? "justify-center h-[38px] w-[38px]" : "gap-2.5 px-2.5 py-[7px]",
+                        "flex items-center gap-2.5 px-2.5 py-[7px] rounded-[10px] transition-all duration-150",
                         active
                           ? "bg-[var(--sidebar-accent)] text-[var(--sidebar-accent-foreground)] font-semibold"
                           : "text-[var(--sidebar-foreground)] hover:bg-[var(--sidebar-accent)] hover:text-[var(--sidebar-accent-foreground)]"
                       )}
                     >
-                      <Icon className={cn("shrink-0", collapsed ? "h-[18px] w-[18px]" : "h-[16px] w-[16px]", active && "text-[var(--primary)]")} />
-                      {!collapsed && <span className="text-[13px] truncate">{label}</span>}
+                      <Icon className={cn("h-[16px] w-[16px] shrink-0", active && "text-[var(--primary)]")} />
+                      <span className="text-[13px] truncate">{label}</span>
                     </Link>
                   );
                 })}
@@ -208,36 +181,18 @@ export function Sidebar({ className }: { className?: string }) {
         })}
       </nav>
 
-      {/* Bottom toolbar — theme + logout only (collapse is on the edge pill) */}
-      <div className={cn(
-        "shrink-0 border-t-2 border-[var(--sidebar-border)]",
-        collapsed ? "px-1.5 py-2 flex flex-row items-center justify-center gap-1" : "px-2 py-2 flex flex-col gap-0.5"
-      )}>
-        {collapsed ? (
-          <>
-            <button onClick={toggleDark} title={dark ? "Light mode" : "Dark mode"}
-              className="h-[30px] w-[30px] rounded-full flex items-center justify-center text-amber-500 bg-amber-500/10 hover:bg-amber-500 hover:text-white transition-colors">
-              {dark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
-            </button>
-            <button onClick={() => { fetch("/api/auth/logout", { method: "POST" }).then(() => { window.location.href = "/login"; }); }} title="Sign out"
-              className="h-[30px] w-[30px] rounded-full flex items-center justify-center text-red-400 bg-red-500/10 hover:bg-red-500 hover:text-white transition-colors">
-              <LogOut className="h-3.5 w-3.5" />
-            </button>
-          </>
-        ) : (
-          <>
-            <button onClick={toggleDark}
-              className="flex items-center gap-2.5 px-2.5 py-[6px] rounded-[8px] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--sidebar-accent)] transition-colors">
-              {dark ? <Sun className="h-[15px] w-[15px] shrink-0 text-amber-500" /> : <Moon className="h-[15px] w-[15px] shrink-0 text-amber-500" />}
-              <span className="text-[12px]">{dark ? "Light mode" : "Dark mode"}</span>
-            </button>
-            <button onClick={() => { fetch("/api/auth/logout", { method: "POST" }).then(() => { window.location.href = "/login"; }); }}
-              className="flex items-center gap-2.5 px-2.5 py-[6px] rounded-[8px] text-[var(--muted-foreground)] hover:text-[var(--destructive)] hover:bg-red-500/10 transition-colors">
-              <LogOut className="h-[15px] w-[15px] shrink-0" />
-              <span className="text-[12px]">Sign out</span>
-            </button>
-          </>
-        )}
+      {/* Bottom — theme + sign out, big and clear */}
+      <div className="shrink-0 border-t-2 border-[var(--sidebar-border)] px-2 py-3 flex items-center gap-2">
+        <button onClick={toggleDark} title={dark ? "Light mode" : "Dark mode"}
+          className="flex-1 h-[38px] rounded-[10px] flex items-center justify-center gap-2 text-amber-500 bg-amber-500/10 hover:bg-amber-500 hover:text-white transition-colors">
+          {dark ? <Sun className="h-[18px] w-[18px]" /> : <Moon className="h-[18px] w-[18px]" />}
+          <span className="text-[12px] font-medium">{dark ? "Light" : "Dark"}</span>
+        </button>
+        <button onClick={() => { fetch("/api/auth/logout", { method: "POST" }).then(() => { window.location.href = "/login"; }); }} title="Sign out"
+          className="flex-1 h-[38px] rounded-[10px] flex items-center justify-center gap-2 text-red-400 bg-red-500/10 hover:bg-red-500 hover:text-white transition-colors">
+          <LogOut className="h-[18px] w-[18px]" />
+          <span className="text-[12px] font-medium">Sign out</span>
+        </button>
       </div>
     </aside>
   );
