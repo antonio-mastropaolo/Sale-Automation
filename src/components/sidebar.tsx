@@ -7,8 +7,8 @@ import {
   LayoutDashboard, PlusCircle, BarChart3, Settings, Moon, Sun, Zap,
   Camera, Radar, HelpCircle, DollarSign, FileUp, BookTemplate,
   Truck, Target, Calendar, LogOut, Stethoscope, Columns2,
-  MessageCircle, FlaskConical, ChevronDown, User, KeyRound, ImagePlus,
-  ChevronUp,
+  MessageCircle, FlaskConical, ChevronDown, KeyRound, ImagePlus,
+  ChevronUp, Flame,
 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { applyTheme, getSavedTheme, applyDesignStyle, getSavedDesignStyle } from "@/lib/themes";
@@ -34,6 +34,7 @@ const sections = [
       { href: "/analytics", label: "Analytics", icon: BarChart3 },
       { href: "/trends", label: "Trends", icon: Radar },
       { href: "/competitor", label: "Competitor Spy", icon: Target },
+      { href: "/drops", label: "Drop Feed", icon: Flame },
       { href: "/scheduler", label: "Scheduler", icon: Calendar },
     ],
   },
