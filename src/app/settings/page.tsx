@@ -42,6 +42,17 @@ import {
   PenTool,
   Link2,
   SlidersHorizontal,
+  Monitor,
+  Puzzle,
+  Lock,
+  Globe,
+  Bell,
+  Database,
+  Package,
+  Store,
+  Palette,
+  RefreshCw,
+  Camera,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useHelp } from "@/components/help-context";
@@ -121,33 +132,52 @@ const platformInfo = Object.fromEntries(
 // ═══════════════════════════════════════════════════════════════════
 
 export default function SettingsPage() {
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/auth/me").then((r) => r.json()).then((data) => {
+      const u = data.user;
+      if (u && (u.role === "admin" || u.username === "antonio" || u.email === "admin@listblitz.io")) setIsAdmin(true);
+    }).catch(() => {});
+  }, []);
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Settings</h1>
         <p className="text-muted-foreground text-sm">
-          Manage your AI provider, customize prompts, connect platforms, and configure defaults
+          Manage your AI provider, customize prompts, connect platforms, and configure your workspace
         </p>
       </div>
 
       <Tabs defaultValue="ai">
-        <TabsList className="w-full sm:w-auto">
-          <TabsTrigger value="ai" className="gap-1.5">
-            <Cpu className="h-4 w-4" />
+        <TabsList className="h-auto p-1 bg-muted/50 rounded-xl flex flex-wrap gap-1">
+          <TabsTrigger value="ai" className="gap-1.5 rounded-lg text-xs data-[state=active]:bg-card data-[state=active]:shadow-sm px-3 py-2">
+            <Cpu className="h-3.5 w-3.5" />
             AI Provider
           </TabsTrigger>
-          <TabsTrigger value="prompts" className="gap-1.5">
-            <PenTool className="h-4 w-4" />
-            Prompt Studio
+          <TabsTrigger value="prompts" className="gap-1.5 rounded-lg text-xs data-[state=active]:bg-card data-[state=active]:shadow-sm px-3 py-2">
+            <PenTool className="h-3.5 w-3.5" />
+            Prompts
           </TabsTrigger>
-          <TabsTrigger value="platforms" className="gap-1.5">
-            <Link2 className="h-4 w-4" />
+          <TabsTrigger value="platforms" className="gap-1.5 rounded-lg text-xs data-[state=active]:bg-card data-[state=active]:shadow-sm px-3 py-2">
+            <Link2 className="h-3.5 w-3.5" />
             Platforms
           </TabsTrigger>
-          <TabsTrigger value="general" className="gap-1.5">
-            <SlidersHorizontal className="h-4 w-4" />
+          <TabsTrigger value="general" className="gap-1.5 rounded-lg text-xs data-[state=active]:bg-card data-[state=active]:shadow-sm px-3 py-2">
+            <Palette className="h-3.5 w-3.5" />
             General
           </TabsTrigger>
+          <TabsTrigger value="system" className="gap-1.5 rounded-lg text-xs data-[state=active]:bg-card data-[state=active]:shadow-sm px-3 py-2">
+            <Monitor className="h-3.5 w-3.5" />
+            System
+          </TabsTrigger>
+          {isAdmin && (
+            <TabsTrigger value="plugins" className="gap-1.5 rounded-lg text-xs data-[state=active]:bg-card data-[state=active]:shadow-sm px-3 py-2">
+              <Puzzle className="h-3.5 w-3.5" />
+              Plugins
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="ai">
@@ -162,6 +192,14 @@ export default function SettingsPage() {
         <TabsContent value="general">
           <GeneralTab />
         </TabsContent>
+        <TabsContent value="system">
+          <SystemTab />
+        </TabsContent>
+        {isAdmin && (
+          <TabsContent value="plugins">
+            <PluginsTab />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );
@@ -1456,6 +1494,207 @@ function GeneralTab() {
             </p>
             <p>List once, sell everywhere. Optimized for Depop, Grailed, Poshmark, Mercari, eBay, Vinted, Facebook Marketplace, and Vestiaire Collective.</p>
             <p className="text-xs">Version 0.1.0</p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TAB 5 — SYSTEM
+// ═══════════════════════════════════════════════════════════════════
+
+function SystemTab() {
+  const [settings, setSettings] = useState({
+    notifications_enabled: "true",
+    auto_sync_interval: "15",
+    data_retention_days: "90",
+    automation_api_url: "",
+    import_on_connect: "true",
+    debug_mode: "false",
+  });
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/settings").then((r) => r.json()).then((data: Record<string, string>) => {
+      setSettings((prev) => ({
+        ...prev,
+        notifications_enabled: data.notifications_enabled || "true",
+        auto_sync_interval: data.auto_sync_interval || "15",
+        data_retention_days: data.data_retention_days || "90",
+        automation_api_url: data.automation_api_url || "",
+        import_on_connect: data.import_on_connect || "true",
+        debug_mode: data.debug_mode || "false",
+      }));
+    }).catch(() => {});
+  }, []);
+
+  const update = (key: string, value: string) => setSettings((prev) => ({ ...prev, [key]: value }));
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ settings }),
+      });
+      toast.success("System settings saved");
+    } catch { toast.error("Failed to save"); }
+    setSaving(false);
+  };
+
+  const systemItems = [
+    { icon: Bell, label: "Push Notifications", description: "Toast + browser notifications for new buyer messages", type: "toggle" as const, key: "notifications_enabled" },
+    { icon: RefreshCw, label: "Auto-Sync Interval", description: "How often to check listing status across platforms", type: "select" as const, key: "auto_sync_interval", options: [{ value: "5", label: "5 min" }, { value: "10", label: "10 min" }, { value: "15", label: "15 min" }, { value: "30", label: "30 min" }, { value: "60", label: "1 hour" }] },
+    { icon: Database, label: "Data Retention", description: "How long to keep analytics and message history", type: "select" as const, key: "data_retention_days", options: [{ value: "30", label: "30 days" }, { value: "60", label: "60 days" }, { value: "90", label: "90 days" }, { value: "180", label: "6 months" }, { value: "365", label: "1 year" }] },
+    { icon: Package, label: "Import on Connect", description: "Auto-import active listings when connecting a new platform", type: "toggle" as const, key: "import_on_connect" },
+    { icon: Globe, label: "Automation API", description: "Backend service URL for platform automation", type: "input" as const, key: "automation_api_url", placeholder: "http://localhost:8000" },
+    { icon: Monitor, label: "Debug Mode", description: "Show detailed logs in browser console", type: "toggle" as const, key: "debug_mode" },
+  ];
+
+  return (
+    <div className="space-y-4 pt-2">
+      <Card className="border-0 shadow-sm">
+        <CardContent className="pt-5">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="p-3 rounded-xl bg-primary/10"><Monitor className="h-6 w-6 text-primary" /></div>
+            <div><h3 className="font-semibold">System Configuration</h3><p className="text-sm text-muted-foreground">Backend, sync, notifications, and data management</p></div>
+          </div>
+          <div className="space-y-0.5">
+            {systemItems.map((item) => (
+              <div key={item.key} className="flex items-center gap-4 py-3 border-b border-border last:border-b-0">
+                <item.icon className="h-4 w-4 text-muted-foreground shrink-0" />
+                <div className="flex-1 min-w-0"><p className="text-sm font-medium">{item.label}</p><p className="text-xs text-muted-foreground">{item.description}</p></div>
+                {item.type === "toggle" && (
+                  <button onClick={() => update(item.key, settings[item.key as keyof typeof settings] === "true" ? "false" : "true")}
+                    className={`relative h-6 w-11 rounded-full transition-colors shrink-0 ${settings[item.key as keyof typeof settings] === "true" ? "bg-[var(--primary)]" : "bg-muted"}`}>
+                    <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${settings[item.key as keyof typeof settings] === "true" ? "translate-x-[22px]" : "translate-x-0.5"}`} />
+                  </button>
+                )}
+                {item.type === "select" && (
+                  <select value={settings[item.key as keyof typeof settings]} onChange={(e) => update(item.key, e.target.value)}
+                    className="h-8 rounded-lg border border-border bg-background px-2 text-xs shrink-0">
+                    {item.options?.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                )}
+                {item.type === "input" && (
+                  <Input value={settings[item.key as keyof typeof settings]} onChange={(e) => update(item.key, e.target.value)}
+                    placeholder={item.placeholder} className="h-8 text-xs w-[200px] font-mono shrink-0" />
+                )}
+              </div>
+            ))}
+          </div>
+          <Button onClick={save} disabled={saving} size="sm" className="w-full mt-4 h-9 text-xs">
+            {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Save className="h-3.5 w-3.5 mr-1.5" />}
+            Save System Settings
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TAB 6 — PLUGINS (admin-only, hidden marketplace)
+// ═══════════════════════════════════════════════════════════════════
+
+interface PluginDef {
+  id: string; name: string; description: string; author: string; version: string;
+  category: "analytics" | "automation" | "sourcing" | "pricing" | "social";
+  icon: React.ComponentType<{ className?: string }>; installed: boolean; enabled: boolean; price: string;
+}
+
+const PLUGIN_CATALOG: PluginDef[] = [
+  { id: "stockx-intel", name: "StockX Price Intel", description: "Pull real-time StockX pricing into your listings for accurate market comparison.", author: "ListBlitz", version: "1.0.0", category: "pricing", icon: Sparkles, installed: false, enabled: false, price: "Free" },
+  { id: "goat-sync", name: "GOAT Marketplace Sync", description: "Sync sneaker listings with GOAT for expanded authenticated sneaker market reach.", author: "ListBlitz", version: "0.9.0", category: "automation", icon: Package, installed: false, enabled: false, price: "$9/mo" },
+  { id: "instagram-crosspost", name: "Instagram Crosspost", description: "Auto-post listings to Instagram Stories and Feed with optimized captions.", author: "Community", version: "1.2.0", category: "social", icon: Globe, installed: false, enabled: false, price: "Free" },
+  { id: "thrift-sourcer", name: "Thrift Store Sourcer", description: "AI identifies profitable finds from photos. Scan items in-store for instant resale estimates.", author: "ListBlitz", version: "1.0.0", category: "sourcing", icon: Camera, installed: false, enabled: false, price: "$4/mo" },
+  { id: "advanced-analytics", name: "Advanced Analytics", description: "Deep sales analytics with cohort analysis, LTV prediction, and inventory turnover.", author: "ListBlitz", version: "1.1.0", category: "analytics", icon: Monitor, installed: false, enabled: false, price: "$7/mo" },
+  { id: "auto-repricer", name: "Auto Repricer", description: "Auto-adjusts prices across platforms based on competition, demand, and your minimum margin.", author: "ListBlitz", version: "0.8.0", category: "pricing", icon: Sparkles, installed: false, enabled: false, price: "$12/mo" },
+];
+
+const CAT_COLORS: Record<string, string> = {
+  analytics: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+  automation: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+  sourcing: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+  pricing: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
+  social: "bg-pink-500/10 text-pink-600 dark:text-pink-400",
+};
+
+function PluginsTab() {
+  const [plugins, setPlugins] = useState(PLUGIN_CATALOG);
+  const [filter, setFilter] = useState<string | null>(null);
+
+  const toggleInstall = (id: string) => {
+    setPlugins((prev) => prev.map((p) => p.id === id ? { ...p, installed: !p.installed, enabled: !p.installed } : p));
+    const plugin = plugins.find((p) => p.id === id);
+    toast.success(plugin?.installed ? `${plugin.name} uninstalled` : `${plugin?.name} installed`);
+  };
+
+  const toggleEnabled = (id: string) => {
+    setPlugins((prev) => prev.map((p) => p.id === id ? { ...p, enabled: !p.enabled } : p));
+  };
+
+  const filtered = filter ? plugins.filter((p) => p.category === filter) : plugins;
+  const categories = [...new Set(plugins.map((p) => p.category))];
+
+  return (
+    <div className="space-y-4 pt-2">
+      <Card className="border-0 shadow-sm">
+        <CardContent className="pt-5">
+          <div className="flex items-center gap-4 mb-2">
+            <div className="p-3 rounded-xl bg-purple-500/10"><Store className="h-6 w-6 text-purple-500" /></div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2"><h3 className="font-semibold">Plugin Marketplace</h3><Badge className="text-[9px] bg-amber-500/10 text-amber-600 dark:text-amber-400 border-0">Preview</Badge></div>
+              <p className="text-sm text-muted-foreground">Extend ListBlitz with community and first-party plugins</p>
+            </div>
+          </div>
+
+          <div className="rounded-xl bg-amber-500/5 border border-amber-500/20 p-3 text-xs text-amber-700 dark:text-amber-400 mb-4 flex items-center gap-2">
+            <Lock className="h-3.5 w-3.5 shrink-0" />
+            Plugin marketplace is in private preview. Plugins shown here are planned — installation is simulated.
+          </div>
+
+          <div className="flex gap-1.5 mb-4 flex-wrap">
+            <button onClick={() => setFilter(null)} className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-colors ${!filter ? "bg-[var(--primary)] text-[var(--primary-foreground)]" : "bg-muted text-muted-foreground"}`}>All</button>
+            {categories.map((cat) => (
+              <button key={cat} onClick={() => setFilter(filter === cat ? null : cat)}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-medium capitalize transition-colors ${filter === cat ? "bg-[var(--primary)] text-[var(--primary-foreground)]" : "bg-muted text-muted-foreground"}`}>{cat}</button>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {filtered.map((plugin) => {
+              const Icon = plugin.icon;
+              return (
+                <div key={plugin.id} className="rounded-xl border border-border p-4 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${CAT_COLORS[plugin.category] || "bg-muted"}`}><Icon className="h-5 w-5" /></div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2"><h4 className="text-sm font-semibold">{plugin.name}</h4><Badge variant="outline" className={`text-[8px] px-1 py-0 capitalize ${CAT_COLORS[plugin.category]}`}>{plugin.category}</Badge></div>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">{plugin.description}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                      <span>{plugin.author}</span><span>&middot;</span><span>v{plugin.version}</span><span>&middot;</span><span className="font-semibold text-foreground">{plugin.price}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {plugin.installed && (
+                        <button onClick={() => toggleEnabled(plugin.id)} className={`relative h-5 w-9 rounded-full transition-colors ${plugin.enabled ? "bg-[var(--primary)]" : "bg-muted"}`}>
+                          <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${plugin.enabled ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+                        </button>
+                      )}
+                      <Button variant={plugin.installed ? "outline" : "default"} size="sm" className="h-7 text-[10px]" onClick={() => toggleInstall(plugin.id)}>
+                        {plugin.installed ? "Uninstall" : "Install"}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </CardContent>
       </Card>
