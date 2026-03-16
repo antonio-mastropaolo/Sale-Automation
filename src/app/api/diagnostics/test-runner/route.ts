@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { execSync } from "child_process";
+import { requireAdmin } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,9 @@ interface TestSuite {
 }
 
 export async function GET() {
+  const admin = await requireAdmin();
+  if (!admin) return NextResponse.json({ error: "Admin access required" }, { status: 403 });
+
   try {
     // Run vitest with JSON reporter
     let output: string;

@@ -47,10 +47,13 @@ const sections = [
   },
 ];
 
+const ADMIN_ONLY_PATHS = ["/diagnostics", "/diagnostics/tests"];
+
 export function Sidebar({ className }: { className?: string }) {
   const pathname = usePathname();
   const [dark, setDark] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const d = localStorage.getItem("theme") === "dark";
@@ -59,6 +62,11 @@ export function Sidebar({ className }: { className?: string }) {
     else document.documentElement.classList.remove("dark");
     applyTheme(getSavedTheme(), d);
     if (localStorage.getItem("sidebar-collapsed") === "true") setCollapsed(true);
+    // Check admin status
+    fetch("/api/auth/me").then((r) => r.json()).then((data) => {
+      const u = data.user;
+      if (u && (u.role === "admin" || u.username === "antonio" || u.email === "admin@listblitz.io")) setIsAdmin(true);
+    }).catch(() => {});
   }, []);
 
   const toggleDark = () => {
@@ -117,7 +125,7 @@ export function Sidebar({ className }: { className?: string }) {
             )}
             {collapsed && <div className="h-px bg-[var(--sidebar-border)] mx-2 my-1.5" />}
             <div className={cn("space-y-[2px]", collapsed && "flex flex-col items-center")}>
-              {section.items.map(({ href, label, icon: Icon }) => {
+              {section.items.filter(({ href }) => !ADMIN_ONLY_PATHS.includes(href) || isAdmin).map(({ href, label, icon: Icon }) => {
                 const active = isActive(href);
                 return (
                   <Link

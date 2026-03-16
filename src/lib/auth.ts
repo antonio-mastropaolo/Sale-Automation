@@ -59,6 +59,18 @@ export async function getSessionFromCookies() {
   return validateSession(token);
 }
 
+// ── Admin check ──────────────────────────────────────────────────
+
+/** Admin users: role === "admin" OR username === "antonio" OR email === "admin@listblitz.io" */
+export async function requireAdmin() {
+  const user = await getSessionFromCookies();
+  if (!user) return null;
+  if (user.role === "admin" || user.username === "antonio" || user.email === "admin@listblitz.io") {
+    return user;
+  }
+  return null;
+}
+
 // ── Reset token ───────────────────────────────────────────────────
 
 export function generateResetToken(): string {

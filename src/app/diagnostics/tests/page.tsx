@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useAdmin } from "@/lib/use-admin";
 import {
   Play, Loader2, CheckCircle2, XCircle, MinusCircle, ChevronRight,
   FlaskConical, Clock, BarChart3, RefreshCw, AlertTriangle,
@@ -243,12 +244,16 @@ function HistoryChart({ runs }: { runs: TestRun[] }) {
 // ── Page ──
 
 export default function TestDashboard() {
+  const { isAdmin, loading: adminLoading } = useAdmin();
   const [running, setRunning] = useState(false);
   const [currentRun, setCurrentRun] = useState<TestRun | null>(null);
   const [history, setHistory] = useState<TestRun[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => { setHistory(loadHistory()); }, []);
+
+  if (adminLoading) return <div className="flex items-center justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
+  if (!isAdmin) return <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">Admin access required</div>;
 
   // Load latest run on mount
   useEffect(() => {

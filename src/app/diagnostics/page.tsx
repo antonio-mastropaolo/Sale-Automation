@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
+import { useAdmin } from "@/lib/use-admin";
 import {
   Shield, Database, Brain, Globe, Package, FileCode, Gauge,
   Play, Loader2, CheckCircle2, XCircle, AlertTriangle, MinusCircle,
@@ -144,6 +145,7 @@ function SummaryFooter({ results }: { results: Map<string, CategoryResult> }) {
 }
 
 export default function DiagnosticsPage() {
+  const { isAdmin, loading: adminLoading } = useAdmin();
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [runningCategories, setRunningCategories] = useState<Set<string>>(new Set());
   const [results, setResults] = useState<Map<string, CategoryResult>>(new Map());
@@ -152,6 +154,9 @@ export default function DiagnosticsPage() {
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => { setResults(loadFromLocalStorage()); }, []);
+
+  if (adminLoading) return <div className="flex items-center justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
+  if (!isAdmin) return <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">Admin access required</div>;
 
   const runCategory = useCallback(async (categoryId: string) => {
     setRunningCategories((prev) => new Set(prev).add(categoryId));
