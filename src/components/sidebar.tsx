@@ -8,7 +8,7 @@ import {
   Camera, Radar, HelpCircle, DollarSign, FileUp, BookTemplate,
   Truck, Target, Calendar, LogOut, Stethoscope, Columns2,
   MessageCircle, FlaskConical, ChevronDown, KeyRound, ImagePlus,
-  ChevronUp, Flame,
+  ChevronUp, Flame, Layers,
 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { applyTheme, getSavedTheme, applyDesignStyle, getSavedDesignStyle } from "@/lib/themes";
@@ -44,6 +44,7 @@ const sections = [
     items: [
       { href: "/shipping", label: "Shipping", icon: Truck },
       { href: "/workflow", label: "AI Pipeline", icon: Zap },
+      { href: "/alignment", label: "Store Alignment", icon: Layers },
       { href: "/tools", label: "Seller Tools", icon: HelpCircle },
       { href: "/diagnostics", label: "Diagnostics", icon: Stethoscope },
       { href: "/diagnostics/tests", label: "Test Suite", icon: FlaskConical },
