@@ -196,27 +196,29 @@ export function Sidebar({ className }: { className?: string }) {
         })}
       </nav>
 
-      {/* Bottom */}
+      {/* Bottom toolbar — visually separated from nav */}
       <div className={cn(
-        "border-t border-[var(--sidebar-border)] bg-[var(--sidebar-accent)]/40 py-2 gap-1",
-        collapsed ? "px-1.5 flex flex-col items-center" : "px-2 flex flex-col"
+        "shrink-0 border-t-2 border-[var(--sidebar-border)]",
+        collapsed ? "px-1.5 py-2 flex flex-row items-center justify-center gap-0.5" : "px-2 py-2 flex flex-col gap-0.5"
       )}>
         {collapsed ? (
+          /* Collapsed: horizontal row of small, distinctly styled icon buttons */
           <>
             <button onClick={toggleCollapse} title="Expand sidebar"
-              className="h-[34px] w-[34px] rounded-[8px] flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--sidebar-accent)] transition-colors">
-              <PanelLeftOpen className="h-4 w-4" />
+              className="h-[30px] w-[30px] rounded-full flex items-center justify-center text-[var(--primary)] bg-[var(--sidebar-accent)] hover:bg-[var(--primary)] hover:text-white transition-colors">
+              <PanelLeftOpen className="h-3.5 w-3.5" />
             </button>
             <button onClick={toggleDark} title={dark ? "Light mode" : "Dark mode"}
-              className="h-[34px] w-[34px] rounded-[8px] flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--sidebar-accent)] transition-colors">
-              {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              className="h-[30px] w-[30px] rounded-full flex items-center justify-center text-amber-500 bg-amber-500/10 hover:bg-amber-500 hover:text-white transition-colors">
+              {dark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
             </button>
             <button onClick={() => { fetch("/api/auth/logout", { method: "POST" }).then(() => { window.location.href = "/login"; }); }} title="Sign out"
-              className="h-[34px] w-[34px] rounded-[8px] flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--destructive)] hover:bg-red-500/10 transition-colors">
-              <LogOut className="h-4 w-4" />
+              className="h-[30px] w-[30px] rounded-full flex items-center justify-center text-red-400 bg-red-500/10 hover:bg-red-500 hover:text-white transition-colors">
+              <LogOut className="h-3.5 w-3.5" />
             </button>
           </>
         ) : (
+          /* Expanded: labeled rows */
           <>
             <button onClick={toggleCollapse}
               className="flex items-center gap-2.5 px-2.5 py-[6px] rounded-[8px] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--sidebar-accent)] transition-colors">
@@ -225,7 +227,7 @@ export function Sidebar({ className }: { className?: string }) {
             </button>
             <button onClick={toggleDark}
               className="flex items-center gap-2.5 px-2.5 py-[6px] rounded-[8px] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--sidebar-accent)] transition-colors">
-              {dark ? <Sun className="h-[15px] w-[15px] shrink-0" /> : <Moon className="h-[15px] w-[15px] shrink-0" />}
+              {dark ? <Sun className="h-[15px] w-[15px] shrink-0 text-amber-500" /> : <Moon className="h-[15px] w-[15px] shrink-0 text-amber-500" />}
               <span className="text-[12px]">{dark ? "Light mode" : "Dark mode"}</span>
             </button>
             <button onClick={() => { fetch("/api/auth/logout", { method: "POST" }).then(() => { window.location.href = "/login"; }); }}
