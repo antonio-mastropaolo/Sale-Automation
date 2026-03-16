@@ -238,6 +238,20 @@ describe("B. Design Styles Registry Integrity", () => {
   it("B76: monokai dark bg", () => { expect(DESIGN_STYLES.find((s) => s.id === "monokai")!.dark.background).toBe("#272822"); });
   it("B77: catppuccin dark bg", () => { expect(DESIGN_STYLES.find((s) => s.id === "catppuccin")!.dark.background).toBe("#1e1e2e"); });
   it("B78: rosepine dark bg", () => { expect(DESIGN_STYLES.find((s) => s.id === "rosepine")!.dark.background).toBe("#191724"); });
+
+  // Layout properties
+  it("B79: every style has layout object", () => { DESIGN_STYLES.forEach((s) => expect(s.layout).toBeDefined()); });
+  it("B80: every layout has radius", () => { DESIGN_STYLES.forEach((s) => expect(s.layout.radius).toBeTruthy()); });
+  it("B81: every layout has shadow", () => { DESIGN_STYLES.forEach((s) => expect(typeof s.layout.shadow).toBe("string")); });
+  it("B82: every layout has buttonRadius", () => { DESIGN_STYLES.forEach((s) => expect(s.layout.buttonRadius).toBeTruthy()); });
+  it("B83: every layout has fontWeight", () => { DESIGN_STYLES.forEach((s) => expect(["600", "700", "800"]).toContain(s.layout.fontWeight)); });
+  it("B84: every layout has cardPadding", () => { DESIGN_STYLES.forEach((s) => expect(s.layout.cardPadding).toMatch(/rem$/)); });
+  it("B85: flat has no shadow", () => { expect(DESIGN_STYLES.find((s) => s.id === "flat")!.layout.shadow).toBe("none"); });
+  it("B86: glass has backdrop blur", () => { expect(DESIGN_STYLES.find((s) => s.id === "glass")!.layout.backdropBlur).toContain("blur"); });
+  it("B87: neumorphic has double shadow", () => { expect(DESIGN_STYLES.find((s) => s.id === "neumorphic")!.layout.shadow).toContain(","); });
+  it("B88: material has no border", () => { expect(DESIGN_STYLES.find((s) => s.id === "material")!.layout.borderWidth).toBe("0px"); });
+  it("B89: flat has 0.5rem radius", () => { expect(DESIGN_STYLES.find((s) => s.id === "flat")!.layout.radius).toBe("0.5rem"); });
+  it("B90: material has pill buttons", () => { expect(DESIGN_STYLES.find((s) => s.id === "material")!.layout.buttonRadius).toBe("1.25rem"); });
 });
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -302,7 +316,7 @@ describe("F. Style Metadata", () => {
     it(`F: ${s.id} label under 20 chars`, () => { expect(s.label.length).toBeLessThanOrEqual(20); });
     it(`F: ${s.id} description under 50 chars`, () => { expect(s.description.length).toBeLessThanOrEqual(50); });
     it(`F: ${s.id} has exactly 4 top-level keys (id,label,description,preview) + dark + light`, () => {
-      expect(Object.keys(s)).toEqual(expect.arrayContaining(["id", "label", "description", "preview", "dark", "light"]));
+      expect(Object.keys(s)).toEqual(expect.arrayContaining(["id", "label", "description", "preview", "layout", "dark", "light"]));
     });
     it(`F: ${s.id} id no spaces`, () => { expect(s.id).not.toMatch(/\s/); });
     it(`F: ${s.id} label no leading/trailing space`, () => { expect(s.label.trim()).toBe(s.label); });

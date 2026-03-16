@@ -139,11 +139,25 @@ export function saveTheme(themeId: string) {
 
 // ── Design Styles (full palette overrides, mainly dark mode) ──
 
+export interface DesignLayout {
+  radius: string;          // border-radius for cards
+  borderWidth: string;     // border thickness
+  shadow: string;          // box-shadow for cards
+  shadowHover: string;     // box-shadow on hover
+  cardPadding: string;     // inner padding
+  backdropBlur: string;    // backdrop-filter blur
+  fontWeight: string;      // heading font weight (600, 700, 800)
+  spacing: string;         // gap between sections
+  iconStroke: string;      // icon stroke width
+  buttonRadius: string;    // button border-radius
+}
+
 export interface DesignStyle {
   id: string;
   label: string;
   description: string;
-  preview: string; // gradient for preview swatch
+  preview: string;
+  layout: DesignLayout;
   dark: {
     background: string;
     card: string;
@@ -177,6 +191,7 @@ export const DESIGN_STYLES: DesignStyle[] = [
     label: "Flat",
     description: "Clean, minimal, bold colors",
     preview: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)",
+    layout: { radius: "0.5rem", borderWidth: "1px", shadow: "none", shadowHover: "none", cardPadding: "1rem", backdropBlur: "none", fontWeight: "700", spacing: "1.25rem", iconStroke: "2", buttonRadius: "0.5rem" },
     dark: {
       background: "#0f0f0f", card: "#1a1a1a", cardForeground: "#fafafa",
       popover: "#1a1a1a", secondary: "#262626", secondaryForeground: "#e5e5e5",
@@ -195,6 +210,7 @@ export const DESIGN_STYLES: DesignStyle[] = [
     label: "Material",
     description: "Google's layered paper design",
     preview: "linear-gradient(135deg, #121212 0%, #1e1e1e 50%, #2d2d2d 100%)",
+    layout: { radius: "0.75rem", borderWidth: "0px", shadow: "0 2px 4px rgba(0,0,0,0.2), 0 1px 2px rgba(0,0,0,0.1)", shadowHover: "0 8px 24px rgba(0,0,0,0.3)", cardPadding: "1.25rem", backdropBlur: "none", fontWeight: "600", spacing: "1.5rem", iconStroke: "2", buttonRadius: "1.25rem" },
     dark: {
       background: "#121212", card: "#1e1e1e", cardForeground: "#e0e0e0",
       popover: "#2d2d2d", secondary: "#2d2d2d", secondaryForeground: "#e0e0e0",
@@ -213,6 +229,7 @@ export const DESIGN_STYLES: DesignStyle[] = [
     label: "Glassmorphism",
     description: "Frosted glass with blur effects",
     preview: "linear-gradient(135deg, rgba(15,23,42,0.8) 0%, rgba(30,41,59,0.6) 100%)",
+    layout: { radius: "1rem", borderWidth: "1px", shadow: "0 4px 30px rgba(0,0,0,0.1)", shadowHover: "0 8px 40px rgba(0,0,0,0.15)", cardPadding: "1.5rem", backdropBlur: "blur(20px)", fontWeight: "600", spacing: "1.5rem", iconStroke: "1.5", buttonRadius: "0.75rem" },
     dark: {
       background: "#0a0a0f", card: "rgba(30,30,45,0.6)", cardForeground: "#e2e8f0",
       popover: "rgba(30,30,45,0.8)", secondary: "rgba(50,50,70,0.4)", secondaryForeground: "#cbd5e1",
@@ -231,6 +248,7 @@ export const DESIGN_STYLES: DesignStyle[] = [
     label: "Neumorphism",
     description: "Soft extruded surfaces",
     preview: "linear-gradient(145deg, #1a1a2e 0%, #25253d 100%)",
+    layout: { radius: "1.25rem", borderWidth: "0px", shadow: "6px 6px 12px rgba(0,0,0,0.3), -6px -6px 12px rgba(255,255,255,0.03)", shadowHover: "8px 8px 16px rgba(0,0,0,0.4), -8px -8px 16px rgba(255,255,255,0.04)", cardPadding: "1.5rem", backdropBlur: "none", fontWeight: "600", spacing: "1.75rem", iconStroke: "1.5", buttonRadius: "1rem" },
     dark: {
       background: "#1a1a2e", card: "#1f1f35", cardForeground: "#e0def4",
       popover: "#25253d", secondary: "#25253d", secondaryForeground: "#e0def4",
@@ -249,6 +267,7 @@ export const DESIGN_STYLES: DesignStyle[] = [
     label: "Apple HIG",
     description: "iOS-style clarity and depth",
     preview: "linear-gradient(135deg, #000000 0%, #1c1c1e 100%)",
+    layout: { radius: "0.75rem", borderWidth: "0.5px", shadow: "0 1px 3px rgba(0,0,0,0.1)", shadowHover: "0 4px 12px rgba(0,0,0,0.15)", cardPadding: "1.25rem", backdropBlur: "blur(12px)", fontWeight: "600", spacing: "1.25rem", iconStroke: "1.5", buttonRadius: "0.625rem" },
     dark: {
       background: "#000000", card: "#1c1c1e", cardForeground: "#ffffff",
       popover: "#2c2c2e", secondary: "#2c2c2e", secondaryForeground: "#e5e5ea",
@@ -267,6 +286,7 @@ export const DESIGN_STYLES: DesignStyle[] = [
     label: "Midnight",
     description: "Deep navy, premium feel",
     preview: "linear-gradient(135deg, #0b1120 0%, #162240 100%)",
+    layout: { radius: "0.875rem", borderWidth: "1px", shadow: "0 2px 8px rgba(0,0,0,0.2)", shadowHover: "0 8px 24px rgba(0,0,0,0.3)", cardPadding: "1.25rem", backdropBlur: "blur(8px)", fontWeight: "600", spacing: "1.5rem", iconStroke: "1.5", buttonRadius: "0.75rem" },
     dark: {
       background: "#0b1120", card: "#0f1729", cardForeground: "#e2e8f0",
       popover: "#162240", secondary: "#162240", secondaryForeground: "#cbd5e1",
@@ -285,6 +305,7 @@ export const DESIGN_STYLES: DesignStyle[] = [
     label: "Dracula",
     description: "Purple-tinted dark with vivid accents",
     preview: "linear-gradient(135deg, #282a36 0%, #44475a 100%)",
+    layout: { radius: "0.75rem", borderWidth: "1px", shadow: "0 2px 6px rgba(0,0,0,0.2)", shadowHover: "0 6px 20px rgba(0,0,0,0.3)", cardPadding: "1.25rem", backdropBlur: "none", fontWeight: "700", spacing: "1.25rem", iconStroke: "2", buttonRadius: "0.625rem" },
     dark: {
       background: "#282a36", card: "#2d303e", cardForeground: "#f8f8f2",
       popover: "#343746", secondary: "#44475a", secondaryForeground: "#f8f8f2",
@@ -303,6 +324,7 @@ export const DESIGN_STYLES: DesignStyle[] = [
     label: "Nord",
     description: "Arctic blue, calm and focused",
     preview: "linear-gradient(135deg, #2e3440 0%, #3b4252 50%, #434c5e 100%)",
+    layout: { radius: "0.625rem", borderWidth: "1px", shadow: "0 1px 4px rgba(0,0,0,0.15)", shadowHover: "0 4px 16px rgba(0,0,0,0.2)", cardPadding: "1.25rem", backdropBlur: "none", fontWeight: "600", spacing: "1.25rem", iconStroke: "1.5", buttonRadius: "0.5rem" },
     dark: {
       background: "#2e3440", card: "#3b4252", cardForeground: "#eceff4",
       popover: "#434c5e", secondary: "#434c5e", secondaryForeground: "#e5e9f0",
@@ -321,6 +343,7 @@ export const DESIGN_STYLES: DesignStyle[] = [
     label: "Solarized",
     description: "Ethan Schoonover's precision palette",
     preview: "linear-gradient(135deg, #002b36 0%, #073642 100%)",
+    layout: { radius: "0.5rem", borderWidth: "1px", shadow: "0 1px 3px rgba(0,0,0,0.12)", shadowHover: "0 4px 12px rgba(0,0,0,0.18)", cardPadding: "1.25rem", backdropBlur: "none", fontWeight: "600", spacing: "1.25rem", iconStroke: "1.5", buttonRadius: "0.375rem" },
     dark: {
       background: "#002b36", card: "#073642", cardForeground: "#fdf6e3",
       popover: "#073642", secondary: "#0a4050", secondaryForeground: "#eee8d5",
@@ -339,6 +362,7 @@ export const DESIGN_STYLES: DesignStyle[] = [
     label: "Monokai",
     description: "Rich dark with warm highlights",
     preview: "linear-gradient(135deg, #272822 0%, #3e3d32 100%)",
+    layout: { radius: "0.5rem", borderWidth: "1px", shadow: "0 1px 3px rgba(0,0,0,0.15)", shadowHover: "0 4px 12px rgba(0,0,0,0.25)", cardPadding: "1rem", backdropBlur: "none", fontWeight: "600", spacing: "1.25rem", iconStroke: "2", buttonRadius: "0.375rem" },
     dark: {
       background: "#272822", card: "#2d2e27", cardForeground: "#f8f8f2",
       popover: "#3e3d32", secondary: "#3e3d32", secondaryForeground: "#f8f8f2",
@@ -357,6 +381,7 @@ export const DESIGN_STYLES: DesignStyle[] = [
     label: "Catppuccin",
     description: "Pastel warmth, easy on the eyes",
     preview: "linear-gradient(135deg, #1e1e2e 0%, #302d41 100%)",
+    layout: { radius: "1rem", borderWidth: "1px", shadow: "0 2px 6px rgba(0,0,0,0.15)", shadowHover: "0 6px 20px rgba(0,0,0,0.2)", cardPadding: "1.25rem", backdropBlur: "none", fontWeight: "600", spacing: "1.5rem", iconStroke: "1.5", buttonRadius: "0.75rem" },
     dark: {
       background: "#1e1e2e", card: "#24243a", cardForeground: "#cdd6f4",
       popover: "#302d41", secondary: "#302d41", secondaryForeground: "#bac2de",
@@ -375,6 +400,7 @@ export const DESIGN_STYLES: DesignStyle[] = [
     label: "Rose Pine",
     description: "Elegant dark with muted rose tones",
     preview: "linear-gradient(135deg, #191724 0%, #1f1d2e 50%, #26233a 100%)",
+    layout: { radius: "0.875rem", borderWidth: "1px", shadow: "0 2px 8px rgba(0,0,0,0.15)", shadowHover: "0 6px 20px rgba(0,0,0,0.25)", cardPadding: "1.25rem", backdropBlur: "none", fontWeight: "600", spacing: "1.5rem", iconStroke: "1.5", buttonRadius: "0.625rem" },
     dark: {
       background: "#191724", card: "#1f1d2e", cardForeground: "#e0def4",
       popover: "#26233a", secondary: "#26233a", secondaryForeground: "#e0def4",
@@ -411,12 +437,18 @@ export function applyDesignStyle(styleId: string, isDark: boolean) {
   if ("sidebarForeground" in palette) root.style.setProperty("--sidebar-foreground", (palette as DesignStyle["dark"]).sidebarForeground);
   root.style.setProperty("--sidebar-border", palette.sidebarBorder);
 
-  // Glassmorphism: add backdrop-blur to cards
-  if (styleId === "glass") {
-    root.style.setProperty("--card-blur", "blur(20px)");
-  } else {
-    root.style.setProperty("--card-blur", "none");
-  }
+  // Layout properties — changes actual UI shape, not just colors
+  const layout = style.layout;
+  root.style.setProperty("--radius", layout.radius);
+  root.style.setProperty("--card-shadow", layout.shadow);
+  root.style.setProperty("--card-shadow-hover", layout.shadowHover);
+  root.style.setProperty("--card-padding", layout.cardPadding);
+  root.style.setProperty("--card-blur", layout.backdropBlur);
+  root.style.setProperty("--card-border-width", layout.borderWidth);
+  root.style.setProperty("--heading-weight", layout.fontWeight);
+  root.style.setProperty("--section-spacing", layout.spacing);
+  root.style.setProperty("--icon-stroke", layout.iconStroke);
+  root.style.setProperty("--button-radius", layout.buttonRadius);
 }
 
 export function getSavedDesignStyle(): string {

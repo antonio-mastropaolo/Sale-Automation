@@ -26,6 +26,16 @@ export async function GET() {
   const admin = await requireAdmin();
   if (!admin) return NextResponse.json({ error: "Admin access required" }, { status: 403 });
 
+  // Vercel serverless doesn't have vitest/shell access
+  const isServerless = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
+  if (isServerless) {
+    return NextResponse.json({
+      error: "Test runner unavailable in production",
+      detail: "Tests can only run in local development. Use `npm test` locally and view results here.",
+      environment: "production",
+    }, { status: 422 });
+  }
+
   try {
     // Run vitest with JSON reporter
     let output: string;
