@@ -98,11 +98,11 @@ export function Sidebar({ className }: { className?: string }) {
       className,
     )}>
       {/* Header */}
-      <div className={cn("flex items-center justify-center shrink-0 border-b border-[var(--sidebar-border)] overflow-hidden rounded-b-lg", collapsed ? "h-[56px] p-1" : "h-[96px] px-1 py-1", dark ? "bg-[#0d1117]" : "bg-white")}>
+      <div className={cn("shrink-0 border-b border-[var(--sidebar-border)] overflow-hidden", collapsed ? "h-[56px] p-1 flex items-center justify-center" : "h-[96px]", dark ? "bg-[#0d1117]" : "bg-white")}>
         <img
           src={collapsed ? "/logo.png" : dark ? "/logo-full-dark.png" : "/logo-full.png"}
           alt="ListBlitz"
-          className={cn("object-contain", collapsed ? "h-10" : "h-full w-full")}
+          className={collapsed ? "h-10 object-contain" : "w-full h-full object-cover"}
         />
       </div>
 
