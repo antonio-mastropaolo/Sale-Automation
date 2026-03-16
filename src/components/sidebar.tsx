@@ -136,7 +136,7 @@ export function Sidebar({ className }: { className?: string }) {
     <aside className={cn(
       "fixed inset-y-0 left-0 z-50 flex flex-col transition-all duration-300 ease-in-out",
       "bg-[var(--sidebar)] glass border-r border-[var(--sidebar-border)]",
-      compact ? "w-[68px]" : "w-[220px]",
+      compact ? "w-[60px]" : "w-[192px]",
       className,
     )}>
       {/* Header */}
@@ -243,45 +243,45 @@ export function Sidebar({ className }: { className?: string }) {
         {/* Popover menu */}
         {userMenuOpen && (
           <div className={cn(
-            "absolute bottom-full mb-1 rounded-xl bg-[var(--card)] border border-[var(--border)] shadow-lg overflow-hidden animate-fade-in z-50",
+            "absolute bottom-full mb-1 rounded-xl bg-[#1c1c1e] dark:bg-[#111113] border border-white/10 shadow-2xl overflow-hidden animate-fade-in z-50",
             compact ? "left-1 w-[200px]" : "left-2 right-2"
           )}>
             {/* User info header */}
-            <div className="px-3 py-2.5 border-b border-[var(--border)]">
-              <p className="text-[12px] font-semibold">{userName || "User"}</p>
-              <p className="text-[10px] text-[var(--muted-foreground)]">{userEmail}</p>
+            <div className="px-3 py-2.5 border-b border-white/8">
+              <p className="text-[12px] font-semibold text-white">{userName || "User"}</p>
+              <p className="text-[10px] text-white/50">{userEmail}</p>
             </div>
 
             {/* Menu items */}
             <div className="py-1">
-              <button onClick={toggleDark} className="w-full flex items-center gap-2.5 px-3 py-2 text-[12px] text-[var(--foreground)] hover:bg-[var(--accent)] transition-colors">
-                {dark ? <Sun className="h-3.5 w-3.5 text-amber-500" /> : <Moon className="h-3.5 w-3.5 text-amber-500" />}
+              <button onClick={toggleDark} className="w-full flex items-center gap-2.5 px-3 py-2 text-[12px] text-white/80 hover:bg-white/8 transition-colors">
+                {dark ? <Sun className="h-3.5 w-3.5 text-amber-400" /> : <Moon className="h-3.5 w-3.5 text-amber-400" />}
                 {dark ? "Light mode" : "Dark mode"}
               </button>
-              <button onClick={toggleCompact} className="w-full flex items-center gap-2.5 px-3 py-2 text-[12px] text-[var(--foreground)] hover:bg-[var(--accent)] transition-colors">
-                <Columns2 className="h-3.5 w-3.5 text-[var(--primary)]" />
+              <button onClick={toggleCompact} className="w-full flex items-center gap-2.5 px-3 py-2 text-[12px] text-white/80 hover:bg-white/8 transition-colors">
+                <Columns2 className="h-3.5 w-3.5 text-blue-400" />
                 {compact ? "Expand sidebar" : "Compact sidebar"}
               </button>
 
-              <div className="h-px bg-[var(--border)] my-1" />
+              <div className="h-px bg-white/8 my-1" />
 
-              <button onClick={() => { setUserMenuOpen(false); window.location.href = "/settings"; }} className="w-full flex items-center gap-2.5 px-3 py-2 text-[12px] text-[var(--foreground)] hover:bg-[var(--accent)] transition-colors">
-                <KeyRound className="h-3.5 w-3.5 text-[var(--muted-foreground)]" />
+              <button onClick={() => { setUserMenuOpen(false); window.location.href = "/settings"; }} className="w-full flex items-center gap-2.5 px-3 py-2 text-[12px] text-white/80 hover:bg-white/8 transition-colors">
+                <KeyRound className="h-3.5 w-3.5 text-white/40" />
                 Change password
               </button>
-              <button onClick={() => { setUserMenuOpen(false); window.location.href = "/settings"; }} className="w-full flex items-center gap-2.5 px-3 py-2 text-[12px] text-[var(--foreground)] hover:bg-[var(--accent)] transition-colors">
-                <ImagePlus className="h-3.5 w-3.5 text-[var(--muted-foreground)]" />
+              <button onClick={() => { setUserMenuOpen(false); window.location.href = "/settings"; }} className="w-full flex items-center gap-2.5 px-3 py-2 text-[12px] text-white/80 hover:bg-white/8 transition-colors">
+                <ImagePlus className="h-3.5 w-3.5 text-white/40" />
                 Change picture
               </button>
-              <button onClick={() => { setUserMenuOpen(false); window.location.href = "/settings"; }} className="w-full flex items-center gap-2.5 px-3 py-2 text-[12px] text-[var(--foreground)] hover:bg-[var(--accent)] transition-colors">
-                <Settings className="h-3.5 w-3.5 text-[var(--muted-foreground)]" />
+              <button onClick={() => { setUserMenuOpen(false); window.location.href = "/settings"; }} className="w-full flex items-center gap-2.5 px-3 py-2 text-[12px] text-white/80 hover:bg-white/8 transition-colors">
+                <Settings className="h-3.5 w-3.5 text-white/40" />
                 Settings
               </button>
 
-              <div className="h-px bg-[var(--border)] my-1" />
+              <div className="h-px bg-white/8 my-1" />
 
               <button onClick={() => { fetch("/api/auth/logout", { method: "POST" }).then(() => { window.location.href = "/login"; }); }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-[12px] text-[var(--destructive)] hover:bg-red-500/10 transition-colors">
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-[12px] text-red-400 hover:bg-red-500/15 transition-colors">
                 <LogOut className="h-3.5 w-3.5" />
                 Sign out
               </button>
