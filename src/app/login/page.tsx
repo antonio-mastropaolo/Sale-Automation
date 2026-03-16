@@ -3,12 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Zap, LogIn, Mail, Lock } from "lucide-react";
+import { Mail, Lock, Rocket } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -51,7 +47,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex min-h-screen bg-[#0d1117]">
+    <div className="fixed inset-0 z-[100] flex min-h-screen">
       {/* Left branding panel */}
       <div className="hidden lg:block lg:w-1/2 relative overflow-hidden bg-[#0b1026]">
         <img
@@ -61,94 +57,85 @@ export default function LoginPage() {
         />
       </div>
 
-      {/* Right login form */}
-      <div className="flex-1 flex items-center justify-center p-6 bg-[#0d1117]">
-        <div className="w-full max-w-sm">
-          {/* Mobile logo */}
-          <div className="lg:hidden flex items-center justify-center mb-8">
-            <img src="/logo-full.png" alt="ListBlitz" className="h-16 object-contain" />
+      {/* Right login panel — dark sleek style */}
+      <div className="flex-1 flex items-center justify-center p-6" style={{ background: "linear-gradient(160deg, #1a1f2e 0%, #141824 40%, #0f1219 100%)" }}>
+        <div className="w-full max-w-xs">
+          {/* Logo + heading */}
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <Rocket className="h-6 w-6 text-[#5b9bd5]" />
+              <span className="text-xl font-bold text-white tracking-tight">ListBlitz.io</span>
+            </div>
+            <p className="text-sm text-[#8899aa]">Access your dashboard</p>
           </div>
 
-          <Card className="rounded-2xl border-white/10 bg-[#161b22] text-white shadow-2xl">
-            <CardHeader className="text-center pb-2">
-              <CardTitle className="text-xl font-bold text-white">Welcome back</CardTitle>
-              <CardDescription className="text-gray-400">Sign in to your ListBlitz account</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {error && (
-                  <div className="bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-xl px-4 py-3">
-                    {error}
-                  </div>
-                )}
+          {/* Error */}
+          {error && (
+            <div className="mb-4 bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-lg px-4 py-3">
+              {error}
+            </div>
+          )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="you@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                </div>
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Email */}
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#5b9bd5]" />
+              <input
+                type="email"
+                placeholder="demo@listblitz.io"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full h-11 pl-10 pr-4 rounded-lg bg-[#0d1117] border border-[#2a3444] text-white text-sm placeholder:text-[#4a5568] focus:border-[#5b9bd5] focus:ring-1 focus:ring-[#5b9bd5]/30 outline-none transition-colors"
+              />
+            </div>
 
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="password">Password</Label>
-                    <Link
-                      href="/forgot-password"
-                      className="text-xs text-primary hover:underline"
-                    >
-                      Forgot password?
-                    </Link>
-                  </div>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="password"
-                      type="password"
-                      placeholder="Enter your password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                </div>
+            {/* Password */}
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#5b9bd5]" />
+              <input
+                type="password"
+                placeholder="••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full h-11 pl-10 pr-4 rounded-lg bg-[#0d1117] border border-[#2a3444] text-white text-sm placeholder:text-[#4a5568] focus:border-[#5b9bd5] focus:ring-1 focus:ring-[#5b9bd5]/30 outline-none transition-colors"
+              />
+            </div>
 
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full h-10 rounded-xl font-semibold"
-                >
-                  {loading ? (
-                    <span className="flex items-center gap-2">
-                      <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Signing in...
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-2">
-                      <LogIn className="h-4 w-4" />
-                      Log In
-                    </span>
-                  )}
-                </Button>
-              </form>
+            {/* Login button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full h-11 rounded-lg font-semibold text-sm text-white transition-all disabled:opacity-60"
+              style={{ background: "linear-gradient(135deg, #3a7bd5 0%, #2b6cb0 50%, #1a5a9e 100%)" }}
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Signing in...
+                </span>
+              ) : (
+                "Log In"
+              )}
+            </button>
+          </form>
 
-              <div className="mt-6 text-center text-sm text-muted-foreground">
-                Don&apos;t have an account?{" "}
-                <Link href="/register" className="text-primary font-medium hover:underline">
-                  Sign up
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Forgot password */}
+          <div className="mt-5 text-center">
+            <Link href="/forgot-password" className="text-xs text-[#5b9bd5] hover:text-[#7bb5e8] transition-colors">
+              Forgot password?
+            </Link>
+          </div>
+
+          {/* Sign up */}
+          <div className="mt-6 text-center text-xs text-[#4a5568]">
+            Don&apos;t have an account?{" "}
+            <Link href="/register" className="text-[#5b9bd5] font-medium hover:text-[#7bb5e8] transition-colors">
+              Sign up
+            </Link>
+          </div>
         </div>
       </div>
     </div>
