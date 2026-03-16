@@ -7,9 +7,10 @@ import {
   LayoutDashboard, PlusCircle, BarChart3, Settings, Moon, Sun, Zap,
   Camera, Radar, HelpCircle, DollarSign, FileUp, BookTemplate,
   Truck, Target, Calendar, LogOut, Stethoscope, Columns2,
-  MessageCircle, FlaskConical, ChevronDown,
+  MessageCircle, FlaskConical, ChevronDown, User, KeyRound, ImagePlus,
+  ChevronUp,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { applyTheme, getSavedTheme, applyDesignStyle, getSavedDesignStyle } from "@/lib/themes";
 
 const sections = [
@@ -58,6 +59,10 @@ export function Sidebar({ className }: { className?: string }) {
   const [compact, setCompact] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [foldedSections, setFoldedSections] = useState<Record<string, boolean>>({});
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [userName, setUserName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const d = localStorage.getItem("theme") === "dark";
@@ -72,11 +77,24 @@ export function Sidebar({ className }: { className?: string }) {
       const saved = localStorage.getItem("sidebar-folded");
       if (saved) setFoldedSections(JSON.parse(saved));
     } catch { /* ignore */ }
-    // Check admin status
+    // Fetch user info
     fetch("/api/auth/me").then((r) => r.json()).then((data) => {
       const u = data.user;
-      if (u && (u.role === "admin" || u.username === "antonio" || u.email === "admin@listblitz.io")) setIsAdmin(true);
+      if (u) {
+        if (u.role === "admin" || u.username === "antonio" || u.email === "admin@listblitz.io") setIsAdmin(true);
+        setUserName(u.name || u.username || "User");
+        setUserEmail(u.email || "");
+      }
     }).catch(() => {});
+  }, []);
+
+  // Close user menu on click outside
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setUserMenuOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
   }, []);
 
   const toggleDark = () => {
@@ -199,23 +217,77 @@ export function Sidebar({ className }: { className?: string }) {
         })}
       </nav>
 
-      {/* Bottom — resize, exit, dark/light — horizontal, full width */}
-      <div className="shrink-0 border-t border-[var(--sidebar-border)] flex items-stretch h-[44px]">
-        <button onClick={toggleCompact} title={compact ? "Expand" : "Compact"}
-          className="flex-1 flex items-center justify-center gap-1.5 text-[var(--muted-foreground)] hover:text-[var(--primary)] hover:bg-[var(--sidebar-accent)] transition-colors border-r border-[var(--sidebar-border)]">
-          <Columns2 className="h-[16px] w-[16px]" />
-          {!compact && <span className="text-[11px] font-medium">Resize</span>}
+      {/* Bottom — user avatar with popover menu */}
+      <div ref={menuRef} className="shrink-0 border-t border-[var(--sidebar-border)] relative">
+        <button
+          onClick={() => setUserMenuOpen((o) => !o)}
+          className={cn(
+            "w-full flex items-center gap-2.5 transition-colors hover:bg-[var(--sidebar-accent)]",
+            compact ? "justify-center p-2.5" : "px-3 py-2.5"
+          )}
+        >
+          <div className="h-8 w-8 rounded-full bg-[var(--primary)] flex items-center justify-center text-white text-[12px] font-bold shrink-0">
+            {userName ? userName[0].toUpperCase() : "U"}
+          </div>
+          {!compact && (
+            <>
+              <div className="flex-1 min-w-0 text-left">
+                <p className="text-[12px] font-semibold truncate text-[var(--sidebar-foreground)]">{userName || "User"}</p>
+                <p className="text-[10px] text-[var(--muted-foreground)] truncate">{userEmail || "Not signed in"}</p>
+              </div>
+              <ChevronUp className={cn("h-3 w-3 text-[var(--muted-foreground)] transition-transform", !userMenuOpen && "rotate-180")} />
+            </>
+          )}
         </button>
-        <button onClick={() => { fetch("/api/auth/logout", { method: "POST" }).then(() => { window.location.href = "/login"; }); }} title="Sign out"
-          className="flex-1 flex items-center justify-center gap-1.5 text-[var(--muted-foreground)] hover:text-[var(--destructive)] hover:bg-red-500/10 transition-colors border-r border-[var(--sidebar-border)]">
-          <LogOut className="h-[16px] w-[16px]" />
-          {!compact && <span className="text-[11px] font-medium">Sign out</span>}
-        </button>
-        <button onClick={toggleDark} title={dark ? "Light mode" : "Dark mode"}
-          className="flex-1 flex items-center justify-center gap-1.5 text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--sidebar-accent)] transition-colors">
-          {dark ? <Sun className="h-[16px] w-[16px]" /> : <Moon className="h-[16px] w-[16px]" />}
-          {!compact && <span className="text-[11px] font-medium">{dark ? "Light" : "Dark"}</span>}
-        </button>
+
+        {/* Popover menu */}
+        {userMenuOpen && (
+          <div className={cn(
+            "absolute bottom-full mb-1 rounded-xl bg-[var(--card)] border border-[var(--border)] shadow-lg overflow-hidden animate-fade-in z-50",
+            compact ? "left-1 w-[200px]" : "left-2 right-2"
+          )}>
+            {/* User info header */}
+            <div className="px-3 py-2.5 border-b border-[var(--border)]">
+              <p className="text-[12px] font-semibold">{userName || "User"}</p>
+              <p className="text-[10px] text-[var(--muted-foreground)]">{userEmail}</p>
+            </div>
+
+            {/* Menu items */}
+            <div className="py-1">
+              <button onClick={toggleDark} className="w-full flex items-center gap-2.5 px-3 py-2 text-[12px] text-[var(--foreground)] hover:bg-[var(--accent)] transition-colors">
+                {dark ? <Sun className="h-3.5 w-3.5 text-amber-500" /> : <Moon className="h-3.5 w-3.5 text-amber-500" />}
+                {dark ? "Light mode" : "Dark mode"}
+              </button>
+              <button onClick={toggleCompact} className="w-full flex items-center gap-2.5 px-3 py-2 text-[12px] text-[var(--foreground)] hover:bg-[var(--accent)] transition-colors">
+                <Columns2 className="h-3.5 w-3.5 text-[var(--primary)]" />
+                {compact ? "Expand sidebar" : "Compact sidebar"}
+              </button>
+
+              <div className="h-px bg-[var(--border)] my-1" />
+
+              <button onClick={() => { setUserMenuOpen(false); window.location.href = "/settings"; }} className="w-full flex items-center gap-2.5 px-3 py-2 text-[12px] text-[var(--foreground)] hover:bg-[var(--accent)] transition-colors">
+                <KeyRound className="h-3.5 w-3.5 text-[var(--muted-foreground)]" />
+                Change password
+              </button>
+              <button onClick={() => { setUserMenuOpen(false); window.location.href = "/settings"; }} className="w-full flex items-center gap-2.5 px-3 py-2 text-[12px] text-[var(--foreground)] hover:bg-[var(--accent)] transition-colors">
+                <ImagePlus className="h-3.5 w-3.5 text-[var(--muted-foreground)]" />
+                Change picture
+              </button>
+              <button onClick={() => { setUserMenuOpen(false); window.location.href = "/settings"; }} className="w-full flex items-center gap-2.5 px-3 py-2 text-[12px] text-[var(--foreground)] hover:bg-[var(--accent)] transition-colors">
+                <Settings className="h-3.5 w-3.5 text-[var(--muted-foreground)]" />
+                Settings
+              </button>
+
+              <div className="h-px bg-[var(--border)] my-1" />
+
+              <button onClick={() => { fetch("/api/auth/logout", { method: "POST" }).then(() => { window.location.href = "/login"; }); }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-[12px] text-[var(--destructive)] hover:bg-red-500/10 transition-colors">
+                <LogOut className="h-3.5 w-3.5" />
+                Sign out
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </aside>
   );
