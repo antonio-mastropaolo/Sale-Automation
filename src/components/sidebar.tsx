@@ -197,19 +197,44 @@ export function Sidebar({ className }: { className?: string }) {
       </nav>
 
       {/* Bottom */}
-      <div className={cn("border-t border-[var(--sidebar-border)] py-2", collapsed ? "px-1.5 flex flex-col items-center gap-1" : "px-2 flex items-center gap-1")}>
-        <button onClick={toggleCollapse} title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className="h-[34px] w-[34px] rounded-[8px] flex items-center justify-center text-[var(--muted-foreground)] hover:bg-[var(--sidebar-accent)] transition-colors">
-          {collapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
-        </button>
-        <button onClick={toggleDark} title={dark ? "Light" : "Dark"}
-          className="h-[34px] w-[34px] rounded-[8px] flex items-center justify-center text-[var(--muted-foreground)] hover:bg-[var(--sidebar-accent)] transition-colors">
-          {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-        </button>
-        <button onClick={() => { fetch("/api/auth/logout", { method: "POST" }).then(() => { window.location.href = "/login"; }); }} title="Sign out"
-          className="h-[34px] w-[34px] rounded-[8px] flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--destructive)] hover:bg-red-500/10 transition-colors">
-          <LogOut className="h-4 w-4" />
-        </button>
+      <div className={cn(
+        "border-t border-[var(--sidebar-border)] bg-[var(--sidebar-accent)]/40 py-2 gap-1",
+        collapsed ? "px-1.5 flex flex-col items-center" : "px-2 flex flex-col"
+      )}>
+        {collapsed ? (
+          <>
+            <button onClick={toggleCollapse} title="Expand sidebar"
+              className="h-[34px] w-[34px] rounded-[8px] flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--sidebar-accent)] transition-colors">
+              <PanelLeftOpen className="h-4 w-4" />
+            </button>
+            <button onClick={toggleDark} title={dark ? "Light mode" : "Dark mode"}
+              className="h-[34px] w-[34px] rounded-[8px] flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--sidebar-accent)] transition-colors">
+              {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </button>
+            <button onClick={() => { fetch("/api/auth/logout", { method: "POST" }).then(() => { window.location.href = "/login"; }); }} title="Sign out"
+              className="h-[34px] w-[34px] rounded-[8px] flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--destructive)] hover:bg-red-500/10 transition-colors">
+              <LogOut className="h-4 w-4" />
+            </button>
+          </>
+        ) : (
+          <>
+            <button onClick={toggleCollapse}
+              className="flex items-center gap-2.5 px-2.5 py-[6px] rounded-[8px] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--sidebar-accent)] transition-colors">
+              <PanelLeftClose className="h-[15px] w-[15px] shrink-0" />
+              <span className="text-[12px]">Collapse</span>
+            </button>
+            <button onClick={toggleDark}
+              className="flex items-center gap-2.5 px-2.5 py-[6px] rounded-[8px] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--sidebar-accent)] transition-colors">
+              {dark ? <Sun className="h-[15px] w-[15px] shrink-0" /> : <Moon className="h-[15px] w-[15px] shrink-0" />}
+              <span className="text-[12px]">{dark ? "Light mode" : "Dark mode"}</span>
+            </button>
+            <button onClick={() => { fetch("/api/auth/logout", { method: "POST" }).then(() => { window.location.href = "/login"; }); }}
+              className="flex items-center gap-2.5 px-2.5 py-[6px] rounded-[8px] text-[var(--muted-foreground)] hover:text-[var(--destructive)] hover:bg-red-500/10 transition-colors">
+              <LogOut className="h-[15px] w-[15px] shrink-0" />
+              <span className="text-[12px]">Sign out</span>
+            </button>
+          </>
+        )}
       </div>
     </aside>
   );
