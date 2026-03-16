@@ -155,9 +155,6 @@ export default function DiagnosticsPage() {
 
   useEffect(() => { setResults(loadFromLocalStorage()); }, []);
 
-  if (adminLoading) return <div className="flex items-center justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
-  if (!isAdmin) return <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">Admin access required</div>;
-
   const runCategory = useCallback(async (categoryId: string) => {
     setRunningCategories((prev) => new Set(prev).add(categoryId));
     try {
@@ -192,6 +189,9 @@ export default function DiagnosticsPage() {
   const toggleExpand = useCallback((id: string) => {
     setExpandedCategories((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
   }, []);
+
+  if (adminLoading) return <div className="flex items-center justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
+  if (!isAdmin) return <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">Admin access required</div>;
 
   return (
     <div className="space-y-4 animate-fade-in">

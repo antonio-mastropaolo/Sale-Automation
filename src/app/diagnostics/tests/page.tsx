@@ -252,9 +252,6 @@ export default function TestDashboard() {
 
   useEffect(() => { setHistory(loadHistory()); }, []);
 
-  if (adminLoading) return <div className="flex items-center justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
-  if (!isAdmin) return <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">Admin access required</div>;
-
   // Load latest run on mount
   useEffect(() => {
     const h = loadHistory();
@@ -281,6 +278,9 @@ export default function TestDashboard() {
     }
     setRunning(false);
   };
+
+  if (adminLoading) return <div className="flex items-center justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
+  if (!isAdmin) return <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">Admin access required</div>;
 
   return (
     <div className="space-y-4 animate-fade-in">
