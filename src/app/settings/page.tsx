@@ -38,6 +38,10 @@ import {
   Star,
   Lightbulb,
   ArrowRight,
+  Cpu,
+  PenTool,
+  Link2,
+  SlidersHorizontal,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useHelp } from "@/components/help-context";
@@ -129,19 +133,19 @@ export default function SettingsPage() {
       <Tabs defaultValue="ai">
         <TabsList className="w-full sm:w-auto">
           <TabsTrigger value="ai" className="gap-1.5">
-            <Brain className="h-4 w-4" />
+            <Cpu className="h-4 w-4" />
             AI Provider
           </TabsTrigger>
           <TabsTrigger value="prompts" className="gap-1.5">
-            <Wand2 className="h-4 w-4" />
+            <PenTool className="h-4 w-4" />
             Prompt Studio
           </TabsTrigger>
           <TabsTrigger value="platforms" className="gap-1.5">
-            <Plug className="h-4 w-4" />
+            <Link2 className="h-4 w-4" />
             Platforms
           </TabsTrigger>
           <TabsTrigger value="general" className="gap-1.5">
-            <Settings2 className="h-4 w-4" />
+            <SlidersHorizontal className="h-4 w-4" />
             General
           </TabsTrigger>
         </TabsList>
