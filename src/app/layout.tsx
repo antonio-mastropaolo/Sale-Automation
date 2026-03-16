@@ -8,6 +8,7 @@ import { MainContent } from "@/components/main-content";
 import { HelpProvider } from "@/components/help-context";
 import { HelpAssistant } from "@/components/help-assistant";
 import { Footer } from "@/components/footer";
+import { InboxNotifications } from "@/components/inbox-notifications";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -45,6 +46,7 @@ export default function RootLayout({
             </MainContent>
           </div>
           <HelpAssistant />
+          <InboxNotifications />
           <Toaster position="bottom-right" richColors />
         </HelpProvider>
       </body>
