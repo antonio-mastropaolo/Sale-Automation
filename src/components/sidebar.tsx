@@ -133,14 +133,6 @@ export function Sidebar({ className }: { className?: string }) {
         />
       </div>
 
-      {/* Collapse toggle */}
-      <button
-        onClick={toggleCollapse}
-        className="absolute -right-[13px] top-[28px] z-50 h-[26px] w-[26px] rounded-full bg-[var(--card)] border border-[var(--border)] flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors shadow-sm"
-      >
-        {collapsed ? <PanelLeftOpen className="h-3 w-3" /> : <PanelLeftClose className="h-3 w-3" />}
-      </button>
-
       {/* Nav */}
       <nav className={cn("flex-1 overflow-y-auto py-2", collapsed ? "px-1.5" : "px-2")}>
         {sections.map((section) => {
@@ -206,6 +198,10 @@ export function Sidebar({ className }: { className?: string }) {
 
       {/* Bottom */}
       <div className={cn("border-t border-[var(--sidebar-border)] py-2", collapsed ? "px-1.5 flex flex-col items-center gap-1" : "px-2 flex items-center gap-1")}>
+        <button onClick={toggleCollapse} title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          className="h-[34px] w-[34px] rounded-[8px] flex items-center justify-center text-[var(--muted-foreground)] hover:bg-[var(--sidebar-accent)] transition-colors">
+          {collapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+        </button>
         <button onClick={toggleDark} title={dark ? "Light" : "Dark"}
           className="h-[34px] w-[34px] rounded-[8px] flex items-center justify-center text-[var(--muted-foreground)] hover:bg-[var(--sidebar-accent)] transition-colors">
           {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}

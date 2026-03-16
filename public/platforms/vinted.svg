@@ -1,4 +1,4 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40">
-  <circle cx="20" cy="20" r="20" fill="#09877E"/>
-  <text x="20" y="28" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="bold" fill="white">V</text>
+  <rect rx="10" width="40" height="40" fill="#09877E"/>
+  <path d="M11 16 L18 28 L30 11" stroke="white" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
