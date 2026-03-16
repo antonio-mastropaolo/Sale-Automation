@@ -245,7 +245,7 @@ export default function LoginPage() {
         <div className="w-full max-w-xs">
           {/* Logo + heading */}
           <div className="text-center mb-8">
-            <img src="/logo-full.png" alt="ListBlitz.io" className="h-10 object-contain mx-auto mb-3" />
+            <img src="/logo-full-dark.png" alt="ListBlitz.io" className="h-10 object-contain mx-auto mb-3" />
             <p className="text-sm text-[#8899aa]">Access your dashboard</p>
           </div>
 
