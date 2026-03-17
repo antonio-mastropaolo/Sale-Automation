@@ -96,6 +96,8 @@ export default function CrossMarketSearchPage() {
   const [priceMin, setPriceMin] = useState("");
   const [priceMax, setPriceMax] = useState("");
   const [selectedResult, setSelectedResult] = useState<SearchResult | null>(null);
+  const [searchPage, setSearchPage] = useState(1);
+  const SEARCH_PAGE_SIZE = 9;
 
   const handleSearch = useCallback(async () => {
     if (!query.trim()) return;
@@ -106,6 +108,7 @@ export default function CrossMarketSearchPage() {
     await new Promise((r) => setTimeout(r, 1500));
     const mockResults = generateMockResults(query);
     setResults(mockResults);
+    setSearchPage(1);
     setLoading(false);
     toast.success(`Found ${mockResults.length} results across ${selectedPlatforms.size} platforms`);
   }, [query, selectedPlatforms.size]);
@@ -239,14 +242,19 @@ export default function CrossMarketSearchPage() {
 
       {!loading && sortedResults.length > 0 && (
         <div>
+          {(() => {
+            const totalSearchPages = Math.ceil(sortedResults.length / SEARCH_PAGE_SIZE);
+            const paginatedResults = sortedResults.slice((searchPage - 1) * SEARCH_PAGE_SIZE, searchPage * SEARCH_PAGE_SIZE);
+            return (<>
           <div className="flex items-center justify-between mb-3">
             <p className="text-[12px] text-muted-foreground">
               <span className="font-semibold text-foreground">{sortedResults.length}</span> results across <span className="font-semibold text-foreground">{new Set(sortedResults.map((r) => r.platform)).size}</span> platforms
+              {totalSearchPages > 1 && <span> · Page {searchPage}/{totalSearchPages}</span>}
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-            {sortedResults.map((result) => {
+            {paginatedResults.map((result) => {
               const isSelected = selectedResult?.id === result.id;
               const marketAvg = Math.round(result.price * (0.9 + Math.random() * 0.3));
               const resaleEst = Math.round(result.price * (1.2 + Math.random() * 0.5));
@@ -384,6 +392,49 @@ export default function CrossMarketSearchPage() {
               );
             })}
           </div>
+
+          {/* Pagination */}
+          {totalSearchPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-6">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs"
+                disabled={searchPage <= 1}
+                onClick={() => { setSearchPage((p) => p - 1); setSelectedResult(null); }}
+              >
+                Previous
+              </Button>
+              <div className="flex gap-1">
+                {Array.from({ length: Math.min(totalSearchPages, 5) }, (_, i) => {
+                  const p = searchPage <= 3 ? i + 1 : searchPage + i - 2;
+                  if (p < 1 || p > totalSearchPages) return null;
+                  return (
+                    <button
+                      key={p}
+                      onClick={() => { setSearchPage(p); setSelectedResult(null); }}
+                      className={cn(
+                        "h-8 w-8 rounded-md text-xs font-medium transition-colors",
+                        p === searchPage ? "bg-[var(--primary)] text-[var(--primary-foreground)]" : "bg-muted text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      {p}
+                    </button>
+                  );
+                })}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs"
+                disabled={searchPage >= totalSearchPages}
+                onClick={() => { setSearchPage((p) => p + 1); setSelectedResult(null); }}
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </>); })()}
         </div>
       )}
 

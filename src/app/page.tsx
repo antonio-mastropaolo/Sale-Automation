@@ -59,7 +59,7 @@ export default function Dashboard() {
   const totalRevenue = stats.platformStats.reduce((s, p) => s + (p.revenue || 0), 0);
 
   const [page, setPage] = useState(1);
-  const PAGE_SIZE = 25;
+  const PAGE_SIZE = 9;
 
   const filtered = listings.filter((l) => {
     if (filterStatus && l.status !== filterStatus) return false;
