@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -8,10 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Zap, UserPlus, Mail, Lock, User } from "lucide-react";
+import { UserPlus, Mail, Lock, User, Zap } from "lucide-react";
 
 export default function RegisterPage() {
   const router = useRouter();
+  useEffect(() => { window.dispatchEvent(new Event("app:ready")); }, []);
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -69,10 +70,7 @@ export default function RegisterPage() {
       <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-12" style={{ background: "linear-gradient(135deg, #0f766e, #134e4a)" }}>
         <div className="max-w-md text-white space-y-8">
           <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-full bg-white/15 border-2 border-white/20 flex items-center justify-center">
-              <Zap className="h-6 w-6 text-white" />
-            </div>
-            <span className="font-bold text-3xl tracking-tight">ListBlitz</span>
+            <img src="/logo-dark.svg" alt="ListBlitz" className="h-10" />
           </div>
           <h1 className="text-4xl font-bold leading-tight">
             Start selling<br />smarter today.
@@ -103,7 +101,7 @@ export default function RegisterPage() {
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-3 mb-8 justify-center">
             <div className="h-10 w-10 rounded-full bg-primary/10 border-2 border-primary/20 flex items-center justify-center">
-              <Zap className="h-5 w-5 text-primary" />
+              <img src="/logo-icon.svg" alt="ListBlitz" className="h-5 w-5" />
             </div>
             <span className="font-bold text-2xl tracking-tight text-foreground">ListBlitz</span>
           </div>

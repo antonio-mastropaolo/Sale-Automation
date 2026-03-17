@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -28,6 +28,8 @@ export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  useEffect(() => { window.dispatchEvent(new Event("app:ready")); }, []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [transitioning, setTransitioning] = useState(false);
@@ -90,7 +92,7 @@ export default function LoginPage() {
         <div className="relative z-10 text-center max-w-md px-6">
           {/* Logo */}
           <div className="mb-6 animate-float">
-            <Rocket className="h-12 w-12 text-[#5b9bd5] mx-auto drop-shadow-[0_0_20px_rgba(59,130,246,0.4)]" />
+            <img src="/logo-icon.svg" alt="ListBlitz" className="h-12 w-12 mx-auto drop-shadow-[0_0_20px_rgba(59,130,246,0.4)]" />
           </div>
 
           {/* Welcome */}
@@ -246,9 +248,9 @@ export default function LoginPage() {
           {/* Logo + heading */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-2.5 mb-3">
-              <Rocket className="h-7 w-7 text-[#5b9bd5] drop-shadow-[0_0_8px_rgba(91,155,213,0.4)]" />
+              <img src="/logo-icon.svg" alt="ListBlitz" className="h-8 w-8 drop-shadow-[0_0_8px_rgba(91,155,213,0.4)]" />
               <span className="text-2xl font-bold tracking-tight">
-                <span className="text-[#a0aec0]">List</span><span className="text-[#5b9bd5]">Blitz</span><span className="text-[#718096]">.io</span>
+                <span className="text-[#f1f5f9]">List</span><span className="text-[#60a5fa]">Blitz</span><span className="text-[#64748b]">.io</span>
               </span>
             </div>
             <p className="text-sm text-[#8899aa]">Access your dashboard</p>

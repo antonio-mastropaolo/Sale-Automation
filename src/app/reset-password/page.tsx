@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -8,11 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Zap, Lock, KeyRound, CheckCircle } from "lucide-react";
+import { Lock, KeyRound, CheckCircle } from "lucide-react";
 import { Suspense } from "react";
 
 function ResetPasswordForm() {
   const router = useRouter();
+  useEffect(() => { window.dispatchEvent(new Event("app:ready")); }, []);
   const searchParams = useSearchParams();
   const token = searchParams.get("token") || "";
 
@@ -195,10 +196,7 @@ export default function ResetPasswordPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex items-center gap-3 mb-8 justify-center">
-          <div className="h-10 w-10 rounded-full bg-white/15 border-2 border-white/20 flex items-center justify-center">
-            <Zap className="h-5 w-5 text-white" />
-          </div>
-          <span className="font-bold text-2xl tracking-tight text-white">ListBlitz</span>
+          <img src="/logo-dark.svg" alt="ListBlitz" className="h-10" />
         </div>
 
         <Suspense fallback={

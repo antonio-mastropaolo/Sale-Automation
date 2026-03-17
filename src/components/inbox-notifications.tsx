@@ -164,7 +164,7 @@ async function fireNotification(conv: {
   if (typeof Notification !== "undefined" && Notification.permission === "granted") {
     new Notification(`${conv.buyerName} on ${platformLabel}`, {
       body: summary,
-      icon: logoSrc || "/logo.png",
+      icon: logoSrc || "/logo-icon.svg",
       tag: `inbox-${conv.platform}-${conv.buyerName}`,
     });
   }

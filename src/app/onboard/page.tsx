@@ -157,7 +157,7 @@ export default function OnboardPage() {
       <div className="w-full max-w-lg">
         {/* Logo */}
         <div className="flex items-center justify-center mb-5">
-          <img src="/logo-full.png" alt="ListBlitz" className="h-16 object-contain" />
+          <img src="/logo-dark.svg" alt="ListBlitz" className="h-10 object-contain" />
         </div>
 
         {/* Progress */}

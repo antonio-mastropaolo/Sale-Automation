@@ -1,15 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Zap, Mail, ArrowLeft, Send, CheckCircle } from "lucide-react";
+import { Mail, ArrowLeft, Send, CheckCircle } from "lucide-react";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
+  useEffect(() => { window.dispatchEvent(new Event("app:ready")); }, []);
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
@@ -45,10 +46,7 @@ export default function ForgotPasswordPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex items-center gap-3 mb-8 justify-center">
-          <div className="h-10 w-10 rounded-full bg-white/15 border-2 border-white/20 flex items-center justify-center">
-            <Zap className="h-5 w-5 text-white" />
-          </div>
-          <span className="font-bold text-2xl tracking-tight text-white">ListBlitz</span>
+          <img src="/logo-dark.svg" alt="ListBlitz" className="h-10" />
         </div>
 
         <Card className="rounded-2xl">

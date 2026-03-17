@@ -77,7 +77,7 @@ export function TopHeader() {
           </Sheet>
 
           <div className="flex items-center">
-            <img src={dark ? "/logo-full-dark.png" : "/logo-full.png"} alt="ListBlitz" className="h-8 sm:h-9 object-contain" />
+            <img src={dark ? "/logo-dark.svg" : "/logo-light.svg"} alt="ListBlitz" className="h-8 sm:h-9 object-contain" />
           </div>
         </div>
 

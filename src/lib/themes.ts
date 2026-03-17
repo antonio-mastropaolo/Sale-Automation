@@ -418,11 +418,43 @@ export const DESIGN_STYLES: DesignStyle[] = [
 
 export const DEFAULT_DESIGN_STYLE = "ios";
 
+/**
+ * Maps each design style ID to a CSS layout type.
+ * Layout types correspond to [data-layout] CSS overrides in globals.css
+ * that control shape, spacing, shadows, and structural behavior.
+ */
+const DESIGN_STYLE_TO_LAYOUT: Record<string, string> = {
+  ios: "ios",
+  material: "material",
+  flat: "flat",
+  glass: "glassmorphism",
+  neumorphic: "neumorphism",
+  // Color-palette-only styles use "default" layout
+  midnight: "default",
+  dracula: "default",
+  nord: "default",
+  solarized: "default",
+  monokai: "default",
+  catppuccin: "default",
+  rosepine: "default",
+};
+
+export function getLayoutForDesignStyle(styleId: string): string {
+  if (typeof styleId !== "string" || !Object.hasOwn(DESIGN_STYLE_TO_LAYOUT, styleId)) return "default";
+  return DESIGN_STYLE_TO_LAYOUT[styleId];
+}
+
 export function applyDesignStyle(styleId: string, isDark: boolean) {
   const style = DESIGN_STYLES.find((s) => s.id === styleId) || DESIGN_STYLES.find((s) => s.id === DEFAULT_DESIGN_STYLE)!;
   const root = document.documentElement;
   const palette = isDark ? style.dark : style.light;
 
+  // Set data-layout attribute for CSS-level layout overrides
+  const layoutType = getLayoutForDesignStyle(style.id);
+  root.setAttribute("data-layout", layoutType);
+  try { localStorage.setItem("listblitz-layout", layoutType); } catch {}
+
+  // Apply color palette
   root.style.setProperty("--background", palette.background);
   root.style.setProperty("--card", palette.card);
   if ("cardForeground" in palette) root.style.setProperty("--card-foreground", (palette as DesignStyle["dark"]).cardForeground);
@@ -437,18 +469,9 @@ export function applyDesignStyle(styleId: string, isDark: boolean) {
   if ("sidebarForeground" in palette) root.style.setProperty("--sidebar-foreground", (palette as DesignStyle["dark"]).sidebarForeground);
   root.style.setProperty("--sidebar-border", palette.sidebarBorder);
 
-  // Layout properties — changes actual UI shape, not just colors
+  // Apply layout properties (radius, spacing — for styles that use "default" layout)
   const layout = style.layout;
   root.style.setProperty("--radius", layout.radius);
-  root.style.setProperty("--card-shadow", layout.shadow);
-  root.style.setProperty("--card-shadow-hover", layout.shadowHover);
-  root.style.setProperty("--card-padding", layout.cardPadding);
-  root.style.setProperty("--card-blur", layout.backdropBlur);
-  root.style.setProperty("--card-border-width", layout.borderWidth);
-  root.style.setProperty("--heading-weight", layout.fontWeight);
-  root.style.setProperty("--section-spacing", layout.spacing);
-  root.style.setProperty("--icon-stroke", layout.iconStroke);
-  root.style.setProperty("--button-radius", layout.buttonRadius);
 }
 
 export function getSavedDesignStyle(): string {
