@@ -386,15 +386,22 @@ export default function TrendsPage() {
         icon={<Zap className="h-5 w-5 text-orange-500" />}
         items={data.hotItems}
         renderCard={(item) => (
-          <div className="rounded-xl bg-card p-4 space-y-2.5 card-hover">
-            <div className="flex items-start justify-between gap-3">
-              <h3 className="font-semibold text-[13px] leading-tight min-w-0 line-clamp-2">{item.name}</h3>
-              <Badge className="bg-primary text-primary-foreground border-0 text-[10px] font-bold shrink-0 whitespace-nowrap">{item.priceRange}</Badge>
+          <div className="rounded-xl bg-card overflow-hidden card-hover">
+            {/* Product image placeholder */}
+            <div className="h-28 bg-gradient-to-br from-orange-500/10 to-amber-500/5 flex items-center justify-center relative">
+              <ShoppingBag className="h-10 w-10 text-muted-foreground/10" />
+              <Badge className="absolute top-2 right-2 bg-primary text-primary-foreground border-0 text-[10px] font-bold">{item.priceRange}</Badge>
+              <div className="absolute bottom-2 left-2">
+                <DirectionBadge direction={item.trendDirection} />
+              </div>
             </div>
-            <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">{item.description}</p>
-            <div className="flex items-center justify-between">
-              <DirectionBadge direction={item.trendDirection} />
-              <CompetitionBadge level={item.competitionLevel} />
+            <div className="p-3.5 space-y-2">
+              <h3 className="font-semibold text-[13px] leading-tight line-clamp-2">{item.name}</h3>
+              <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">{item.description}</p>
+              <div className="flex items-center justify-between pt-1 border-t border-border">
+                <CompetitionBadge level={item.competitionLevel} />
+                <span className="text-[10px] text-muted-foreground">{item.sellThroughRate || "—"}</span>
+              </div>
             </div>
           </div>
         )}
@@ -440,16 +447,22 @@ export default function TrendsPage() {
         icon={<Gem className="h-5 w-5 text-emerald-500" />}
         items={data.sleeperPicks}
         renderCard={(pick) => (
-          <div className="rounded-xl bg-card p-4 space-y-2.5 card-hover relative overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-500 to-teal-500" />
-            <div className="flex items-start justify-between gap-2">
-              <h3 className="font-semibold text-[13px]">{pick.name}</h3>
-              <Badge className="bg-emerald-500 border-0 text-white text-[10px] font-bold shrink-0">+{pick.estimatedROI}</Badge>
+          <div className="rounded-xl bg-card overflow-hidden card-hover relative">
+            {/* Product image placeholder with emerald gradient */}
+            <div className="h-24 bg-gradient-to-br from-emerald-500/10 to-teal-500/5 flex items-center justify-center relative">
+              <Gem className="h-8 w-8 text-emerald-500/15" />
+              <Badge className="absolute top-2 right-2 bg-emerald-500 border-0 text-white text-[10px] font-bold">+{pick.estimatedROI}</Badge>
+              {pick.riskLevel && (
+                <Badge variant="outline" className={`absolute top-2 left-2 text-[9px] px-1.5 py-0 ${RISK_COLORS[pick.riskLevel] || ""}`}>{pick.riskLevel} risk</Badge>
+              )}
             </div>
-            <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">{pick.reasoning}</p>
-            <div className="flex items-center justify-between">
-              {pick.timeframe && <span className="text-[10px] text-muted-foreground flex items-center gap-0.5"><Clock className="h-3 w-3" /> {pick.timeframe}</span>}
-              {pick.riskLevel && <Badge variant="outline" className={`text-[9px] px-1.5 py-0 ${RISK_COLORS[pick.riskLevel] || ""}`}>{pick.riskLevel} risk</Badge>}
+            <div className="p-3.5 space-y-2">
+              <h3 className="font-semibold text-[13px]">{pick.name}</h3>
+              <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">{pick.reasoning}</p>
+              <div className="flex items-center justify-between pt-1 border-t border-border">
+                {pick.currentAvgPrice && <span className="text-[11px] font-semibold">{pick.currentAvgPrice}</span>}
+                {pick.timeframe && <span className="text-[10px] text-muted-foreground flex items-center gap-0.5"><Clock className="h-3 w-3" /> {pick.timeframe}</span>}
+              </div>
             </div>
           </div>
         )}
