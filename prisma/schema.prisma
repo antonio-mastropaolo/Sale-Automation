@@ -143,6 +143,21 @@ model ImportJob {
   completedAt DateTime?
 }
 
+// ── Activity log — app-level event tracking for ops monitor ─────────
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  type      String   // listing_created, optimize, publish_success, publish_failed, etc.
+  title     String   // Human-readable summary
+  detail    String   @default("")
+  platform  String   @default("")
+  severity  String   @default("info") // info, success, warning, error
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([type])
+}
+
 // ── Auth models ─────────────────────────────────────────────────────
 
 model User {

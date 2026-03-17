@@ -8,7 +8,8 @@ export type LayoutStyle =
   | "material"
   | "flat"
   | "neumorphism"
-  | "glassmorphism";
+  | "glassmorphism"
+  | "skeuomorphism";
 
 const VALID_STYLES: LayoutStyle[] = [
   "default",
@@ -17,6 +18,7 @@ const VALID_STYLES: LayoutStyle[] = [
   "flat",
   "neumorphism",
   "glassmorphism",
+  "skeuomorphism",
 ];
 
 interface LayoutContextType {

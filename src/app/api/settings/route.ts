@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getAllSettings, setSetting } from "@/lib/settings";
+import { logActivity } from "@/lib/activity-log";
 
 export async function GET() {
   const settings = await getAllSettings();
@@ -41,6 +42,8 @@ export async function POST(request: NextRequest) {
     if (typeof value !== "string") continue;
     await setSetting(key, value);
   }
+
+  await logActivity({ type: "settings_changed", title: "Settings updated" });
 
   return NextResponse.json({ ok: true });
 }

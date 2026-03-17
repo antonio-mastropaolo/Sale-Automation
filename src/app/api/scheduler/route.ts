@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { logActivity } from "@/lib/activity-log";
 
 export async function GET() {
   const posts = await prisma.scheduledPost.findMany({
@@ -58,6 +59,8 @@ export async function POST(request: NextRequest) {
     },
     include: { listing: true },
   });
+
+  await logActivity({ type: "schedule_created", title: listing.title, platform: body.platform as string });
 
   return NextResponse.json(post, { status: 201 });
 }

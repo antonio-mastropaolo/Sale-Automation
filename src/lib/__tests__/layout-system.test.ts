@@ -41,8 +41,8 @@ const themesTsx = readSrc("lib/themes.ts");
 
 // ── Constants ──
 
-const VALID_LAYOUT_TYPES = ["default", "ios", "material", "flat", "neumorphism", "glassmorphism"];
-const CSS_LAYOUT_TYPES = ["ios", "material", "flat", "neumorphism", "glassmorphism"]; // have CSS overrides
+const VALID_LAYOUT_TYPES = ["default", "ios", "material", "flat", "neumorphism", "glassmorphism", "skeuomorphism"];
+const CSS_LAYOUT_TYPES = ["ios", "material", "flat", "neumorphism", "glassmorphism", "skeuomorphism"]; // have CSS overrides
 const ALL_DESIGN_STYLE_IDS = DESIGN_STYLES.map((s) => s.id);
 
 // Layout CSS variables that must appear in :root
@@ -155,9 +155,9 @@ describe("A. Layout Mapping Integrity", () => {
     expect(getLayoutForDesignStyle(123 as unknown as string)).toBe("default");
   });
 
-  it("A23: exactly 5 styles have non-default layouts", () => {
+  it("A23: exactly 6 styles have non-default layouts", () => {
     const nonDefault = ALL_DESIGN_STYLE_IDS.filter((id) => getLayoutForDesignStyle(id) !== "default");
-    expect(nonDefault).toHaveLength(5);
+    expect(nonDefault).toHaveLength(6);
   });
 
   it("A24: exactly 7 styles use default layout", () => {
@@ -165,9 +165,9 @@ describe("A. Layout Mapping Integrity", () => {
     expect(defaultStyles).toHaveLength(7);
   });
 
-  it("A25: non-default styles are ios, material, flat, glass, neumorphic", () => {
+  it("A25: non-default styles are ios, material, flat, glass, neumorphic, skeuomorphic", () => {
     const nonDefault = ALL_DESIGN_STYLE_IDS.filter((id) => getLayoutForDesignStyle(id) !== "default");
-    expect(nonDefault.sort()).toEqual(["flat", "glass", "ios", "material", "neumorphic"]);
+    expect(nonDefault.sort()).toEqual(["flat", "glass", "ios", "material", "neumorphic", "skeuomorphic"]);
   });
 
   it("A26: color-only styles all map to default", () => {
@@ -175,8 +175,8 @@ describe("A. Layout Mapping Integrity", () => {
     colorOnly.forEach((id) => expect(getLayoutForDesignStyle(id)).toBe("default"));
   });
 
-  it("A27: mapping covers all 12 design styles", () => {
-    expect(ALL_DESIGN_STYLE_IDS).toHaveLength(12);
+  it("A27: mapping covers all 13 design styles", () => {
+    expect(ALL_DESIGN_STYLE_IDS).toHaveLength(13);
     ALL_DESIGN_STYLE_IDS.forEach((id) => {
       expect(typeof getLayoutForDesignStyle(id)).toBe("string");
     });
@@ -1137,10 +1137,10 @@ describe("G. Mapping Exhaustiveness", () => {
     expect(themesTsx).toContain('localStorage.setItem("listblitz-layout", layoutType)');
   });
 
-  // No layout style called "skeuomorphic" (TrendSmart-only)
-  it("G16: no skeuomorphic layout in ListBlitz", () => {
-    expect(getLayoutForDesignStyle("skeuomorphic")).toBe("default");
-    expect(globalsCss).not.toContain("skeuomorphic");
+  // Skeuomorphism layout exists
+  it("G16: skeuomorphic maps to skeuomorphism", () => {
+    expect(getLayoutForDesignStyle("skeuomorphic")).toBe("skeuomorphism");
+    expect(globalsCss).toContain('[data-layout="skeuomorphism"]');
   });
 
   // No layout style called "android" (TrendSmart-only)
@@ -1260,12 +1260,12 @@ describe("H. Edge Cases & Stress", () => {
     });
   });
 
-  it("H15: VALID_LAYOUT_TYPES has exactly 6 types", () => {
-    expect(VALID_LAYOUT_TYPES).toHaveLength(6);
+  it("H15: VALID_LAYOUT_TYPES has exactly 7 types", () => {
+    expect(VALID_LAYOUT_TYPES).toHaveLength(7);
   });
 
-  it("H16: CSS_LAYOUT_TYPES has exactly 5 types (no 'default')", () => {
-    expect(CSS_LAYOUT_TYPES).toHaveLength(5);
+  it("H16: CSS_LAYOUT_TYPES has exactly 6 types (no 'default')", () => {
+    expect(CSS_LAYOUT_TYPES).toHaveLength(6);
     expect(CSS_LAYOUT_TYPES).not.toContain("default");
   });
 
@@ -1401,7 +1401,7 @@ describe("I. Cross-System Integration", () => {
   it("I01: every theme × layout combo is theoretically valid", () => {
     const themeCount = 10; // from themes.ts
     const layoutCount = VALID_LAYOUT_TYPES.length;
-    expect(themeCount * layoutCount).toBe(60);
+    expect(themeCount * layoutCount).toBe(70);
   });
 
   // Layout provider ↔ themes.ts consistency
@@ -1532,13 +1532,13 @@ describe("J. Determinism & Stability", () => {
 
   it("J06: VALID_LAYOUT_TYPES order is stable", () => {
     for (let i = 0; i < 100; i++) {
-      expect(VALID_LAYOUT_TYPES).toEqual(["default", "ios", "material", "flat", "neumorphism", "glassmorphism"]);
+      expect(VALID_LAYOUT_TYPES).toEqual(["default", "ios", "material", "flat", "neumorphism", "glassmorphism", "skeuomorphism"]);
     }
   });
 
   it("J07: CSS_LAYOUT_TYPES order is stable", () => {
     for (let i = 0; i < 100; i++) {
-      expect(CSS_LAYOUT_TYPES).toEqual(["ios", "material", "flat", "neumorphism", "glassmorphism"]);
+      expect(CSS_LAYOUT_TYPES).toEqual(["ios", "material", "flat", "neumorphism", "glassmorphism", "skeuomorphism"]);
     }
   });
 

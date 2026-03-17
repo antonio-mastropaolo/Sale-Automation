@@ -23,43 +23,31 @@ export async function GET() {
       where: { status: "pending" },
     });
 
-    // ── Failed platform listings (proxy for failed jobs) ──
+    // ── Failed platform listings ──
     const failed = await prisma.platformListing.count({
       where: { status: "failed" },
     });
 
-    // ── Recent events (last 20 analytics events) ──
-    const recentEvents = await prisma.analyticsEvent.findMany({
-      take: 20,
-      orderBy: { recordedAt: "desc" },
-      select: {
-        id: true,
-        eventType: true,
-        value: true,
-        recordedAt: true,
-        platformListing: {
-          select: {
-            platform: true,
-            listing: { select: { title: true } },
-          },
-        },
-      },
+    // ── Recent activity log events (last 30) ──
+    const recentLogs = await prisma.activityLog.findMany({
+      take: 30,
+      orderBy: { createdAt: "desc" },
     });
 
-    const events = recentEvents.map((e) => ({
-      id: e.id,
-      type: e.eventType,
-      platform: e.platformListing?.platform ?? "unknown",
-      value: e.value,
-      title: e.platformListing?.listing?.title ?? "Unknown",
-      ts: e.recordedAt.toISOString(),
+    const events = recentLogs.map((log) => ({
+      id: log.id,
+      type: log.type,
+      platform: log.platform,
+      title: log.title,
+      detail: log.detail,
+      severity: log.severity,
+      ts: log.createdAt.toISOString(),
     }));
 
     // ── System metrics ──
     const mem = process.memoryUsage();
     const uptime = process.uptime();
 
-    // DB latency check
     const dbStart = performance.now();
     await prisma.$queryRaw`SELECT 1`;
     const dbLatency = Math.round(performance.now() - dbStart);
@@ -73,6 +61,12 @@ export async function GET() {
       db: { latencyMs: dbLatency, status: dbLatency < 200 ? "ok" : "slow" },
       uptime: Math.round(uptime),
     };
+
+    // ── Occasional cleanup: prune logs older than 30 days ──
+    if (Math.random() < 0.01) {
+      const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      prisma.activityLog.deleteMany({ where: { createdAt: { lt: cutoff } } }).catch(() => {});
+    }
 
     return NextResponse.json({
       listings: { total, active, draft, sold },

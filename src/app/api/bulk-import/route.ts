@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { logActivity } from "@/lib/activity-log";
 
 function parseCSV(text: string): string[][] {
   const lines = text.split(/\r?\n/).filter((line) => line.trim() !== "");
@@ -132,6 +133,8 @@ export async function POST(request: NextRequest) {
       );
     }
   }
+
+  await logActivity({ type: "import_completed", title: `Imported ${imported} listings`, severity: errors.length > 0 ? "warning" : "success" });
 
   return NextResponse.json({ imported, errors });
 }

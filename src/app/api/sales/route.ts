@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { logActivity } from "@/lib/activity-log";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -140,6 +141,8 @@ export async function POST(request: NextRequest) {
       // Listing may not exist; sale is still valid
     }
   }
+
+  await logActivity({ type: "sale_recorded", title: sale.title, platform: sale.platform, severity: "success" });
 
   return NextResponse.json(sale, { status: 201 });
 }

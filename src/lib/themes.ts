@@ -282,6 +282,25 @@ export const DESIGN_STYLES: DesignStyle[] = [
     },
   },
   {
+    id: "skeuomorphic",
+    label: "Skeuomorphism",
+    description: "Tactile, textured, real-world depth",
+    preview: "linear-gradient(180deg, #e8e8e8 0%, #d0d0d0 100%)",
+    layout: { radius: "0.5rem", borderWidth: "1px", shadow: "0 1px 0 rgba(255,255,255,0.6) inset, 0 2px 4px rgba(0,0,0,0.2), 0 4px 8px rgba(0,0,0,0.1)", shadowHover: "0 1px 0 rgba(255,255,255,0.6) inset, 0 4px 12px rgba(0,0,0,0.25)", cardPadding: "1rem", backdropBlur: "none", fontWeight: "600", spacing: "1rem", iconStroke: "2", buttonRadius: "0.5rem" },
+    dark: {
+      background: "#1a1a1a", card: "#2a2a28", cardForeground: "#e8e8e0",
+      popover: "#333330", secondary: "#333330", secondaryForeground: "#e8e8e0",
+      muted: "#333330", mutedForeground: "#999990", border: "rgba(255,255,255,0.08)",
+      input: "#333330", sidebar: "rgba(42,42,40,0.95)", sidebarForeground: "#999990",
+      sidebarBorder: "rgba(255,255,255,0.06)",
+    },
+    light: {
+      background: "#e0ddd5", card: "#f5f4f0", secondary: "#e8e5de",
+      muted: "#ddd9d0", mutedForeground: "#706b60", border: "rgba(0,0,0,0.15)",
+      sidebar: "rgba(240,238,232,0.95)", sidebarBorder: "rgba(0,0,0,0.1)",
+    },
+  },
+  {
     id: "midnight",
     label: "Midnight",
     description: "Deep navy, premium feel",
@@ -429,6 +448,7 @@ const DESIGN_STYLE_TO_LAYOUT: Record<string, string> = {
   flat: "flat",
   glass: "glassmorphism",
   neumorphic: "neumorphism",
+  skeuomorphic: "skeuomorphism",
   // Color-palette-only styles use "default" layout
   midnight: "default",
   dracula: "default",

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { platforms } from "@/lib/platforms";
+import { logActivity } from "@/lib/activity-log";
 
 export async function POST(
   request: NextRequest,
@@ -72,12 +73,16 @@ export async function POST(
       data: { status: "active" },
     });
 
+    await logActivity({ type: "publish_success", title: listing.title, platform, severity: "success" });
+
     return NextResponse.json({ success: true, url: result.url });
   } catch (error) {
     await prisma.platformListing.update({
       where: { id: platformListing.id },
       data: { status: "failed" },
     });
+
+    await logActivity({ type: "publish_failed", title: listing.title, platform, severity: "error", detail: error instanceof Error ? error.message : "Unknown" });
 
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Publishing failed" },

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { optimizeForAllPlatforms, Platform } from "@/lib/ai";
+import { logActivity } from "@/lib/activity-log";
 
 export async function POST(
   request: NextRequest,
@@ -62,6 +63,8 @@ export async function POST(
       });
     })
   );
+
+  await logActivity({ type: "optimize", title: listing.title, severity: "info" });
 
   return NextResponse.json(platformListings);
 }

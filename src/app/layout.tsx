@@ -43,7 +43,7 @@ const layoutScript = `
 (function() {
   try {
     var layout = localStorage.getItem('listblitz-layout');
-    if (layout && ['default','ios','material','flat','neumorphism','glassmorphism'].indexOf(layout) !== -1) {
+    if (layout && ['default','ios','material','flat','neumorphism','glassmorphism','skeuomorphism'].indexOf(layout) !== -1) {
       document.documentElement.setAttribute('data-layout', layout);
     }
   } catch(e) {}

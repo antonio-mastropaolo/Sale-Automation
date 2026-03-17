@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
+import { logActivity } from "@/lib/activity-log";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -137,6 +138,8 @@ export async function POST(request: NextRequest) {
       platformListings: true,
     },
   });
+
+  await logActivity({ type: "listing_created", title: listing.title, severity: "success" });
 
   return NextResponse.json(listing, { status: 201 });
 }

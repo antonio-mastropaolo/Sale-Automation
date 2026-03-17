@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { verifyPassword, createSession } from "@/lib/auth";
 import { cookies } from "next/headers";
+import { logActivity } from "@/lib/activity-log";
 
 export async function POST(req: NextRequest) {
   try {
@@ -33,6 +34,8 @@ export async function POST(req: NextRequest) {
       maxAge: 7 * 24 * 60 * 60,
       path: "/",
     });
+
+    await logActivity({ type: "login", title: user.username || user.email });
 
     return NextResponse.json({
       user: {

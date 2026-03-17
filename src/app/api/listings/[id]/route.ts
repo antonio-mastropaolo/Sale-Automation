@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { logActivity } from "@/lib/activity-log";
 
 export async function GET(
   _request: NextRequest,
@@ -104,6 +105,8 @@ export async function PATCH(
     },
   });
 
+  await logActivity({ type: "listing_updated", title: listing.title });
+
   return NextResponse.json(listing);
 }
 
@@ -119,5 +122,8 @@ export async function DELETE(
   }
 
   await prisma.listing.delete({ where: { id } });
+
+  await logActivity({ type: "listing_deleted", title: existing.title, severity: "warning" });
+
   return NextResponse.json({ success: true });
 }
