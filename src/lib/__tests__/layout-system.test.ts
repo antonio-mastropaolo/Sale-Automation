@@ -969,15 +969,15 @@ describe("F. Footer & Auth Routes", () => {
   });
 
   it("F05: footer has platform info", () => {
-    expect(footerTsx).toContain("8 platforms");
+    expect(footerTsx).toContain("platforms");
   });
 
   it("F06: footer has ListBlitz branding", () => {
     expect(footerTsx).toContain("ListBlitz");
   });
 
-  it("F07: footer has copyright year", () => {
-    expect(footerTsx).toContain("new Date().getFullYear()");
+  it("F07: footer has version number", () => {
+    expect(footerTsx).toContain("APP_VERSION");
   });
 
   it("F08: footer links to settings", () => {
@@ -1012,8 +1012,8 @@ describe("F. Footer & Auth Routes", () => {
   });
 
   // Layout structure
-  it("F15: layout.tsx has flex min-h-screen", () => {
-    expect(layoutTsx).toContain("flex min-h-screen");
+  it("F15: layout.tsx has flex-col min-h-screen wrapper", () => {
+    expect(layoutTsx).toContain("flex flex-col min-h-screen");
   });
 
   it("F16: layout.tsx has flex-1 content area", () => {

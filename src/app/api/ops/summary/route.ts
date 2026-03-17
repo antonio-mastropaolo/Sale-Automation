@@ -4,6 +4,8 @@ import { prisma } from "@/lib/db";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  const apiStart = performance.now();
+
   try {
     // ── Listing counts by status ──
     const [total, active, draft, sold] = await Promise.all([
@@ -13,20 +15,12 @@ export async function GET() {
       prisma.listing.count({ where: { status: "sold" } }),
     ]);
 
-    // ── Published platform listings ──
-    const published = await prisma.platformListing.count({
-      where: { status: "published" },
-    });
-
-    // ── Scheduled posts ──
-    const scheduled = await prisma.scheduledPost.count({
-      where: { status: "pending" },
-    });
-
-    // ── Failed platform listings ──
-    const failed = await prisma.platformListing.count({
-      where: { status: "failed" },
-    });
+    // ── Published / scheduled / failed ──
+    const [published, scheduled, failed] = await Promise.all([
+      prisma.platformListing.count({ where: { status: "published" } }),
+      prisma.scheduledPost.count({ where: { status: "pending" } }),
+      prisma.platformListing.count({ where: { status: "failed" } }),
+    ]);
 
     // ── Recent activity log events (last 30) ──
     const recentLogs = await prisma.activityLog.findMany({
@@ -44,6 +38,21 @@ export async function GET() {
       ts: log.createdAt.toISOString(),
     }));
 
+    // ── Platform credential health ──
+    const credentials = await prisma.platformCredential.findMany({
+      select: { platform: true },
+    });
+    const connectedPlatforms = credentials.map((c) => c.platform);
+
+    // ── AI provider health (from settings) ──
+    const aiSettings = await prisma.setting.findMany({
+      where: {
+        key: { in: ["ai_api_key", "ai_api_key_openai", "ai_api_key_google", "ai_api_key_groq", "ai_provider"] },
+      },
+    });
+    const aiKeySet = aiSettings.some((s) => s.key.startsWith("ai_api_key") && s.value && s.value !== '""');
+    const aiProvider = aiSettings.find((s) => s.key === "ai_provider")?.value?.replace(/"/g, "") || "openai";
+
     // ── System metrics ──
     const mem = process.memoryUsage();
     const uptime = process.uptime();
@@ -51,6 +60,8 @@ export async function GET() {
     const dbStart = performance.now();
     await prisma.$queryRaw`SELECT 1`;
     const dbLatency = Math.round(performance.now() - dbStart);
+
+    const responseMs = Math.round(performance.now() - apiStart);
 
     const system = {
       memory: {
@@ -60,6 +71,7 @@ export async function GET() {
       },
       db: { latencyMs: dbLatency, status: dbLatency < 200 ? "ok" : "slow" },
       uptime: Math.round(uptime),
+      responseMs,
     };
 
     // ── Occasional cleanup: prune logs older than 30 days ──
@@ -75,6 +87,14 @@ export async function GET() {
       failed,
       events,
       system,
+      platforms: {
+        connected: connectedPlatforms,
+        total: 8,
+      },
+      ai: {
+        configured: aiKeySet,
+        provider: aiProvider,
+      },
     });
   } catch (err) {
     console.error("Ops summary error:", err);

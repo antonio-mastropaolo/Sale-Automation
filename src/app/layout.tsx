@@ -124,22 +124,25 @@ export default function RootLayout({
           <script>${bootDismissScript}</script>
         ` }} />
         <HelpProvider>
-          <div className="flex min-h-screen">
-            {/* Left rail — navigation only */}
-            <Sidebar />
-            {/* Center workspace — hero area */}
-            <div className="flex flex-1 flex-col overflow-x-hidden">
-              <main className="flex-1">
-                <PageTransition>
-                  <div className="w-full px-4 pb-10 pt-16 sm:px-6 sm:pt-16 md:pt-10 lg:px-8 lg:pt-6 xl:px-10 2xl:px-12 2xl:pb-12">
-                    {children}
-                  </div>
-                </PageTransition>
-              </main>
-              <Footer />
+          <div className="flex flex-col min-h-screen">
+            <div className="flex flex-1 min-h-0">
+              {/* Left rail — navigation only */}
+              <Sidebar />
+              {/* Center workspace — hero area */}
+              <div className="flex flex-1 flex-col overflow-x-hidden">
+                <main className="flex-1">
+                  <PageTransition>
+                    <div className="w-full px-4 pb-10 pt-16 sm:px-6 sm:pt-16 md:pt-10 lg:px-8 lg:pt-6 xl:px-10 2xl:px-12 2xl:pb-12">
+                      {children}
+                    </div>
+                  </PageTransition>
+                </main>
+              </div>
+              {/* Right rail — live ops telemetry */}
+              <RightRail />
             </div>
-            {/* Right rail — live ops telemetry */}
-            <RightRail />
+            {/* Footer spans full width below all three panels */}
+            <Footer />
           </div>
           <HelpAssistant />
           <InboxNotifications />

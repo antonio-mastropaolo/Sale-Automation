@@ -288,6 +288,26 @@
   }
 }
 
+/* Apply layout-aware radius and shadows to common card patterns.
+   This makes design style switches actually visible across all pages. */
+[data-layout] .bg-card,
+[data-layout] [class*="bg-card"] {
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+}
+
+/* Buttons pick up the layout button radius */
+[data-layout] button:not([class*="rounded-full"]),
+[data-layout] a[class*="rounded-lg"],
+[data-layout] a[class*="rounded-xl"] {
+  border-radius: var(--btn-radius);
+}
+
+/* Nav items pick up layout nav radius */
+[data-layout] nav a {
+  border-radius: var(--nav-radius) !important;
+}
+
 /* ── iOS: glass sidebar + hover scale + press effect ──────────────────────── */
 [data-layout="ios"] .layout-card {
   transition: transform 0.2s ease, box-shadow 0.2s ease;

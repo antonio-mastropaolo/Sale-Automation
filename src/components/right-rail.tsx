@@ -16,8 +16,10 @@ import {
   Loader2,
   PanelRightClose,
   PanelRightOpen,
+  Play,
   RefreshCw,
   RotateCcw,
+  Timer,
   Workflow,
   Zap,
   XCircle,
@@ -26,13 +28,15 @@ import {
   CalendarClock,
   Store,
   Sparkles,
-  Eye,
   DollarSign,
   Send,
   LogIn,
   Settings2,
   Trash2,
   Upload,
+  ExternalLink,
+  Wifi,
+  WifiOff,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import useSWR from "swr";
@@ -49,7 +53,10 @@ interface OpsSummary {
     memory: { usedMB: number; totalMB: number; percent: number };
     db: { latencyMs: number; status: string };
     uptime: number;
+    responseMs: number;
   };
+  platforms: { connected: string[]; total: number };
+  ai: { configured: boolean; provider: string };
 }
 
 interface OpsEvent {
@@ -67,36 +74,37 @@ interface OpsEvent {
 const AUTH_ROUTES = ["/login", "/register", "/forgot-password", "/reset-password"];
 const fetcher = (url: string) => fetch(url).then((r) => (r.ok ? r.json() : null));
 
-type FilterType = "all" | "errors" | "success" | "ai" | "publishing";
+type FilterKey = "all" | "errors" | "success" | "ai" | "publishing";
 
-const FILTER_CHIPS: { key: FilterType; label: string }[] = [
+const FILTER_CHIPS: { key: FilterKey; label: string }[] = [
   { key: "all", label: "All" },
   { key: "errors", label: "Errors" },
   { key: "success", label: "Success" },
   { key: "ai", label: "AI" },
-  { key: "publishing", label: "Publishing" },
+  { key: "publishing", label: "Publish" },
 ];
 
-/* Maps ActivityLog.type → display metadata */
-const EVENT_META: Record<string, { label: string; icon: typeof Activity; filter: FilterType; dot: string }> = {
-  listing_created:  { label: "Created",     icon: FileText,      filter: "success",    dot: "bg-emerald-400" },
-  listing_updated:  { label: "Updated",     icon: FileText,      filter: "all",        dot: "bg-slate-400" },
-  listing_deleted:  { label: "Deleted",     icon: Trash2,        filter: "errors",     dot: "bg-red-400" },
-  optimize:         { label: "AI Optimized",icon: Sparkles,      filter: "ai",         dot: "bg-violet-400" },
-  publish_success:  { label: "Published",   icon: Send,          filter: "publishing", dot: "bg-emerald-400" },
-  publish_failed:   { label: "Publish fail",icon: XCircle,       filter: "errors",     dot: "bg-red-400" },
-  import_started:   { label: "Import",      icon: Upload,        filter: "all",        dot: "bg-blue-400" },
-  import_completed: { label: "Imported",    icon: Package,       filter: "success",    dot: "bg-emerald-400" },
-  schedule_created: { label: "Scheduled",   icon: CalendarClock, filter: "publishing", dot: "bg-indigo-400" },
-  schedule_deleted: { label: "Unscheduled", icon: CalendarClock, filter: "all",        dot: "bg-slate-400" },
-  batch_action:     { label: "Batch",       icon: Package,       filter: "all",        dot: "bg-blue-400" },
-  settings_changed: { label: "Settings",    icon: Settings2,     filter: "all",        dot: "bg-slate-400" },
-  sale_recorded:    { label: "Sale",        icon: DollarSign,    filter: "success",    dot: "bg-emerald-400" },
-  login:            { label: "Login",       icon: LogIn,         filter: "all",        dot: "bg-slate-400" },
-  logout:           { label: "Logout",      icon: LogIn,         filter: "all",        dot: "bg-slate-400" },
+const ALL_PLATFORMS = ["depop", "grailed", "poshmark", "mercari", "ebay", "vinted", "facebook", "vestiaire"];
+
+const EVENT_META: Record<string, { label: string; icon: typeof Activity; filter: FilterKey; dot: string }> = {
+  listing_created:  { label: "Created",      icon: FileText,      filter: "success",    dot: "bg-emerald-400" },
+  listing_updated:  { label: "Updated",      icon: FileText,      filter: "all",        dot: "bg-slate-400/60" },
+  listing_deleted:  { label: "Deleted",       icon: Trash2,        filter: "errors",     dot: "bg-red-400" },
+  optimize:         { label: "AI Optimized",  icon: Sparkles,      filter: "ai",         dot: "bg-violet-400" },
+  publish_success:  { label: "Published",     icon: Send,          filter: "publishing", dot: "bg-emerald-400" },
+  publish_failed:   { label: "Publish failed",icon: XCircle,       filter: "errors",     dot: "bg-red-400" },
+  import_started:   { label: "Import started",icon: Upload,        filter: "all",        dot: "bg-blue-400" },
+  import_completed: { label: "Imported",      icon: Package,       filter: "success",    dot: "bg-emerald-400" },
+  schedule_created: { label: "Scheduled",     icon: CalendarClock, filter: "publishing", dot: "bg-indigo-400" },
+  schedule_deleted: { label: "Unscheduled",   icon: CalendarClock, filter: "all",        dot: "bg-slate-400/60" },
+  batch_action:     { label: "Batch",         icon: Package,       filter: "all",        dot: "bg-blue-400" },
+  settings_changed: { label: "Settings",      icon: Settings2,     filter: "all",        dot: "bg-slate-400/60" },
+  sale_recorded:    { label: "Sale",          icon: DollarSign,    filter: "success",    dot: "bg-emerald-400" },
+  login:            { label: "Login",         icon: LogIn,         filter: "all",        dot: "bg-slate-400/60" },
+  logout:           { label: "Logout",        icon: LogIn,         filter: "all",        dot: "bg-slate-400/60" },
 };
 
-/** Compact relative time: "now", "2m", "1h", "3d" */
+/** Compact relative time */
 const fmtAgo = (iso: string): string => {
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60000);
@@ -113,7 +121,7 @@ const fmtUptime = (seconds: number): string => {
   return `${Math.floor(seconds / 86400)}d ${Math.floor((seconds % 86400) / 3600)}h`;
 };
 
-/* ── Section header ── */
+/* ── Sub-components ── */
 
 function SectionHeader({
   title, open, onToggle, badge, badgeColor,
@@ -124,7 +132,7 @@ function SectionHeader({
   return (
     <button
       onClick={onToggle}
-      className="flex w-full items-center gap-2 px-3.5 py-2 text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] transition-colors hover:text-[var(--foreground)]"
+      className="flex w-full items-center gap-2 px-3.5 py-2 text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]/60 transition-colors hover:text-[var(--muted-foreground)]"
     >
       <ChevronDown className={cn("h-2.5 w-2.5 shrink-0 transition-transform duration-200", !open && "-rotate-90")} />
       <span className="flex-1 text-left">{title}</span>
@@ -145,6 +153,15 @@ function Collapsible({ open, children }: { open: boolean; children: React.ReactN
   );
 }
 
+function ProviderDot({ name, connected }: { name: string; connected: boolean }) {
+  return (
+    <div className="flex items-center gap-1" title={`${name}: ${connected ? "Connected" : "Not configured"}`}>
+      <span className={cn("h-1.5 w-1.5 rounded-full", connected ? "bg-emerald-400 shadow-[0_0_4px_rgba(52,211,153,0.4)]" : "bg-[var(--muted-foreground)]/20")} />
+      <span className={cn("text-[9px] capitalize", connected ? "text-emerald-500" : "text-[var(--muted-foreground)]/30")}>{name}</span>
+    </div>
+  );
+}
+
 /* ── Main Component ── */
 
 export function RightRail() {
@@ -155,10 +172,12 @@ export function RightRail() {
     dedupingInterval: 10_000,
   });
 
-  const [sections, setSections] = useState({ ops: true, monitor: true, system: false, actions: true });
-  const [monitorFilter, setMonitorFilter] = useState<FilterType>("all");
+  const [sections, setSections] = useState({ ops: true, monitor: true, system: true, actions: true });
+  const [monitorFilter, setMonitorFilter] = useState<FilterKey>("all");
+  const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState(false);
 
+  // Responsive auto-collapse + localStorage persistence
   useEffect(() => {
     try {
       const saved = localStorage.getItem("right-rail-collapsed");
@@ -166,6 +185,16 @@ export function RightRail() {
       const savedSections = localStorage.getItem("right-rail-sections");
       if (savedSections) setSections(JSON.parse(savedSections));
     } catch {}
+
+    // Auto-collapse below 2xl unless user explicitly set a preference
+    const mq = window.matchMedia("(min-width: 1536px)");
+    const handleChange = (e: MediaQueryListEvent | MediaQueryList) => {
+      const userPref = localStorage.getItem("right-rail-collapsed");
+      if (userPref === null) setCollapsed(!e.matches);
+    };
+    handleChange(mq);
+    mq.addEventListener("change", handleChange);
+    return () => mq.removeEventListener("change", handleChange);
   }, []);
 
   const toggleCollapsed = () => {
@@ -184,14 +213,12 @@ export function RightRail() {
 
   if (AUTH_ROUTES.includes(pathname)) return null;
 
-  // Filter events
   const filteredEvents = useMemo(() => {
     if (!data?.events) return [];
     if (monitorFilter === "all") return data.events;
     return data.events.filter((e) => {
       const meta = EVENT_META[e.type];
       if (!meta) {
-        // Fallback: use severity
         if (monitorFilter === "errors") return e.severity === "error" || e.severity === "warning";
         if (monitorFilter === "success") return e.severity === "success";
         return false;
@@ -204,8 +231,10 @@ export function RightRail() {
   const draftCount = data?.listings.draft ?? 0;
   const scheduledCount = data?.scheduled ?? 0;
   const publishedCount = data?.published ?? 0;
+  const connectedCount = data?.platforms?.connected?.length ?? 0;
+  const platformTotal = data?.platforms?.total ?? 8;
 
-  /* ── Collapsed state ── */
+  /* ── Collapsed: thin icon bar ── */
 
   if (collapsed) {
     return (
@@ -217,38 +246,38 @@ export function RightRail() {
         <div title={`${failCount} failed`} className={cn("flex h-6 w-6 items-center justify-center rounded text-[9px] font-bold tabular-nums", failCount > 0 ? "bg-red-500/10 text-red-400" : "text-[var(--muted-foreground)]/40")}>
           {failCount}
         </div>
-        <div title={`${draftCount} drafts`} className="flex h-6 w-6 items-center justify-center rounded text-[9px] font-bold tabular-nums text-[var(--muted-foreground)]/40">
-          {draftCount}
-        </div>
-        <div title={`${scheduledCount} scheduled`} className={cn("flex h-6 w-6 items-center justify-center rounded text-[9px] font-bold tabular-nums", scheduledCount > 0 ? "bg-indigo-500/10 text-indigo-400" : "text-[var(--muted-foreground)]/40")}>
-          {scheduledCount}
-        </div>
         <div title={`${publishedCount} published`} className="flex h-6 w-6 items-center justify-center rounded text-[9px] font-bold tabular-nums text-emerald-400/60">
           {publishedCount}
         </div>
-        <div className="flex-1" />
-        <div title={`${data?.events?.length ?? 0} events`} className={cn("flex h-6 w-6 items-center justify-center rounded", (data?.events?.length ?? 0) > 0 ? "text-indigo-400" : "text-[var(--muted-foreground)]/20")}>
-          <Activity className="h-3 w-3" />
+        <div title={`${connectedCount}/${platformTotal} platforms`} className={cn("flex h-6 w-6 items-center justify-center rounded", connectedCount === platformTotal ? "text-emerald-400" : "text-[var(--muted-foreground)]/30")}>
+          {connectedCount === platformTotal ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
         </div>
+        <div className="flex-1" />
+        {(data?.events?.length ?? 0) > 0 && (
+          <div className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse" title="Events active" />
+        )}
       </aside>
     );
   }
 
-  /* ── Expanded state ── */
+  /* ── Expanded: full ops rail ── */
 
   return (
-    <aside className="sticky top-0 hidden h-screen w-[280px] shrink-0 flex-col border-l border-[var(--border)] bg-[var(--card)]/60 backdrop-blur-sm xl:flex 2xl:w-[300px]">
+    <aside className="sticky top-0 hidden h-screen w-[250px] shrink-0 flex-col border-l border-[var(--border)] bg-[var(--card)]/60 backdrop-blur-sm xl:flex 2xl:w-[280px]">
 
-      {/* Rail header */}
+      {/* ── Header ── */}
       <div className="flex items-center gap-2 border-b border-[var(--border)] px-3.5 py-2.5 shrink-0">
-        <Activity className="h-3.5 w-3.5 text-[var(--primary)]" />
-        <span className="flex-1 text-[11px] font-bold tracking-wide">Operations</span>
-        <button onClick={toggleCollapsed} title="Collapse" className="flex h-6 w-6 items-center justify-center rounded-md text-[var(--muted-foreground)] hover:bg-[var(--accent)] hover:text-[var(--foreground)] transition-colors">
+        <div className="flex items-center gap-1.5">
+          <Activity className="h-3.5 w-3.5 text-[var(--primary)]" />
+          <span className="text-[11px] font-bold tracking-wide">OPS</span>
+        </div>
+        <div className="flex-1" />
+        <button onClick={toggleCollapsed} title="Collapse" className="flex h-6 w-6 items-center justify-center rounded-md text-[var(--muted-foreground)]/40 hover:bg-[var(--accent)] hover:text-[var(--muted-foreground)] transition-colors">
           <PanelRightClose className="h-3.5 w-3.5" />
         </button>
       </div>
 
-      {/* Scrollable body */}
+      {/* ── Scrollable body ── */}
       <div className="flex-1 overflow-y-auto">
 
         {/* ═══ OPS SUMMARY ═══ */}
@@ -260,28 +289,24 @@ export function RightRail() {
           badgeColor={failCount > 0 ? "bg-red-500/15 text-red-400" : undefined}
         />
         <Collapsible open={sections.ops}>
-          <div className="grid grid-cols-2 gap-1.5 px-3.5 pb-3">
+          <div className="grid grid-cols-3 gap-1.5 px-3.5 pb-3">
             <div className={cn(
               "rounded-lg border px-2.5 py-2 text-center",
               failCount > 0 ? "border-red-500/20 bg-red-500/[0.04]" : "border-[var(--border)] bg-[var(--accent)]/20"
             )}>
               <p className={cn("text-base font-bold tabular-nums leading-none", failCount > 0 ? "text-red-400" : "")}>{failCount}</p>
-              <p className="text-[8px] font-medium uppercase tracking-wider text-[var(--muted-foreground)] mt-1">Failed</p>
+              <p className="text-[8px] font-medium uppercase tracking-wider text-[var(--muted-foreground)]/50 mt-1">Errors</p>
             </div>
             <div className="rounded-lg border border-[var(--border)] bg-[var(--accent)]/20 px-2.5 py-2 text-center">
               <p className="text-base font-bold tabular-nums leading-none">{draftCount}</p>
-              <p className="text-[8px] font-medium uppercase tracking-wider text-[var(--muted-foreground)] mt-1">Drafts</p>
+              <p className="text-[8px] font-medium uppercase tracking-wider text-[var(--muted-foreground)]/50 mt-1">Drafts</p>
             </div>
             <div className={cn(
               "rounded-lg border px-2.5 py-2 text-center",
-              scheduledCount > 0 ? "border-indigo-500/20 bg-indigo-500/[0.04]" : "border-[var(--border)] bg-[var(--accent)]/20"
+              publishedCount > 0 ? "border-emerald-500/20 bg-emerald-500/[0.04]" : "border-[var(--border)] bg-[var(--accent)]/20"
             )}>
-              <p className={cn("text-base font-bold tabular-nums leading-none", scheduledCount > 0 ? "text-indigo-400" : "")}>{scheduledCount}</p>
-              <p className="text-[8px] font-medium uppercase tracking-wider text-[var(--muted-foreground)] mt-1">Scheduled</p>
-            </div>
-            <div className="rounded-lg border border-[var(--border)] bg-[var(--accent)]/20 px-2.5 py-2 text-center">
-              <p className="text-base font-bold tabular-nums leading-none text-emerald-500">{publishedCount}</p>
-              <p className="text-[8px] font-medium uppercase tracking-wider text-[var(--muted-foreground)] mt-1">Published</p>
+              <p className={cn("text-base font-bold tabular-nums leading-none", publishedCount > 0 ? "text-emerald-400" : "")}>{publishedCount}</p>
+              <p className="text-[8px] font-medium uppercase tracking-wider text-[var(--muted-foreground)]/50 mt-1">Live</p>
             </div>
           </div>
         </Collapsible>
@@ -293,7 +318,6 @@ export function RightRail() {
           title="Monitor"
           open={sections.monitor}
           onToggle={() => toggleSection("monitor")}
-          badge={data?.events?.length ?? undefined}
         />
         <Collapsible open={sections.monitor}>
           {/* Filter chips */}
@@ -305,8 +329,8 @@ export function RightRail() {
                 className={cn(
                   "rounded px-2 py-[3px] text-[9px] font-semibold transition-all duration-150",
                   monitorFilter === key
-                    ? "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm"
-                    : "text-[var(--muted-foreground)] hover:bg-[var(--accent)]"
+                    ? "bg-[var(--foreground)]/10 text-[var(--foreground)]/80 shadow-sm"
+                    : "text-[var(--muted-foreground)]/40 hover:bg-[var(--accent)] hover:text-[var(--muted-foreground)]"
                 )}
               >
                 {label}
@@ -315,32 +339,56 @@ export function RightRail() {
           </div>
 
           {/* Event list */}
-          <div className="max-h-[260px] overflow-y-auto">
+          <div className="max-h-[280px] overflow-y-auto">
             {filteredEvents.length === 0 ? (
-              <p className="px-3.5 py-8 text-center text-[10px] text-[var(--muted-foreground)]/50">No events</p>
+              <p className="px-3.5 py-8 text-center text-[10px] text-[var(--muted-foreground)]/30">No events</p>
             ) : (
               filteredEvents.slice(0, 25).map((event) => {
                 const meta = EVENT_META[event.type] ?? {
                   label: event.type.replace(/_/g, " "),
                   icon: Activity,
                   filter: "all" as const,
-                  dot: event.severity === "error" ? "bg-red-400" : event.severity === "success" ? "bg-emerald-400" : "bg-slate-400",
+                  dot: event.severity === "error" ? "bg-red-400" : event.severity === "success" ? "bg-emerald-400" : "bg-slate-400/60",
                 };
+                const isExpanded = expandedEventId === event.id;
+                const hasDetail = event.detail && event.detail.length > 0;
 
                 return (
-                  <div
-                    key={event.id}
-                    className="flex w-full items-center gap-2 px-3.5 py-[5px] text-left transition-colors hover:bg-[var(--accent)]/50"
-                  >
-                    <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", meta.dot)} />
-                    <span className="flex-1 truncate text-[10px] text-[var(--foreground)]/70">
-                      <span className="font-medium">{meta.label}</span>
-                      <span className="text-[var(--muted-foreground)]"> · {event.title.slice(0, 28)}{event.title.length > 28 ? "…" : ""}</span>
-                    </span>
-                    {event.platform && (
-                      <span className="shrink-0 text-[8px] text-[var(--muted-foreground)]/50 capitalize">{event.platform}</span>
+                  <div key={event.id}>
+                    <button
+                      onClick={() => hasDetail ? setExpandedEventId(isExpanded ? null : event.id) : undefined}
+                      className={cn(
+                        "flex w-full items-center gap-2 px-3.5 py-[5px] text-left transition-colors",
+                        hasDetail ? "hover:bg-[var(--accent)]/40 cursor-pointer" : "cursor-default",
+                        isExpanded && "bg-[var(--accent)]/40"
+                      )}
+                    >
+                      <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", meta.dot)} />
+                      <span className="flex-1 truncate text-[10px]">
+                        <span className="font-medium text-[var(--foreground)]/70">{meta.label}</span>
+                        <span className="text-[var(--muted-foreground)]/50"> · {event.title.slice(0, 24)}{event.title.length > 24 ? "…" : ""}</span>
+                      </span>
+                      <span className="shrink-0 text-[8px] tabular-nums text-[var(--muted-foreground)]/30 w-[22px] text-right">{fmtAgo(event.ts)}</span>
+                    </button>
+
+                    {/* Inline expand — detail panel */}
+                    {isExpanded && hasDetail && (
+                      <div className="mx-3.5 mb-1 rounded border border-[var(--border)] bg-[var(--accent)]/30 p-2 space-y-1 text-[10px]">
+                        <p className="text-[var(--muted-foreground)]/50 font-mono text-[9px]">{event.type}</p>
+                        {event.severity === "error" && (
+                          <div className="flex items-start gap-1.5">
+                            <AlertTriangle className="h-3 w-3 shrink-0 text-red-400 mt-0.5" />
+                            <p className="text-red-400/80 break-all leading-snug">{event.detail.slice(0, 200)}</p>
+                          </div>
+                        )}
+                        {event.severity !== "error" && (
+                          <p className="text-[var(--muted-foreground)]/50 leading-snug break-all">{event.detail.slice(0, 150)}</p>
+                        )}
+                        {event.platform && (
+                          <p className="text-[var(--muted-foreground)]/30 capitalize">Platform: {event.platform}</p>
+                        )}
+                      </div>
                     )}
-                    <span className="shrink-0 text-[8px] tabular-nums text-[var(--muted-foreground)]/40 w-[22px] text-right">{fmtAgo(event.ts)}</span>
                   </div>
                 );
               })
@@ -350,36 +398,64 @@ export function RightRail() {
           <div className="px-3.5 pb-2 pt-1">
             <Link
               href="/diagnostics"
-              className="flex items-center justify-center gap-1 rounded bg-[var(--accent)] px-2 py-1.5 text-[9px] font-medium text-[var(--muted-foreground)] transition-colors hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
+              className="flex items-center justify-center gap-1 rounded bg-[var(--accent)]/40 px-2 py-1.5 text-[9px] font-medium text-[var(--muted-foreground)]/50 transition-colors hover:bg-[var(--accent)] hover:text-[var(--muted-foreground)]"
             >
-              Full event log <ChevronRight className="h-2.5 w-2.5" />
+              Full audit log <ExternalLink className="h-2.5 w-2.5" />
             </Link>
           </div>
         </Collapsible>
 
         <div className="mx-3.5 border-t border-[var(--border)]" />
 
-        {/* ═══ COMPUTER / SYSTEM ═══ */}
+        {/* ═══ SYSTEM & PLATFORMS ═══ */}
         <SectionHeader
           title="System"
           open={sections.system}
           onToggle={() => toggleSection("system")}
+          badge={connectedCount < platformTotal ? `${connectedCount}/${platformTotal}` : undefined}
+          badgeColor={connectedCount < platformTotal ? "bg-amber-500/15 text-amber-400" : undefined}
         />
         <Collapsible open={sections.system}>
           <div className="space-y-2.5 px-3.5 pb-3">
+
+            {/* Platform health */}
+            <div className="rounded-lg border border-[var(--border)] bg-[var(--accent)]/20 px-3 py-2">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[9px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]/40">Platforms</span>
+                <Link href="/settings" className="text-[8px] text-[var(--muted-foreground)]/30 hover:text-[var(--muted-foreground)]/60 transition-colors">Configure</Link>
+              </div>
+              <div className="flex flex-wrap gap-x-3 gap-y-1">
+                {ALL_PLATFORMS.map((p) => (
+                  <ProviderDot key={p} name={p} connected={data?.platforms?.connected?.includes(p) ?? false} />
+                ))}
+              </div>
+            </div>
+
+            {/* AI provider status */}
+            <div className="flex items-center justify-between text-[10px]">
+              <span className="flex items-center gap-1.5 text-[var(--muted-foreground)]/60">
+                <Sparkles className="h-3 w-3" /> AI
+              </span>
+              <span className={cn("font-semibold capitalize", data?.ai?.configured ? "text-emerald-400" : "text-[var(--muted-foreground)]/30")}>
+                {data?.ai?.configured ? data.ai.provider : "Not set"}
+              </span>
+            </div>
+
             {!data?.system ? (
-              <div className="flex items-center justify-center gap-2 py-3 text-[10px] text-[var(--muted-foreground)]">
+              <div className="flex items-center justify-center gap-2 py-3 text-[10px] text-[var(--muted-foreground)]/40">
                 <Loader2 className="h-3 w-3 animate-spin" /> Loading...
               </div>
             ) : (
               <>
-                {/* Memory */}
+                {/* Memory bar */}
                 <div className="space-y-1">
                   <div className="flex items-center justify-between text-[10px]">
-                    <span className="flex items-center gap-1.5 text-[var(--muted-foreground)]">
-                      <HardDrive className="h-3 w-3" /> Memory
+                    <span className="flex items-center gap-1.5 text-[var(--muted-foreground)]/60">
+                      <HardDrive className="h-3 w-3" /> Server
                     </span>
-                    <span className="font-semibold tabular-nums">{data.system.memory.usedMB}/{data.system.memory.totalMB} MB</span>
+                    <span className="font-semibold tabular-nums text-[var(--foreground)]/60">
+                      {data.system.memory.usedMB} MB <span className="text-[var(--muted-foreground)]/30 font-normal">/ {data.system.memory.totalMB} MB</span>
+                    </span>
                   </div>
                   <div className="h-1 rounded-full bg-[var(--accent)]">
                     <div
@@ -395,7 +471,7 @@ export function RightRail() {
                 {/* Metrics grid */}
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
                   <div className="flex items-center justify-between text-[10px]">
-                    <span className="flex items-center gap-1.5 text-[var(--muted-foreground)]">
+                    <span className="flex items-center gap-1.5 text-[var(--muted-foreground)]/60">
                       <Database className="h-3 w-3" /> DB
                     </span>
                     <span className={cn("font-semibold tabular-nums", data.system.db.latencyMs > 100 ? "text-amber-400" : "text-emerald-400")}>
@@ -403,13 +479,19 @@ export function RightRail() {
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-[10px]">
-                    <span className="flex items-center gap-1.5 text-[var(--muted-foreground)]">
-                      <Clock className="h-3 w-3" /> Up
+                    <span className="flex items-center gap-1.5 text-[var(--muted-foreground)]/60">
+                      <Timer className="h-3 w-3" /> API
                     </span>
-                    <span className="font-semibold tabular-nums">{fmtUptime(data.system.uptime)}</span>
+                    <span className="font-semibold tabular-nums text-[var(--foreground)]/60">{data.system.responseMs}ms</span>
                   </div>
                   <div className="flex items-center justify-between text-[10px]">
-                    <span className="flex items-center gap-1.5 text-[var(--muted-foreground)]">
+                    <span className="flex items-center gap-1.5 text-[var(--muted-foreground)]/60">
+                      <Clock className="h-3 w-3" /> Up
+                    </span>
+                    <span className="font-semibold tabular-nums text-[var(--foreground)]/60">{fmtUptime(data.system.uptime)}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-[10px]">
+                    <span className="flex items-center gap-1.5 text-[var(--muted-foreground)]/60">
                       <Gauge className="h-3 w-3" /> Health
                     </span>
                     <span className={cn("font-semibold", data.system.db.status === "ok" ? "text-emerald-400" : "text-amber-400")}>
@@ -420,7 +502,7 @@ export function RightRail() {
 
                 <button
                   onClick={() => refresh()}
-                  className="flex w-full items-center justify-center gap-1.5 rounded bg-[var(--accent)] px-2 py-1.5 text-[9px] font-medium text-[var(--muted-foreground)] transition-colors hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
+                  className="flex w-full items-center justify-center gap-1.5 rounded bg-[var(--accent)]/40 px-2 py-1.5 text-[9px] font-medium text-[var(--muted-foreground)]/50 transition-colors hover:bg-[var(--accent)] hover:text-[var(--muted-foreground)]"
                 >
                   <RefreshCw className="h-2.5 w-2.5" /> Refresh
                 </button>
@@ -439,6 +521,15 @@ export function RightRail() {
         />
         <Collapsible open={sections.actions}>
           <div className="space-y-1 px-3.5 pb-3">
+            <Link
+              href="/workflow"
+              className="flex w-full items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--accent)]/20 px-2.5 py-2 text-[10px] font-medium transition-colors hover:bg-[var(--accent)]"
+            >
+              <Play className="h-3.5 w-3.5 text-emerald-400" />
+              Run Pipeline
+              <ChevronRight className="ml-auto h-3 w-3 text-[var(--muted-foreground)]/20" />
+            </Link>
+
             <button
               onClick={async () => {
                 try { await fetch("/api/batch", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "retry-failed" }) }); refresh(); } catch {}
@@ -446,18 +537,9 @@ export function RightRail() {
               disabled={failCount === 0}
               className="flex w-full items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--accent)]/20 px-2.5 py-2 text-[10px] font-medium transition-colors hover:bg-[var(--accent)] disabled:opacity-30 disabled:pointer-events-none"
             >
-              <RotateCcw className="h-3.5 w-3.5 text-red-400" />
+              <RotateCcw className="h-3.5 w-3.5 text-blue-400" />
               Retry Failed
             </button>
-
-            <Link
-              href="/workflow"
-              className="flex w-full items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--accent)]/20 px-2.5 py-2 text-[10px] font-medium transition-colors hover:bg-[var(--accent)]"
-            >
-              <Workflow className="h-3.5 w-3.5 text-indigo-400" />
-              Open Pipeline
-              <ChevronRight className="ml-auto h-3 w-3 text-[var(--muted-foreground)]/30" />
-            </Link>
 
             <Link
               href="/diagnostics"
@@ -465,7 +547,7 @@ export function RightRail() {
             >
               <FileText className="h-3.5 w-3.5 text-violet-400" />
               Diagnostics
-              <ChevronRight className="ml-auto h-3 w-3 text-[var(--muted-foreground)]/30" />
+              <ChevronRight className="ml-auto h-3 w-3 text-[var(--muted-foreground)]/20" />
             </Link>
 
             <Link
@@ -474,23 +556,12 @@ export function RightRail() {
             >
               <Zap className="h-3.5 w-3.5 text-amber-400" />
               API Keys
-              <ChevronRight className="ml-auto h-3 w-3 text-[var(--muted-foreground)]/30" />
+              <ChevronRight className="ml-auto h-3 w-3 text-[var(--muted-foreground)]/20" />
             </Link>
           </div>
         </Collapsible>
       </div>
 
-      {/* Rail footer */}
-      <div className="shrink-0 border-t border-[var(--border)] px-3.5 py-2">
-        <div className="flex items-center justify-between text-[9px] text-[var(--muted-foreground)]">
-          <span className="font-medium bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-500 bg-clip-text text-transparent">
-            ListBlitz
-          </span>
-          <span className="tabular-nums">
-            {data?.listings.total ?? 0} listings · {data?.published ?? 0} live
-          </span>
-        </div>
-      </div>
     </aside>
   );
 }
