@@ -39,6 +39,8 @@ const navStructure: NavEntry[] = [
     ],
   },
   { href: "/inventory", label: "Products", icon: Package },
+  { href: "/repricing", label: "Smart Repricer", icon: DollarSign },
+  { href: "/offers", label: "Offer Hub", icon: MessageCircle },
   { href: "/search", label: "Cross-Market Search", icon: Search },
   {
     id: "marketplace",
