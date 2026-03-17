@@ -491,8 +491,8 @@ describe("C. Nav Structure Integrity", () => {
     expect(navItems[1]).toEqual({ href: "/listings/smart", label: "Smart List" });
   });
 
-  it("C06: New Listing is third nav item", () => {
-    expect(navItems[2]).toEqual({ href: "/listings/new", label: "New Listing" });
+  it("C06: Photo Studio is third nav item", () => {
+    expect(navItems[2]).toEqual({ href: "/studio", label: "Photo Studio" });
   });
 
   // Key pages exist in nav
@@ -510,7 +510,7 @@ describe("C. Nav Structure Integrity", () => {
   });
 
   it("C07: total nav items is 22", () => {
-    expect(navItems).toHaveLength(22);
+    expect(navItems).toHaveLength(23);
   });
 
   // No duplicate hrefs

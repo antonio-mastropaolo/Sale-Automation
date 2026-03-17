@@ -33,6 +33,7 @@ const navStructure: NavEntry[] = [
     icon: FileUp,
     children: [
       { href: "/listings/smart", label: "Smart List", icon: Camera },
+      { href: "/studio", label: "Photo Studio", icon: Sparkles },
       { href: "/listings/new", label: "New Listing", icon: PlusCircle },
       { href: "/bulk-import", label: "Bulk Import", icon: FileUp },
       { href: "/templates", label: "Templates", icon: BookTemplate },
