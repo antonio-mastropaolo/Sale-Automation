@@ -2,7 +2,7 @@
 
 import { useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
-import { CheckCircle2, Loader2, Pause, Circle, AlertTriangle, GripVertical } from "lucide-react";
+import { CheckCircle2, Loader2, Pause, AlertTriangle, GripVertical, Octagon, Play } from "lucide-react";
 import type { StageStatus } from "./use-pipeline-reducer";
 
 interface PipelineNodeProps {
@@ -34,7 +34,6 @@ export function PipelineNode({
   const isError = status === "error";
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
-    // Only start drag from the grip handle or if not clicking a button
     if ((e.target as HTMLElement).closest("button")) return;
     e.preventDefault();
     e.stopPropagation();
@@ -60,10 +59,7 @@ export function PipelineNode({
 
   return (
     <div
-      className={cn(
-        "absolute select-none touch-none",
-        "transition-shadow duration-200"
-      )}
+      className="absolute select-none touch-none transition-shadow duration-200"
       style={{ left: x, top: y, zIndex: isSelected ? 50 : 10 }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
@@ -72,7 +68,7 @@ export function PipelineNode({
       <div
         className={cn(
           "relative rounded-2xl border bg-card cursor-grab active:cursor-grabbing shadow-lg",
-          "w-[180px] transition-all duration-200",
+          "w-[200px] transition-all duration-200",
           isSelected && "ring-2 ring-[var(--primary)]",
           isRunning && "ring-2",
           isPaused && "ring-2 ring-amber-500/60",
@@ -87,57 +83,65 @@ export function PipelineNode({
       >
         {/* Running progress bar */}
         {isRunning && (
-          <div className="absolute top-0 left-0 right-0 h-0.5 rounded-t-2xl overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl overflow-hidden">
             <div className="h-full rounded-full" style={{ background: color, animation: "progress-fill 2s ease-in-out infinite" }} />
           </div>
         )}
 
-        {/* Paused indicator */}
+        {/* Paused banner */}
         {isPaused && (
-          <div className="absolute -top-1 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full bg-amber-500 text-[8px] font-bold text-white tracking-wider z-20">
-            PAUSED
+          <div className="absolute -top-2 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-amber-500 text-[9px] font-bold text-white tracking-wider z-20 shadow-lg shadow-amber-500/30 flex items-center gap-1">
+            <Pause className="h-2.5 w-2.5" /> PAUSED
           </div>
         )}
 
-        <div className="p-3.5">
+        {/* Breakpoint indicator — red dot on top-right */}
+        {hasBreakpoint && !isPaused && (
+          <div className="absolute -top-1 -right-1 z-20">
+            <div className="h-4 w-4 rounded-full bg-red-500 border-2 border-card flex items-center justify-center shadow-lg shadow-red-500/30">
+              <Octagon className="h-2 w-2 text-white" />
+            </div>
+          </div>
+        )}
+
+        <div className="p-4">
           {/* Top: grip + step badge + icon + label */}
           <div className="flex items-center gap-2.5">
-            {/* Grip handle */}
-            <GripVertical className="h-3.5 w-3.5 text-muted-foreground/30 shrink-0 cursor-grab" />
+            <GripVertical className="h-4 w-4 text-muted-foreground/20 shrink-0 cursor-grab" />
 
             {/* Step badge */}
             <span
-              className="h-5 w-5 rounded-full text-[9px] font-bold flex items-center justify-center text-white shrink-0"
-              style={{ background: isCompleted ? "#10b981" : isError ? "#ef4444" : color, boxShadow: `0 0 8px ${isCompleted ? "#10b98140" : color + "40"}` }}
+              className="h-6 w-6 rounded-full text-[10px] font-bold flex items-center justify-center text-white shrink-0"
+              style={{ background: isCompleted ? "#10b981" : isError ? "#ef4444" : color, boxShadow: `0 0 10px ${isCompleted ? "#10b98140" : color + "40"}` }}
             >
               {isCompleted ? "✓" : index + 1}
             </span>
 
             {/* Icon */}
             <div
-              className={cn("h-9 w-9 rounded-xl flex items-center justify-center shrink-0 transition-transform", isRunning && "scale-105")}
+              className={cn("h-10 w-10 rounded-xl flex items-center justify-center shrink-0 transition-transform", isRunning && "scale-110")}
               style={{ backgroundColor: `${color}12`, color }}
             >
               {isRunning ? (
-                <Loader2 className="h-4.5 w-4.5 animate-spin" />
+                <Loader2 className="h-5 w-5 animate-spin" />
               ) : isCompleted ? (
-                <CheckCircle2 className="h-4.5 w-4.5 text-emerald-500" />
+                <CheckCircle2 className="h-5 w-5 text-emerald-500" />
               ) : isError ? (
-                <AlertTriangle className="h-4.5 w-4.5 text-red-500" />
+                <AlertTriangle className="h-5 w-5 text-red-500" />
               ) : (
-                <Icon className="h-4.5 w-4.5" />
+                <Icon className="h-5 w-5" />
               )}
             </div>
 
             {/* Label + badges */}
             <div className="flex-1 min-w-0">
-              <p className="text-[12px] font-semibold truncate leading-tight">{label}</p>
+              <p className="text-[14px] font-semibold truncate leading-tight">{label}</p>
               <div className="flex items-center gap-1 mt-0.5">
-                <span className={cn("text-[7px] font-bold px-1 py-px rounded", isAI ? "bg-violet-500/10 text-violet-500" : "bg-blue-500/10 text-blue-500")}>
+                <span className={cn("text-[9px] font-bold px-1.5 py-0.5 rounded", isAI ? "bg-violet-500/10 text-violet-500" : "bg-blue-500/10 text-blue-500")}>
                   {isAI ? "AI" : "AUTO"}
                 </span>
                 {status !== "idle" && (
-                  <span className={cn("text-[7px] font-bold px-1 py-px rounded",
+                  <span className={cn("text-[9px] font-bold px-1.5 py-0.5 rounded uppercase",
                     isRunning && "bg-blue-500/10 text-blue-500",
                     isCompleted && "bg-emerald-500/10 text-emerald-500",
                     isPaused && "bg-amber-500/10 text-amber-500",
@@ -150,27 +154,32 @@ export function PipelineNode({
           </div>
 
           {/* Bottom: breakpoint toggle + configure */}
-          <div className="flex items-center justify-between mt-2 pt-2 border-t border-[var(--border)]">
+          <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-[var(--border)]">
             <button
               onClick={(e) => { e.stopPropagation(); onToggleBreakpoint(); }}
               className={cn(
-                "flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-medium transition-colors",
-                hasBreakpoint ? "bg-red-500/10 text-red-500" : "text-muted-foreground/30 hover:text-muted-foreground"
+                "flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-semibold transition-all",
+                hasBreakpoint
+                  ? "bg-red-500/15 text-red-500 hover:bg-red-500/25 ring-1 ring-red-500/20"
+                  : "text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted"
               )}
             >
-              <Circle className={cn("h-2 w-2", hasBreakpoint && "fill-red-500")} />
-              {hasBreakpoint ? "Break" : "Break"}
+              {hasBreakpoint ? (
+                <><Octagon className="h-3 w-3 fill-red-500" /> Breakpoint ON</>
+              ) : (
+                <><Octagon className="h-3 w-3" /> Set Breakpoint</>
+              )}
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); onClick(); }}
-              className="text-[9px] font-medium text-muted-foreground hover:text-foreground transition-colors px-1.5 py-0.5 rounded hover:bg-muted"
+              className="text-[10px] font-semibold text-[var(--primary)] hover:text-[var(--primary)]/80 transition-colors px-2 py-1 rounded-md hover:bg-[var(--primary)]/10"
             >
               Configure
             </button>
           </div>
         </div>
 
-        {/* Connection anchor points (visual) */}
+        {/* Connection anchor points */}
         <div className="absolute left-1/2 -bottom-1.5 w-3 h-3 -translate-x-1/2">
           <div className="w-3 h-3 rounded-full border-2 border-[var(--border)] bg-card" />
         </div>

@@ -47,7 +47,7 @@ const STORAGE_KEY = "listblitz-pipeline-positions";
 function defaultPositions(): Record<string, { x: number; y: number }> {
   const pos: Record<string, { x: number; y: number }> = {};
   const cols = 4;
-  const gapX = 210;
+  const gapX = 230;
   const gapY = 180;
   const startX = 40;
   const startY = 20;
@@ -221,7 +221,7 @@ export default function WorkflowPage() {
     const from = positions[stage.id];
     const to = positions[STAGES[i + 1].id];
     if (!from || !to) return null;
-    const nodeW = 180;
+    const nodeW = 200;
     const x1 = from.x + nodeW / 2;
     const y1 = from.y + 110; // bottom of node
     const x2 = to.x + nodeW / 2;

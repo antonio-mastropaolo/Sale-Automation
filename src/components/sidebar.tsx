@@ -238,7 +238,7 @@ export function Sidebar({ className }: { className?: string }) {
         href={item.href}
         onClick={() => setMobileOpen(false)}
         className={cn(
-          "flex items-center gap-2 rounded-md px-2.5 py-[6px] text-[13px] font-medium transition-all duration-200",
+          "flex items-center gap-2 rounded-md px-2.5 py-[6px] text-[14px] font-medium transition-all duration-200",
           indented && "pl-6",
           isActive
             ? "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-md shadow-[var(--primary)]/20"
@@ -265,7 +265,7 @@ export function Sidebar({ className }: { className?: string }) {
         <button
           onClick={() => toggleGroup(group.id)}
           className={cn(
-            "w-full flex items-center gap-2 rounded-md px-2.5 py-[6px] text-[13px] font-medium transition-all duration-200",
+            "w-full flex items-center gap-2 rounded-md px-2.5 py-[6px] text-[14px] font-medium transition-all duration-200",
             hasActive && !isOpen
               ? "text-[var(--foreground)]"
               : "text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]"

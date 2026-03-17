@@ -132,7 +132,7 @@ function SectionHeader({
   return (
     <button
       onClick={onToggle}
-      className="flex w-full items-center gap-2 px-3.5 py-2 text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]/60 transition-colors hover:text-[var(--muted-foreground)]"
+      className="flex w-full items-center gap-2 px-3.5 py-2 text-[11px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]/60 transition-colors hover:text-[var(--muted-foreground)]"
     >
       <ChevronDown className={cn("h-2.5 w-2.5 shrink-0 transition-transform duration-200", !open && "-rotate-90")} />
       <span className="flex-1 text-left">{title}</span>
@@ -269,7 +269,7 @@ export function RightRail() {
       <div className="flex items-center gap-2 border-b border-[var(--border)] px-3.5 py-2.5 shrink-0">
         <div className="flex items-center gap-1.5">
           <Activity className="h-3.5 w-3.5 text-[var(--primary)]" />
-          <span className="text-[11px] font-bold tracking-wide">OPS</span>
+          <span className="text-[13px] font-bold tracking-wide">OPS</span>
         </div>
         <div className="flex-1" />
         <button onClick={toggleCollapsed} title="Collapse" className="flex h-6 w-6 items-center justify-center rounded-md text-[var(--muted-foreground)]/40 hover:bg-[var(--accent)] hover:text-[var(--muted-foreground)] transition-colors">
@@ -327,7 +327,7 @@ export function RightRail() {
                 key={key}
                 onClick={() => setMonitorFilter(key)}
                 className={cn(
-                  "rounded px-2 py-[3px] text-[9px] font-semibold transition-all duration-150",
+                  "rounded px-2 py-[3px] text-[10px] font-semibold transition-all duration-150",
                   monitorFilter === key
                     ? "bg-[var(--foreground)]/10 text-[var(--foreground)]/80 shadow-sm"
                     : "text-[var(--muted-foreground)]/40 hover:bg-[var(--accent)] hover:text-[var(--muted-foreground)]"
@@ -536,7 +536,7 @@ export function RightRail() {
           <div className="space-y-1 px-3.5 pb-3">
             <Link
               href="/workflow"
-              className="flex w-full items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--accent)]/20 px-2.5 py-2 text-[11px] font-medium transition-colors hover:bg-[var(--accent)]"
+              className="flex w-full items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--accent)]/20 px-2.5 py-2 text-[12px] font-medium transition-colors hover:bg-[var(--accent)]"
             >
               <Workflow className="h-3.5 w-3.5 text-indigo-400" />
               AI Pipeline
@@ -545,7 +545,7 @@ export function RightRail() {
 
             <Link
               href="/diagnostics"
-              className="flex w-full items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--accent)]/20 px-2.5 py-2 text-[11px] font-medium transition-colors hover:bg-[var(--accent)]"
+              className="flex w-full items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--accent)]/20 px-2.5 py-2 text-[12px] font-medium transition-colors hover:bg-[var(--accent)]"
             >
               <FileText className="h-3.5 w-3.5 text-violet-400" />
               Diagnostics
@@ -554,7 +554,7 @@ export function RightRail() {
 
             <Link
               href="/settings"
-              className="flex w-full items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--accent)]/20 px-2.5 py-2 text-[11px] font-medium transition-colors hover:bg-[var(--accent)]"
+              className="flex w-full items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--accent)]/20 px-2.5 py-2 text-[12px] font-medium transition-colors hover:bg-[var(--accent)]"
             >
               <Zap className="h-3.5 w-3.5 text-amber-400" />
               API Keys
