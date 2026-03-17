@@ -8,7 +8,7 @@ import {
   Truck, Package, MapPin, Clock, CheckCircle2, AlertTriangle,
   Bell, ExternalLink, Search, Filter, ChevronRight, Copy,
   Check, Loader2, Printer, QrCode, RefreshCw, ArrowRight,
-  DollarSign, Shield, Box,
+  DollarSign, Shield, Box, Layers, BarChart3, Globe, Container,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -32,7 +32,7 @@ interface ShipmentLabel {
   itemTitle: string;
 }
 
-type FilterStatus = "all" | "label_created" | "in_transit" | "delivered" | "exception";
+type ShippingTab = "all" | "by_status" | "by_platform" | "by_carrier";
 
 const PLATFORM_COLORS: Record<string, string> = {
   depop: "#FF2300", grailed: "#333", poshmark: "#7B2D8E", mercari: "#4DC4FF",
@@ -80,7 +80,7 @@ function generateMockLabels(): ShipmentLabel[] {
 export default function ShippingHubPage() {
   const [labels, setLabels] = useState<ShipmentLabel[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<FilterStatus>("all");
+  const [activeTab, setActiveTab] = useState<ShippingTab>("all");
   const [search, setSearch] = useState("");
   const [selectedLabel, setSelectedLabel] = useState<ShipmentLabel | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -100,14 +100,28 @@ export default function ShippingHubPage() {
     toast.success("Tracking number copied");
   };
 
-  const filteredLabels = labels.filter((l) => {
-    if (filter !== "all" && l.status !== filter) return false;
-    if (search) {
-      const q = search.toLowerCase();
-      return l.itemTitle.toLowerCase().includes(q) || l.buyer.toLowerCase().includes(q) || l.trackingNumber.toLowerCase().includes(q) || l.orderId.toLowerCase().includes(q);
-    }
-    return true;
-  });
+  const searchFilter = (l: ShipmentLabel) => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return l.itemTitle.toLowerCase().includes(q) || l.buyer.toLowerCase().includes(q) || l.trackingNumber.toLowerCase().includes(q) || l.orderId.toLowerCase().includes(q);
+  };
+
+  const filteredLabels = labels.filter(searchFilter);
+
+  /* ── Grouping helpers ── */
+  function groupBy<K extends string>(items: ShipmentLabel[], keyFn: (l: ShipmentLabel) => K): { key: K; items: ShipmentLabel[] }[] {
+    const map = new Map<K, ShipmentLabel[]>();
+    items.forEach((l) => {
+      const k = keyFn(l);
+      if (!map.has(k)) map.set(k, []);
+      map.get(k)!.push(l);
+    });
+    return Array.from(map.entries()).map(([key, items]) => ({ key, items }));
+  }
+
+  const statusGroups = groupBy(filteredLabels, (l) => l.status);
+  const platformGroups = groupBy(filteredLabels, (l) => l.platform);
+  const carrierGroups = groupBy(filteredLabels, (l) => l.carrier);
 
   const stats = {
     total: labels.length,
@@ -119,6 +133,79 @@ export default function ShippingHubPage() {
 
   const fmtDate = (iso: string) => new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
   const fmtTime = (iso: string) => new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+
+  const renderShipmentCard = (label: ShipmentLabel) => {
+    const statusMeta = STATUS_META[label.status];
+    const StatusIcon = statusMeta.icon;
+    const isSelected = selectedLabel?.id === label.id;
+
+    return (
+      <div key={label.id} className={cn("rounded-xl bg-card border overflow-hidden transition-all duration-200", isSelected ? "ring-2 ring-[var(--primary)] shadow-lg" : "border-[var(--border)] hover:shadow-md")}>
+        <button onClick={() => setSelectedLabel(isSelected ? null : label)} className="w-full flex items-center gap-3 p-4 text-left">
+          <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center shrink-0", label.status === "exception" ? "bg-red-500/10" : label.status === "delivered" ? "bg-emerald-500/10" : label.status === "in_transit" ? "bg-amber-500/10" : "bg-blue-500/10")}>
+            <StatusIcon className={cn("h-5 w-5", statusMeta.color)} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="text-[13px] font-semibold truncate">{label.itemTitle}</span>
+              <Badge variant="outline" className="text-[8px] px-1 py-0 shrink-0 capitalize">{label.platform}</Badge>
+            </div>
+            <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+              <span>@{label.buyer}</span><span>·</span><span>{label.buyerCity}</span><span>·</span><span>{label.carrier}</span>
+            </div>
+          </div>
+          <div className="text-right shrink-0">
+            <p className="text-[13px] font-bold tabular-nums">${label.shippingCost.toFixed(2)}</p>
+            <p className={cn("text-[10px] font-semibold", statusMeta.color)}>{statusMeta.label}</p>
+          </div>
+          <ChevronRight className={cn("h-4 w-4 text-muted-foreground/30 shrink-0 transition-transform", isSelected && "rotate-90")} />
+        </button>
+        {isSelected && (
+          <div className="border-t border-[var(--border)] p-4 bg-muted/10 space-y-4 animate-fade-in">
+            <div className="flex items-center justify-between rounded-lg bg-card border border-[var(--border)] p-3">
+              <div>
+                <p className="text-[10px] text-muted-foreground mb-0.5">Tracking Number</p>
+                <p className="text-[13px] font-mono font-semibold">{label.trackingNumber}</p>
+              </div>
+              <div className="flex gap-1.5">
+                <Button variant="outline" size="sm" className="h-7 text-[10px] gap-1" onClick={(e) => { e.stopPropagation(); handleCopy(label.trackingNumber, label.id); }}>
+                  {copiedId === label.id ? <Check className="h-3 w-3 text-emerald-500" /> : <Copy className="h-3 w-3" />} Copy
+                </Button>
+                <Button variant="outline" size="sm" className="h-7 text-[10px] gap-1"><ExternalLink className="h-3 w-3" /> Track</Button>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[
+                { l: "Order ID", v: label.orderId },
+                { l: "Weight", v: label.weight },
+                { l: "Created", v: `${fmtDate(label.createdAt)} ${fmtTime(label.createdAt)}` },
+                { l: "Est. Delivery", v: label.estimatedDelivery ? fmtDate(label.estimatedDelivery) : "Delivered" },
+              ].map((d) => (
+                <div key={d.l} className="rounded-lg bg-card border border-[var(--border)] p-2.5">
+                  <p className="text-[9px] text-muted-foreground mb-0.5">{d.l}</p>
+                  <p className="text-[12px] font-semibold">{d.v}</p>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Button size="sm" className="h-8 text-[11px] gap-1.5 flex-1"><Printer className="h-3.5 w-3.5" /> Print Label</Button>
+              <Button variant="outline" size="sm" className="h-8 text-[11px] gap-1.5 flex-1"><Shield className="h-3.5 w-3.5" /> File Claim</Button>
+            </div>
+            {label.status === "exception" && (
+              <div className="rounded-lg bg-red-500/5 border border-red-500/20 p-3 flex items-start gap-2">
+                <AlertTriangle className="h-4 w-4 text-red-400 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-[12px] font-semibold text-red-400 mb-0.5">Delivery Exception</p>
+                  <p className="text-[11px] text-muted-foreground">Package could not be delivered. Check tracking or contact the carrier.</p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -162,25 +249,34 @@ export default function ShippingHubPage() {
         ))}
       </div>
 
-      {/* Search + filter */}
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by item, buyer, tracking #, or order ID..." className="pl-10 h-9" />
-        </div>
-        <div className="flex gap-1">
-          {(["all", "label_created", "in_transit", "delivered", "exception"] as const).map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={cn("px-2.5 py-1.5 rounded-lg text-[10px] font-medium capitalize transition-colors whitespace-nowrap",
-                filter === f ? "bg-[var(--primary)] text-[var(--primary-foreground)]" : "bg-muted text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {f === "all" ? "All" : STATUS_META[f]?.label || f}
-            </button>
-          ))}
-        </div>
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by item, buyer, tracking #, or order ID..." className="pl-10 h-9" />
+      </div>
+
+      {/* Tab bar */}
+      <div className="flex gap-1 bg-muted/30 rounded-xl p-1">
+        {([
+          { key: "all" as const, label: "All", icon: Layers },
+          { key: "by_status" as const, label: "By Status", icon: BarChart3 },
+          { key: "by_platform" as const, label: "By Platform", icon: Globe },
+          { key: "by_carrier" as const, label: "By Carrier", icon: Container },
+        ]).map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={cn(
+              "flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-[13px] font-medium transition-all",
+              activeTab === tab.key
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <tab.icon className="h-4 w-4" />
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {/* Labels list */}
@@ -195,120 +291,58 @@ export default function ShippingHubPage() {
           <h3 className="text-sm font-semibold mb-1">No shipments found</h3>
           <p className="text-xs text-muted-foreground">Labels will appear here when orders are placed on your connected platforms</p>
         </div>
-      ) : (
+      ) : activeTab === "all" ? (
         <div className="space-y-2">
-          {filteredLabels.map((label) => {
-            const statusMeta = STATUS_META[label.status];
-            const StatusIcon = statusMeta.icon;
-            const isSelected = selectedLabel?.id === label.id;
-
+          {filteredLabels.map((label) => renderShipmentCard(label))}
+        </div>
+      ) : activeTab === "by_status" ? (
+        <div className="space-y-5">
+          {statusGroups.map((group) => {
+            const meta = STATUS_META[group.key];
+            const GroupIcon = meta?.icon || Package;
             return (
-              <div
-                key={label.id}
-                className={cn(
-                  "rounded-xl bg-card border overflow-hidden transition-all duration-200",
-                  isSelected ? "ring-2 ring-[var(--primary)] shadow-lg" : "border-[var(--border)] hover:shadow-md"
-                )}
-              >
-                {/* Main row */}
-                <button
-                  onClick={() => setSelectedLabel(isSelected ? null : label)}
-                  className="w-full flex items-center gap-3 p-4 text-left"
-                >
-                  {/* Status icon */}
-                  <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center shrink-0", label.status === "exception" ? "bg-red-500/10" : label.status === "delivered" ? "bg-emerald-500/10" : label.status === "in_transit" ? "bg-amber-500/10" : "bg-blue-500/10")}>
-                    <StatusIcon className={cn("h-5 w-5", statusMeta.color)} />
-                  </div>
-
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <span className="text-[13px] font-semibold truncate">{label.itemTitle}</span>
-                      <Badge variant="outline" className="text-[8px] px-1 py-0 shrink-0 capitalize">{label.platform}</Badge>
-                    </div>
-                    <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                      <span>@{label.buyer}</span>
-                      <span>·</span>
-                      <span>{label.buyerCity}</span>
-                      <span>·</span>
-                      <span>{label.carrier}</span>
-                    </div>
-                  </div>
-
-                  {/* Right: price + status */}
-                  <div className="text-right shrink-0">
-                    <p className="text-[13px] font-bold tabular-nums">${label.shippingCost.toFixed(2)}</p>
-                    <p className={cn("text-[10px] font-semibold", statusMeta.color)}>{statusMeta.label}</p>
-                  </div>
-
-                  <ChevronRight className={cn("h-4 w-4 text-muted-foreground/30 shrink-0 transition-transform", isSelected && "rotate-90")} />
-                </button>
-
-                {/* Expanded detail */}
-                {isSelected && (
-                  <div className="border-t border-[var(--border)] p-4 bg-muted/10 space-y-4 animate-fade-in">
-                    {/* Tracking */}
-                    <div className="flex items-center justify-between rounded-lg bg-card border border-[var(--border)] p-3">
-                      <div>
-                        <p className="text-[10px] text-muted-foreground mb-0.5">Tracking Number</p>
-                        <p className="text-[13px] font-mono font-semibold">{label.trackingNumber}</p>
-                      </div>
-                      <div className="flex gap-1.5">
-                        <Button variant="outline" size="sm" className="h-7 text-[10px] gap-1" onClick={(e) => { e.stopPropagation(); handleCopy(label.trackingNumber, label.id); }}>
-                          {copiedId === label.id ? <Check className="h-3 w-3 text-emerald-500" /> : <Copy className="h-3 w-3" />}
-                          Copy
-                        </Button>
-                        <Button variant="outline" size="sm" className="h-7 text-[10px] gap-1">
-                          <ExternalLink className="h-3 w-3" /> Track
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Details grid */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      <div className="rounded-lg bg-card border border-[var(--border)] p-2.5">
-                        <p className="text-[9px] text-muted-foreground mb-0.5">Order ID</p>
-                        <p className="text-[12px] font-semibold">{label.orderId}</p>
-                      </div>
-                      <div className="rounded-lg bg-card border border-[var(--border)] p-2.5">
-                        <p className="text-[9px] text-muted-foreground mb-0.5">Weight</p>
-                        <p className="text-[12px] font-semibold">{label.weight}</p>
-                      </div>
-                      <div className="rounded-lg bg-card border border-[var(--border)] p-2.5">
-                        <p className="text-[9px] text-muted-foreground mb-0.5">Created</p>
-                        <p className="text-[12px] font-semibold">{fmtDate(label.createdAt)} {fmtTime(label.createdAt)}</p>
-                      </div>
-                      <div className="rounded-lg bg-card border border-[var(--border)] p-2.5">
-                        <p className="text-[9px] text-muted-foreground mb-0.5">Est. Delivery</p>
-                        <p className="text-[12px] font-semibold">{label.estimatedDelivery ? fmtDate(label.estimatedDelivery) : "Delivered"}</p>
-                      </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex gap-2">
-                      <Button size="sm" className="h-8 text-[11px] gap-1.5 flex-1">
-                        <Printer className="h-3.5 w-3.5" /> Print Label
-                      </Button>
-                      <Button variant="outline" size="sm" className="h-8 text-[11px] gap-1.5 flex-1">
-                        <Shield className="h-3.5 w-3.5" /> File Claim
-                      </Button>
-                    </div>
-
-                    {/* Exception alert */}
-                    {label.status === "exception" && (
-                      <div className="rounded-lg bg-red-500/5 border border-red-500/20 p-3 flex items-start gap-2">
-                        <AlertTriangle className="h-4 w-4 text-red-400 shrink-0 mt-0.5" />
-                        <div>
-                          <p className="text-[12px] font-semibold text-red-400 mb-0.5">Delivery Exception</p>
-                          <p className="text-[11px] text-muted-foreground">Package could not be delivered. Check tracking for details or contact the carrier.</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
+              <div key={group.key}>
+                <div className="flex items-center gap-2 mb-2 px-1">
+                  <GroupIcon className={cn("h-4 w-4", meta?.color || "text-muted-foreground")} />
+                  <h3 className="text-[13px] font-semibold">{meta?.label || group.key}</h3>
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5 tabular-nums">{group.items.length}</Badge>
+                </div>
+                <div className="space-y-2">
+                  {group.items.map((label) => renderShipmentCard(label))}
+                </div>
               </div>
             );
           })}
+        </div>
+      ) : activeTab === "by_platform" ? (
+        <div className="space-y-5">
+          {platformGroups.map((group) => (
+            <div key={group.key}>
+              <div className="flex items-center gap-2 mb-2 px-1">
+                <div className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: PLATFORM_COLORS[group.key] || "#888" }} />
+                <h3 className="text-[13px] font-semibold capitalize">{group.key}</h3>
+                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5 tabular-nums">{group.items.length}</Badge>
+              </div>
+              <div className="space-y-2">
+                {group.items.map((label) => renderShipmentCard(label))}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-5">
+          {carrierGroups.map((group) => (
+            <div key={group.key}>
+              <div className="flex items-center gap-2 mb-2 px-1">
+                <Truck className="h-4 w-4 text-muted-foreground" />
+                <h3 className="text-[13px] font-semibold">{group.key}</h3>
+                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5 tabular-nums">{group.items.length}</Badge>
+              </div>
+              <div className="space-y-2">
+                {group.items.map((label) => renderShipmentCard(label))}
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
