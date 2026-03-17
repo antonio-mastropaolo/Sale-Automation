@@ -356,36 +356,49 @@ export function RightRail() {
                 return (
                   <div key={event.id}>
                     <button
-                      onClick={() => hasDetail ? setExpandedEventId(isExpanded ? null : event.id) : undefined}
+                      onClick={() => setExpandedEventId(isExpanded ? null : event.id)}
                       className={cn(
-                        "flex w-full items-center gap-2 px-3.5 py-[5px] text-left transition-colors",
-                        hasDetail ? "hover:bg-[var(--accent)]/40 cursor-pointer" : "cursor-default",
+                        "flex w-full items-center gap-2 px-3.5 py-[6px] text-left transition-colors hover:bg-[var(--accent)]/40 cursor-pointer",
                         isExpanded && "bg-[var(--accent)]/40"
                       )}
                     >
                       <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", meta.dot)} />
-                      <span className="flex-1 truncate text-[10px]">
+                      <span className="flex-1 truncate text-[11px]">
                         <span className="font-medium text-[var(--foreground)]/70">{meta.label}</span>
-                        <span className="text-[var(--muted-foreground)]/50"> · {event.title.slice(0, 24)}{event.title.length > 24 ? "…" : ""}</span>
+                        <span className="text-[var(--muted-foreground)]/50"> · {event.title.slice(0, 22)}{event.title.length > 22 ? "…" : ""}</span>
                       </span>
-                      <span className="shrink-0 text-[8px] tabular-nums text-[var(--muted-foreground)]/30 w-[22px] text-right">{fmtAgo(event.ts)}</span>
+                      <span className="shrink-0 text-[9px] tabular-nums text-[var(--muted-foreground)]/30 w-[22px] text-right">{fmtAgo(event.ts)}</span>
                     </button>
 
-                    {/* Inline expand — detail panel */}
-                    {isExpanded && hasDetail && (
-                      <div className="mx-3.5 mb-1 rounded border border-[var(--border)] bg-[var(--accent)]/30 p-2 space-y-1 text-[10px]">
-                        <p className="text-[var(--muted-foreground)]/50 font-mono text-[9px]">{event.type}</p>
-                        {event.severity === "error" && (
-                          <div className="flex items-start gap-1.5">
-                            <AlertTriangle className="h-3 w-3 shrink-0 text-red-400 mt-0.5" />
-                            <p className="text-red-400/80 break-all leading-snug">{event.detail.slice(0, 200)}</p>
-                          </div>
+                    {/* Expanded detail panel */}
+                    {isExpanded && (
+                      <div className="mx-3.5 mb-1.5 rounded-lg border border-[var(--border)] bg-[var(--accent)]/30 p-3 space-y-2 text-[11px] animate-fade-in">
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono text-[9px] text-[var(--muted-foreground)]/40">{event.type}</span>
+                          <span className="text-[9px] text-[var(--muted-foreground)]/30">{new Date(event.ts).toLocaleString()}</span>
+                        </div>
+                        <p className="font-medium">{event.title}</p>
+                        {event.platform && <p className="text-[var(--muted-foreground)]/50 capitalize text-[10px]">Platform: {event.platform}</p>}
+                        {event.detail && (
+                          event.severity === "error" ? (
+                            <div className="flex items-start gap-1.5 rounded-md bg-red-500/5 border border-red-500/10 p-2">
+                              <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-red-400 mt-0.5" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-red-400/80 break-all leading-snug text-[10px]">{event.detail.slice(0, 200)}</p>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new CustomEvent("toggle-help-assistant")); }}
+                                  className="mt-1.5 flex items-center gap-1 text-[9px] font-semibold text-blue-400 hover:text-blue-300 transition-colors"
+                                >
+                                  <Sparkles className="h-3 w-3" /> Ask AI to help fix this
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-[var(--muted-foreground)]/50 leading-snug break-all text-[10px]">{event.detail.slice(0, 200)}</p>
+                          )
                         )}
-                        {event.severity !== "error" && (
-                          <p className="text-[var(--muted-foreground)]/50 leading-snug break-all">{event.detail.slice(0, 150)}</p>
-                        )}
-                        {event.platform && (
-                          <p className="text-[var(--muted-foreground)]/30 capitalize">Platform: {event.platform}</p>
+                        {!event.detail && (
+                          <p className="text-[var(--muted-foreground)]/30 text-[10px] italic">No additional details recorded.</p>
                         )}
                       </div>
                     )}
@@ -523,27 +536,16 @@ export function RightRail() {
           <div className="space-y-1 px-3.5 pb-3">
             <Link
               href="/workflow"
-              className="flex w-full items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--accent)]/20 px-2.5 py-2 text-[10px] font-medium transition-colors hover:bg-[var(--accent)]"
+              className="flex w-full items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--accent)]/20 px-2.5 py-2 text-[11px] font-medium transition-colors hover:bg-[var(--accent)]"
             >
-              <Play className="h-3.5 w-3.5 text-emerald-400" />
-              Run Pipeline
+              <Workflow className="h-3.5 w-3.5 text-indigo-400" />
+              AI Pipeline
               <ChevronRight className="ml-auto h-3 w-3 text-[var(--muted-foreground)]/20" />
             </Link>
 
-            <button
-              onClick={async () => {
-                try { await fetch("/api/batch", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "retry-failed" }) }); refresh(); } catch {}
-              }}
-              disabled={failCount === 0}
-              className="flex w-full items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--accent)]/20 px-2.5 py-2 text-[10px] font-medium transition-colors hover:bg-[var(--accent)] disabled:opacity-30 disabled:pointer-events-none"
-            >
-              <RotateCcw className="h-3.5 w-3.5 text-blue-400" />
-              Retry Failed
-            </button>
-
             <Link
               href="/diagnostics"
-              className="flex w-full items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--accent)]/20 px-2.5 py-2 text-[10px] font-medium transition-colors hover:bg-[var(--accent)]"
+              className="flex w-full items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--accent)]/20 px-2.5 py-2 text-[11px] font-medium transition-colors hover:bg-[var(--accent)]"
             >
               <FileText className="h-3.5 w-3.5 text-violet-400" />
               Diagnostics
@@ -552,7 +554,7 @@ export function RightRail() {
 
             <Link
               href="/settings"
-              className="flex w-full items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--accent)]/20 px-2.5 py-2 text-[10px] font-medium transition-colors hover:bg-[var(--accent)]"
+              className="flex w-full items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--accent)]/20 px-2.5 py-2 text-[11px] font-medium transition-colors hover:bg-[var(--accent)]"
             >
               <Zap className="h-3.5 w-3.5 text-amber-400" />
               API Keys
@@ -560,6 +562,17 @@ export function RightRail() {
             </Link>
           </div>
         </Collapsible>
+      </div>
+
+      {/* AI Assistant button at bottom */}
+      <div className="shrink-0 border-t border-[var(--border)] p-3.5">
+        <button
+          onClick={() => window.dispatchEvent(new CustomEvent("toggle-help-assistant"))}
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 px-3 py-2.5 text-[11px] font-semibold text-white shadow-lg shadow-blue-500/20 transition-all hover:shadow-blue-500/30 hover:scale-[1.02] active:scale-[0.98]"
+        >
+          <Sparkles className="h-4 w-4" />
+          AI Assistant
+        </button>
       </div>
 
     </aside>

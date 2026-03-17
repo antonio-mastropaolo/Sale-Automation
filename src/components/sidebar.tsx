@@ -7,12 +7,12 @@ import {
   LayoutDashboard, PlusCircle, BarChart3, Settings,
   Camera, Radar, HelpCircle, DollarSign, FileUp, BookTemplate,
   Truck, Target, Calendar, Stethoscope,
-  MessageCircle, FlaskConical, ChevronDown,
-  Flame, Layers, Menu, X,
+  MessageCircle, FlaskConical, ChevronDown, ChevronUp,
+  Flame, Layers, Menu, X, Moon, Sun, LogOut, Settings2, Columns2,
   ShoppingBag, Zap, Package, Store,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { applyTheme, getSavedTheme, applyDesignStyle, getSavedDesignStyle } from "@/lib/themes";
 
 /* ── Nav structure — navigation only, no monitoring ── */
@@ -109,28 +109,78 @@ export function Sidebar({ className }: { className?: string }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  const [dark, setDark] = useState(false);
+  const [userName, setUserName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [profilePic, setProfilePic] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const userInitials = useMemo(() => {
+    if (userName) {
+      const parts = userName.trim().split(/\s+/);
+      return parts.length >= 2 ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase() : userName.slice(0, 2).toUpperCase();
+    }
+    return "U";
+  }, [userName]);
 
   const isAuthPage = AUTH_ROUTES.includes(pathname);
 
   useEffect(() => {
     const d = localStorage.getItem("theme") === "dark";
+    setDark(d);
     if (d) document.documentElement.classList.add("dark");
     else document.documentElement.classList.remove("dark");
     applyDesignStyle(getSavedDesignStyle(), d);
     applyTheme(getSavedTheme(), d);
     if (localStorage.getItem("sidebar-collapsed") === "true") setCollapsed(true);
-    try {
-      const savedGroups = localStorage.getItem("sidebar-groups");
-      if (savedGroups) setOpenGroups(JSON.parse(savedGroups));
-    } catch {}
+    try { const savedGroups = localStorage.getItem("sidebar-groups"); if (savedGroups) setOpenGroups(JSON.parse(savedGroups)); } catch {}
+    try { const pic = localStorage.getItem("listblitz-profile-pic"); if (pic) setProfilePic(pic); } catch {}
     fetch("/api/auth/me").then((r) => r.json()).then((data) => {
       const u = data.user;
       if (u) {
         if (u.role === "admin" || u.username === "antonio" || u.email === "admin@listblitz.io") setIsAdmin(true);
+        setUserName(u.name || u.username || "User");
+        setUserEmail(u.email || "");
       }
     }).catch(() => {});
     window.dispatchEvent(new Event("app:ready"));
   }, []);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => { if (menuRef.current && !menuRef.current.contains(e.target as Node)) setUserMenuOpen(false); };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const toggleDark = () => {
+    setDark((d) => {
+      const next = !d;
+      document.documentElement.classList.toggle("dark", next);
+      localStorage.setItem("theme", next ? "dark" : "light");
+      applyDesignStyle(getSavedDesignStyle(), next);
+      applyTheme(getSavedTheme(), next);
+      return next;
+    });
+  };
+
+  const handleProfilePicUpload = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result as string;
+        setProfilePic(dataUrl);
+        try { localStorage.setItem("listblitz-profile-pic", dataUrl); } catch {}
+      };
+      reader.readAsDataURL(file);
+    };
+    input.click();
+  };
 
   useEffect(() => {
     const groupId = findGroupForPath(pathname);
@@ -184,7 +234,7 @@ export function Sidebar({ className }: { className?: string }) {
         href={item.href}
         onClick={() => setMobileOpen(false)}
         className={cn(
-          "flex items-center gap-2 rounded-md px-2.5 py-[6px] text-[12px] font-medium transition-all duration-200",
+          "flex items-center gap-2 rounded-md px-2.5 py-[6px] text-[13px] font-medium transition-all duration-200",
           indented && "pl-6",
           isActive
             ? "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-md shadow-[var(--primary)]/20"
@@ -211,7 +261,7 @@ export function Sidebar({ className }: { className?: string }) {
         <button
           onClick={() => toggleGroup(group.id)}
           className={cn(
-            "w-full flex items-center gap-2 rounded-md px-2.5 py-[6px] text-[12px] font-medium transition-all duration-200",
+            "w-full flex items-center gap-2 rounded-md px-2.5 py-[6px] text-[13px] font-medium transition-all duration-200",
             hasActive && !isOpen
               ? "text-[var(--foreground)]"
               : "text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
@@ -256,12 +306,70 @@ export function Sidebar({ className }: { className?: string }) {
 
       <div className="mx-3 border-t border-[var(--sidebar-border)]" />
 
-      {/* Navigation — pure nav, user moved to bottom bar */}
+      {/* Navigation */}
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 py-2">
         {navStructure.map((entry) =>
           isGroup(entry) ? renderNavGroup(entry) : renderNavLink(entry as NavItem)
         )}
       </nav>
+
+      {/* User profile */}
+      <div ref={menuRef} className="shrink-0 border-t border-[var(--sidebar-border)] relative">
+        <button
+          onClick={() => setUserMenuOpen((o) => !o)}
+          className="w-full flex items-center gap-2.5 px-3 py-2.5 transition-colors hover:bg-[var(--muted)]/50"
+        >
+          {profilePic ? (
+            <img src={profilePic} alt="" className="h-8 w-8 rounded-full object-cover shrink-0" />
+          ) : (
+            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-[10px] font-bold shrink-0">
+              {userInitials}
+            </div>
+          )}
+          <div className="flex-1 min-w-0 text-left">
+            <p className="text-[12px] font-semibold truncate">{userName || "User"}</p>
+            <p className="text-[9px] text-[var(--muted-foreground)] truncate">{userEmail}</p>
+          </div>
+          <ChevronUp className={cn("h-3 w-3 text-[var(--muted-foreground)] transition-transform", !userMenuOpen && "rotate-180")} />
+        </button>
+
+        {userMenuOpen && (
+          <div className="absolute bottom-full mb-1 left-2 right-2 rounded-xl bg-[#1c1c1e] dark:bg-[#111113] border border-white/10 shadow-2xl overflow-hidden z-50" style={{ animation: "fadeIn 150ms ease-out" }}>
+            <div className="px-3 py-2 border-b border-white/[0.08]">
+              <p className="text-[11px] font-semibold text-white truncate">{userName}</p>
+              <p className="text-[9px] text-white/40 truncate">{userEmail}</p>
+            </div>
+            <div className="py-1">
+              <button onClick={handleProfilePicUpload} className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-white/80 hover:bg-white/[0.08] transition-colors">
+                <Camera className="h-3 w-3 text-blue-400" />
+                {profilePic ? "Change picture" : "Upload picture"}
+              </button>
+              <button onClick={() => { toggleDark(); setUserMenuOpen(false); }} className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-white/80 hover:bg-white/[0.08] transition-colors">
+                {dark ? <Sun className="h-3 w-3 text-amber-400" /> : <Moon className="h-3 w-3 text-amber-400" />}
+                {dark ? "Light mode" : "Dark mode"}
+              </button>
+              <button onClick={() => { const next = !collapsed; setCollapsed(next); try { localStorage.setItem("sidebar-collapsed", String(next)); } catch {} setUserMenuOpen(false); }} className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-white/80 hover:bg-white/[0.08] transition-colors">
+                <Columns2 className="h-3 w-3 text-blue-400" />
+                {collapsed ? "Expand sidebar" : "Compact sidebar"}
+              </button>
+              <div className="h-px bg-white/[0.08] my-0.5" />
+              <button onClick={() => { setUserMenuOpen(false); window.location.href = "/settings"; }} className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-white/80 hover:bg-white/[0.08] transition-colors">
+                <Settings2 className="h-3 w-3 text-white/40" />Settings
+              </button>
+              <div className="h-px bg-white/[0.08] my-0.5" />
+              <button onClick={() => { fetch("/api/auth/logout", { method: "POST" }).then(() => { window.location.href = "/login"; }); }}
+                className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-red-400 hover:bg-red-500/15 transition-colors">
+                <LogOut className="h-3 w-3" />Sign out
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Branding */}
+      <div className="shrink-0 px-3 py-2 text-center">
+        <p className="text-[9px] text-[var(--muted-foreground)]/30">&copy; {new Date().getFullYear()} <span className="font-semibold bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-500 bg-clip-text text-transparent">ListBlitz</span> v1.0.0</p>
+      </div>
     </>
   );
 

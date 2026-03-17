@@ -1011,8 +1011,8 @@ describe("F. Footer & Auth Routes", () => {
   });
 
   // Layout structure
-  it("F15: layout.tsx has flex-col min-h-screen wrapper", () => {
-    expect(layoutTsx).toContain("flex flex-col min-h-screen");
+  it("F15: layout.tsx has flex min-h-screen wrapper", () => {
+    expect(layoutTsx).toContain("flex min-h-screen");
   });
 
   it("F16: layout.tsx has flex-1 content area", () => {
@@ -1420,8 +1420,9 @@ describe("I. Cross-System Integration", () => {
     expect(layoutTsx).toContain("@/components/sidebar");
   });
 
-  it("I05: footer is imported in layout.tsx", () => {
-    expect(layoutTsx).toContain("@/components/footer");
+  it("I05: footer removed, branding in sidebar", () => {
+    expect(sidebarTsx).toContain("ListBlitz");
+    expect(sidebarTsx).toContain("v1.0.0");
   });
 
   it("I06: page-transition is imported in layout.tsx", () => {
@@ -1472,10 +1473,9 @@ describe("I. Cross-System Integration", () => {
     expect(sidebarPos).toBeLessThan(mainPos);
   });
 
-  it("I21: layout has Footer after main", () => {
-    const mainPos = layoutTsx.indexOf("</main>");
-    const footerPos = layoutTsx.indexOf("<Footer");
-    expect(footerPos).toBeGreaterThan(mainPos);
+  it("I21: sidebar has user profile section", () => {
+    expect(sidebarTsx).toContain("userMenuOpen");
+    expect(sidebarTsx).toContain("Sign out");
   });
 
   it("I22: layout has overflow-x-hidden on content div", () => {

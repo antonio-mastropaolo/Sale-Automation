@@ -6,7 +6,7 @@ import { RightRail } from "@/components/right-rail";
 import { Toaster } from "@/components/ui/sonner";
 import { HelpProvider } from "@/components/help-context";
 import { HelpAssistant } from "@/components/help-assistant";
-import { Footer } from "@/components/footer";
+// Footer removed — user profile + branding moved to sidebar
 import { InboxNotifications } from "@/components/inbox-notifications";
 import { PageTransition } from "@/components/page-transition";
 
@@ -124,25 +124,21 @@ export default function RootLayout({
           <script>${bootDismissScript}</script>
         ` }} />
         <HelpProvider>
-          <div className="flex flex-col min-h-screen">
-            <div className="flex flex-1 min-h-0">
-              {/* Left rail — navigation only */}
-              <Sidebar />
-              {/* Center workspace — hero area */}
-              <div className="flex flex-1 flex-col overflow-x-hidden">
-                <main className="flex-1">
-                  <PageTransition>
-                    <div className="w-full px-4 pb-10 pt-16 sm:px-6 sm:pt-16 md:pt-10 lg:px-8 lg:pt-6 xl:px-10 2xl:px-12 2xl:pb-12">
-                      {children}
-                    </div>
-                  </PageTransition>
-                </main>
-              </div>
-              {/* Right rail — live ops telemetry */}
-              <RightRail />
+          <div className="flex min-h-screen">
+            {/* Left rail — navigation + user profile + branding */}
+            <Sidebar />
+            {/* Center workspace — hero area */}
+            <div className="flex flex-1 flex-col overflow-x-hidden">
+              <main className="flex-1">
+                <PageTransition>
+                  <div className="w-full px-4 pb-10 pt-16 sm:px-6 sm:pt-16 md:pt-10 lg:px-8 lg:pt-6 xl:px-10 2xl:px-12 2xl:pb-12">
+                    {children}
+                  </div>
+                </PageTransition>
+              </main>
             </div>
-            {/* Footer spans full width below all three panels */}
-            <Footer />
+            {/* Right rail — live ops telemetry */}
+            <RightRail />
           </div>
           <HelpAssistant />
           <InboxNotifications />
