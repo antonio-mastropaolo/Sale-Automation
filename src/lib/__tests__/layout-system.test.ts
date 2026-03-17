@@ -584,15 +584,14 @@ describe("C. Nav Structure Integrity", () => {
     expect(sidebarTsx).toContain("sidebar-collapsed");
   });
 
-  it("C21: sidebar has user menu", () => {
-    expect(sidebarTsx).toContain("userMenuOpen");
-    expect(sidebarTsx).toContain("Sign out");
+  it("C21: user menu moved to footer/bottom bar", () => {
+    expect(footerTsx).toContain("menuOpen");
+    expect(footerTsx).toContain("Sign out");
   });
 
-  it("C22: sidebar has dark mode toggle", () => {
-    expect(sidebarTsx).toContain("toggleDark");
-    expect(sidebarTsx).toContain("Light");
-    expect(sidebarTsx).toContain("Dark");
+  it("C22: dark mode toggle in footer/bottom bar", () => {
+    expect(footerTsx).toContain("Light mode");
+    expect(footerTsx).toContain("Dark mode");
   });
 
   it("C23: sidebar applies theme on mount", () => {
@@ -634,8 +633,8 @@ describe("C. Nav Structure Integrity", () => {
     expect(sidebarTsx).toContain("w-[220px]");
   });
 
-  it("C32: sidebar uses gradient avatar", () => {
-    expect(sidebarTsx).toContain("bg-gradient-to-br from-blue-500 to-indigo-600");
+  it("C32: gradient avatar moved to footer/bottom bar", () => {
+    expect(footerTsx).toContain("bg-gradient-to-br from-blue-500 to-indigo-600");
   });
 
   it("C33: sidebar has ListBlitz branding", () => {

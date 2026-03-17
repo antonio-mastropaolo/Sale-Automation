@@ -4,15 +4,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
-  LayoutDashboard, PlusCircle, BarChart3, Settings, Moon, Sun,
+  LayoutDashboard, PlusCircle, BarChart3, Settings,
   Camera, Radar, HelpCircle, DollarSign, FileUp, BookTemplate,
-  Truck, Target, Calendar, LogOut, Stethoscope, Columns2,
-  MessageCircle, FlaskConical, ChevronDown, KeyRound, ImagePlus,
-  ChevronUp, Flame, Layers, Menu, X, Settings2,
+  Truck, Target, Calendar, Stethoscope,
+  MessageCircle, FlaskConical, ChevronDown,
+  Flame, Layers, Menu, X,
   ShoppingBag, Zap, Package, Store,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useEffect, useState, useMemo, useRef, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { applyTheme, getSavedTheme, applyDesignStyle, getSavedDesignStyle } from "@/lib/themes";
 
 /* ── Nav structure — navigation only, no monitoring ── */
@@ -105,32 +105,15 @@ function findGroupForPath(pathname: string): string | null {
 
 export function Sidebar({ className }: { className?: string }) {
   const pathname = usePathname();
-  const [dark, setDark] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [userName, setUserName] = useState("");
-  const [userEmail, setUserEmail] = useState("");
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  const userInitials = useMemo(() => {
-    if (userName) {
-      const parts = userName.trim().split(/\s+/);
-      return parts.length >= 2
-        ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
-        : userName.slice(0, 2).toUpperCase();
-    }
-    if (userEmail) return userEmail[0].toUpperCase();
-    return "U";
-  }, [userName, userEmail]);
 
   const isAuthPage = AUTH_ROUTES.includes(pathname);
 
   useEffect(() => {
     const d = localStorage.getItem("theme") === "dark";
-    setDark(d);
     if (d) document.documentElement.classList.add("dark");
     else document.documentElement.classList.remove("dark");
     applyDesignStyle(getSavedDesignStyle(), d);
@@ -144,8 +127,6 @@ export function Sidebar({ className }: { className?: string }) {
       const u = data.user;
       if (u) {
         if (u.role === "admin" || u.username === "antonio" || u.email === "admin@listblitz.io") setIsAdmin(true);
-        setUserName(u.name || u.username || "User");
-        setUserEmail(u.email || "");
       }
     }).catch(() => {});
     window.dispatchEvent(new Event("app:ready"));
@@ -171,29 +152,9 @@ export function Sidebar({ className }: { className?: string }) {
     return () => { document.body.style.overflow = ""; };
   }, [mobileOpen]);
 
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setUserMenuOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  const toggleDark = () => {
-    setDark((d) => {
-      const next = !d;
-      document.documentElement.classList.toggle("dark", next);
-      localStorage.setItem("theme", next ? "dark" : "light");
-      applyDesignStyle(getSavedDesignStyle(), next);
-      applyTheme(getSavedTheme(), next);
-      return next;
-    });
-  };
-
   const toggleCollapsed = () => {
     const next = !collapsed;
     setCollapsed(next);
-    setUserMenuOpen(false);
     try { localStorage.setItem("sidebar-collapsed", String(next)); } catch {}
   };
 
@@ -212,42 +173,6 @@ export function Sidebar({ className }: { className?: string }) {
   const isGroupActive = useCallback((group: NavGroup) => {
     return group.children.some((child) => isItemActive(child.href));
   }, [isItemActive]);
-
-  /* ── Compact user popover (no large profile card) ── */
-  const popoverMenu = (isCompact: boolean) => (
-    userMenuOpen && (
-      <div className={cn(
-        "absolute bottom-full mb-1 rounded-xl bg-[#1c1c1e] dark:bg-[#111113] border border-white/10 shadow-2xl overflow-hidden z-50",
-        isCompact ? "left-1 w-[200px]" : "left-2 right-2"
-      )} style={{ animation: "fadeIn 150ms ease-out" }}>
-        <div className="px-3 py-2 border-b border-white/[0.08]">
-          <p className="text-[11px] font-semibold text-white truncate">{userName || "User"}</p>
-          <p className="text-[9px] text-white/40 truncate">{userEmail}</p>
-        </div>
-        <div className="py-1">
-          <button onClick={() => { toggleDark(); setUserMenuOpen(false); }} className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-white/80 hover:bg-white/[0.08] transition-colors">
-            {dark ? <Sun className="h-3 w-3 text-amber-400" /> : <Moon className="h-3 w-3 text-amber-400" />}
-            {dark ? "Light" : "Dark"}
-          </button>
-          <button onClick={toggleCollapsed} className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-white/80 hover:bg-white/[0.08] transition-colors">
-            <Columns2 className="h-3 w-3 text-blue-400" />
-            {collapsed ? "Expand" : "Compact"}
-          </button>
-          <div className="h-px bg-white/[0.08] my-0.5" />
-          <button onClick={() => { setUserMenuOpen(false); window.location.href = "/settings"; }} className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-white/80 hover:bg-white/[0.08] transition-colors">
-            <Settings2 className="h-3 w-3 text-white/40" />
-            Settings
-          </button>
-          <div className="h-px bg-white/[0.08] my-0.5" />
-          <button onClick={() => { fetch("/api/auth/logout", { method: "POST" }).then(() => { window.location.href = "/login"; }); }}
-            className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-red-400 hover:bg-red-500/15 transition-colors">
-            <LogOut className="h-3 w-3" />
-            Sign out
-          </button>
-        </div>
-      </div>
-    )
-  );
 
   const renderNavLink = (item: NavItem, indented = false) => {
     if (ADMIN_ONLY_PATHS.includes(item.href) && !isAdmin) return null;
@@ -331,27 +256,12 @@ export function Sidebar({ className }: { className?: string }) {
 
       <div className="mx-3 border-t border-[var(--sidebar-border)]" />
 
-      {/* Navigation */}
+      {/* Navigation — pure nav, user moved to bottom bar */}
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 py-2">
         {navStructure.map((entry) =>
           isGroup(entry) ? renderNavGroup(entry) : renderNavLink(entry as NavItem)
         )}
       </nav>
-
-      {/* Minimal user — no large profile card */}
-      <div ref={menuRef} className="shrink-0 border-t border-[var(--sidebar-border)] relative">
-        <button
-          onClick={() => setUserMenuOpen((o) => !o)}
-          className="w-full flex items-center gap-2 px-3 py-2 transition-colors hover:bg-[var(--muted)]/50"
-        >
-          <div className="h-7 w-7 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-[10px] font-bold shrink-0">
-            {userInitials}
-          </div>
-          <p className="flex-1 text-left text-[11px] font-medium truncate text-[var(--foreground)]">{userName || "User"}</p>
-          <ChevronUp className={cn("h-3 w-3 text-[var(--muted-foreground)] transition-transform duration-200", !userMenuOpen && "rotate-180")} />
-        </button>
-        {popoverMenu(false)}
-      </div>
     </>
   );
 
@@ -425,18 +335,6 @@ export function Sidebar({ className }: { className?: string }) {
                 );
               })}
             </nav>
-            <div ref={collapsed ? menuRef : undefined} className="shrink-0 border-t border-[var(--sidebar-border)] relative">
-              <button
-                onClick={() => setUserMenuOpen((o) => !o)}
-                className="w-full flex justify-center p-2 transition-colors hover:bg-[var(--muted)]/50"
-                title={userName}
-              >
-                <div className="h-7 w-7 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-[10px] font-bold shrink-0">
-                  {userInitials}
-                </div>
-              </button>
-              {popoverMenu(true)}
-            </div>
           </>
         ) : (
           navContent
