@@ -433,6 +433,83 @@ export const DESIGN_STYLES: DesignStyle[] = [
       sidebar: "rgba(250,244,237,0.9)", sidebarBorder: "rgba(0,0,0,0.04)",
     },
   },
+  // ── Award-Winning Themes (inspired by industry leaders) ──
+  {
+    id: "linear",
+    label: "Linear",
+    description: "Ultra-clean SaaS, the gold standard",
+    preview: "linear-gradient(135deg, #101016 0%, #17171f 50%, #1c1c28 100%)",
+    layout: { radius: "0.625rem", borderWidth: "1px", shadow: "0 1px 2px rgba(0,0,0,0.15)", shadowHover: "0 4px 12px rgba(0,0,0,0.2)", cardPadding: "1.25rem", backdropBlur: "none", fontWeight: "600", spacing: "1.25rem", iconStroke: "1.5", buttonRadius: "0.5rem" },
+    dark: {
+      background: "#101016", card: "#17171f", cardForeground: "rgba(255,255,255,0.92)",
+      popover: "#1c1c28", secondary: "#1c1c28", secondaryForeground: "rgba(255,255,255,0.85)",
+      muted: "#1c1c28", mutedForeground: "rgba(255,255,255,0.45)", border: "rgba(255,255,255,0.06)",
+      input: "#1c1c28", sidebar: "rgba(16,16,22,0.98)", sidebarForeground: "rgba(255,255,255,0.45)",
+      sidebarBorder: "rgba(255,255,255,0.04)",
+    },
+    light: {
+      background: "#f9fafb", card: "#ffffff", secondary: "#f3f4f6",
+      muted: "#f3f4f6", mutedForeground: "#6b7280", border: "rgba(0,0,0,0.06)",
+      sidebar: "rgba(249,250,251,0.95)", sidebarBorder: "rgba(0,0,0,0.04)",
+    },
+  },
+  {
+    id: "liquidglass",
+    label: "Liquid Glass",
+    description: "Apple's translucent, frosted design",
+    preview: "linear-gradient(135deg, #0a0a12 0%, #0f1020 50%, #151530 100%)",
+    layout: { radius: "1rem", borderWidth: "1px", shadow: "inset 0 1px 0 rgba(255,255,255,0.06), 0 8px 32px rgba(0,0,0,0.3)", shadowHover: "inset 0 1px 0 rgba(255,255,255,0.1), 0 12px 40px rgba(0,0,0,0.35)", cardPadding: "1.25rem", backdropBlur: "blur(16px)", fontWeight: "600", spacing: "1.25rem", iconStroke: "1.5", buttonRadius: "0.75rem" },
+    dark: {
+      background: "#0a0a12", card: "rgba(255,255,255,0.04)", cardForeground: "rgba(255,255,255,0.92)",
+      popover: "rgba(255,255,255,0.06)", secondary: "rgba(255,255,255,0.04)", secondaryForeground: "rgba(255,255,255,0.85)",
+      muted: "rgba(255,255,255,0.04)", mutedForeground: "rgba(255,255,255,0.40)", border: "rgba(255,255,255,0.08)",
+      input: "rgba(255,255,255,0.06)", sidebar: "rgba(255,255,255,0.03)", sidebarForeground: "rgba(255,255,255,0.45)",
+      sidebarBorder: "rgba(255,255,255,0.06)",
+    },
+    light: {
+      background: "#f2f2f7", card: "rgba(255,255,255,0.60)", secondary: "rgba(255,255,255,0.40)",
+      muted: "rgba(0,0,0,0.03)", mutedForeground: "#6b7280", border: "rgba(0,0,0,0.08)",
+      sidebar: "rgba(255,255,255,0.50)", sidebarBorder: "rgba(0,0,0,0.06)",
+    },
+  },
+  {
+    id: "vercel",
+    label: "Vercel",
+    description: "Developer-grade, maximum contrast",
+    preview: "linear-gradient(135deg, #000000 0%, #0a0a0a 50%, #111111 100%)",
+    layout: { radius: "0.5rem", borderWidth: "1px", shadow: "0 2px 4px rgba(0,0,0,0.2)", shadowHover: "0 6px 16px rgba(0,0,0,0.3)", cardPadding: "1.25rem", backdropBlur: "none", fontWeight: "600", spacing: "1.25rem", iconStroke: "1.5", buttonRadius: "0.375rem" },
+    dark: {
+      background: "#000000", card: "#0a0a0a", cardForeground: "#ededed",
+      popover: "#111111", secondary: "#111111", secondaryForeground: "#ededed",
+      muted: "#111111", mutedForeground: "#888888", border: "rgba(255,255,255,0.08)",
+      input: "#111111", sidebar: "rgba(0,0,0,0.98)", sidebarForeground: "#888888",
+      sidebarBorder: "rgba(255,255,255,0.06)",
+    },
+    light: {
+      background: "#fafafa", card: "#ffffff", secondary: "#f5f5f5",
+      muted: "#f5f5f5", mutedForeground: "#666666", border: "rgba(0,0,0,0.08)",
+      sidebar: "rgba(250,250,250,0.95)", sidebarBorder: "rgba(0,0,0,0.06)",
+    },
+  },
+  {
+    id: "ambient",
+    label: "Ambient Dark",
+    description: "Awwwards-winning gradient orbs + frost",
+    preview: "linear-gradient(135deg, #0a0a10 0%, #12101f 50%, #0f0a18 100%)",
+    layout: { radius: "0.875rem", borderWidth: "1px", shadow: "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.3)", shadowHover: "inset 0 1px 0 rgba(255,255,255,0.06), 0 8px 32px rgba(0,0,0,0.4)", cardPadding: "1.25rem", backdropBlur: "blur(12px)", fontWeight: "600", spacing: "1.5rem", iconStroke: "1.5", buttonRadius: "0.625rem" },
+    dark: {
+      background: "#0a0a10", card: "rgba(255,255,255,0.03)", cardForeground: "rgba(255,255,255,0.90)",
+      popover: "rgba(255,255,255,0.05)", secondary: "rgba(255,255,255,0.03)", secondaryForeground: "rgba(255,255,255,0.85)",
+      muted: "rgba(255,255,255,0.03)", mutedForeground: "rgba(255,255,255,0.38)", border: "rgba(255,255,255,0.06)",
+      input: "rgba(255,255,255,0.05)", sidebar: "rgba(10,10,16,0.95)", sidebarForeground: "rgba(255,255,255,0.40)",
+      sidebarBorder: "rgba(255,255,255,0.04)",
+    },
+    light: {
+      background: "#f0f0f5", card: "rgba(255,255,255,0.70)", secondary: "rgba(255,255,255,0.50)",
+      muted: "rgba(0,0,0,0.03)", mutedForeground: "#64748b", border: "rgba(0,0,0,0.06)",
+      sidebar: "rgba(255,255,255,0.60)", sidebarBorder: "rgba(0,0,0,0.04)",
+    },
+  },
 ];
 
 export const DEFAULT_DESIGN_STYLE = "ios";
@@ -449,6 +526,11 @@ const DESIGN_STYLE_TO_LAYOUT: Record<string, string> = {
   glass: "glassmorphism",
   neumorphic: "neumorphism",
   skeuomorphic: "skeuomorphism",
+  // Award-winning styles
+  linear: "default",
+  liquidglass: "glassmorphism",
+  vercel: "flat",
+  ambient: "glassmorphism",
   // Color-palette-only styles use "default" layout
   midnight: "default",
   dracula: "default",

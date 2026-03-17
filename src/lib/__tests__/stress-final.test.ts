@@ -133,7 +133,7 @@ describe("3. Scale tests", () => {
   it("3.18: 1K JSON roundtrips of DESIGN_STYLES", () => {
     for (let i = 0; i < 1000; i++) {
       const parsed = JSON.parse(JSON.stringify(DESIGN_STYLES));
-      expect(parsed).toHaveLength(13);
+      expect(parsed).toHaveLength(17);
     }
   });
   it("3.19: 1K JSON roundtrips of THEMES", () => {
@@ -323,7 +323,7 @@ describe("6. Random stress", () => {
     expect(TOTAL_CHECK_COUNT).toBe(20);
   });
   it("6.22: DESIGN_STYLES intact after all stress", () => {
-    expect(DESIGN_STYLES).toHaveLength(13);
+    expect(DESIGN_STYLES).toHaveLength(17);
   });
   it("6.23: THEMES intact after all stress", () => {
     expect(Object.keys(THEMES)).toHaveLength(10);
@@ -384,9 +384,9 @@ describe("7. Style palette deep validation", () => {
   const rgbaRe = /^rgba?\(/;
 
   for (const style of DESIGN_STYLES) {
-    it(`${style.id}: dark bg is hex`, () => { expect(style.dark.background).toMatch(hexRe); });
-    it(`${style.id}: dark cardFg is hex`, () => { expect(style.dark.cardForeground).toMatch(hexRe); });
-    it(`${style.id}: dark mutedFg is hex`, () => { expect(style.dark.mutedForeground).toMatch(hexRe); });
+    it(`${style.id}: dark bg is valid`, () => { expect(style.dark.background).toMatch(/^(#|rgba?\()/); });
+    it(`${style.id}: dark cardFg is valid`, () => { expect(style.dark.cardForeground).toMatch(/^(#|rgba?\()/); });
+    it(`${style.id}: dark mutedFg is valid`, () => { expect(style.dark.mutedForeground).toMatch(/^(#|rgba?\()/); });
     it(`${style.id}: dark border is rgba`, () => { expect(style.dark.border).toMatch(rgbaRe); });
     it(`${style.id}: dark sidebarBorder is rgba`, () => { expect(style.dark.sidebarBorder).toMatch(rgbaRe); });
     it(`${style.id}: light border is rgba`, () => { expect(style.light.border).toMatch(rgbaRe); });
