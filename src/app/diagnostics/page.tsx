@@ -5,7 +5,7 @@ import { useAdmin } from "@/lib/use-admin";
 import {
   Shield, Database, Brain, Globe, Package, FileCode, Gauge,
   Play, Loader2, CheckCircle2, XCircle, AlertTriangle, MinusCircle,
-  ChevronRight, Stethoscope,
+  ChevronRight, Stethoscope, Workflow, Clock, Activity,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -190,6 +190,8 @@ export default function DiagnosticsPage() {
     setExpandedCategories((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
   }, []);
 
+  const [activeTab, setActiveTab] = useState<"health" | "pipeline" | "audit">("health");
+
   if (adminLoading) return <div className="flex items-center justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
   if (!isAdmin) return <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">Admin access required</div>;
 
@@ -202,24 +204,160 @@ export default function DiagnosticsPage() {
           </div>
           <div>
             <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">Diagnostics</h1>
-            <p className="mt-0.5 text-xs sm:text-sm text-muted-foreground">Health checks across database, AI, platforms, and more</p>
+            <p className="mt-0.5 text-xs sm:text-sm text-muted-foreground">Health checks, AI pipeline, and full audit log</p>
           </div>
         </div>
-        <button
-          onClick={runAll} disabled={isRunningAll}
-          className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold shadow-md transition-all ${isRunningAll ? "bg-emerald-600/80 text-white" : "bg-emerald-600 text-white hover:bg-emerald-700"}`}
-        >
-          {isRunningAll ? <><Loader2 className="h-4 w-4 animate-spin" />Running... ({runAllProgress}/{DIAGNOSTIC_CATEGORIES.length})</> : <><Play className="h-4 w-4" />Run All</>}
-        </button>
+        {activeTab === "health" && (
+          <button
+            onClick={runAll} disabled={isRunningAll}
+            className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold shadow-md transition-all ${isRunningAll ? "bg-emerald-600/80 text-white" : "bg-emerald-600 text-white hover:bg-emerald-700"}`}
+          >
+            {isRunningAll ? <><Loader2 className="h-4 w-4 animate-spin" />Running... ({runAllProgress}/{DIAGNOSTIC_CATEGORIES.length})</> : <><Play className="h-4 w-4" />Run All</>}
+          </button>
+        )}
       </div>
-      <div className="space-y-2">
-        {DIAGNOSTIC_CATEGORIES.map((cat) => (
-          <CategoryRow key={cat.id} category={cat} result={results.get(cat.id) ?? null}
-            isExpanded={expandedCategories.has(cat.id)} isRunning={runningCategories.has(cat.id)}
-            isRunAllActive={isRunningAll} onToggleExpand={() => toggleExpand(cat.id)} onRun={() => runCategory(cat.id)} />
+
+      {/* Tab bar */}
+      <div className="flex gap-1 bg-muted/30 rounded-xl p-1">
+        {([
+          { key: "health" as const, label: "Health Checks", icon: Stethoscope },
+          { key: "pipeline" as const, label: "AI Pipeline", icon: Workflow },
+          { key: "audit" as const, label: "Audit Log", icon: Activity },
+        ]).map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-[13px] font-medium transition-all ${
+              activeTab === tab.key
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <tab.icon className="h-4 w-4" />
+            {tab.label}
+          </button>
         ))}
       </div>
-      <SummaryFooter results={results} />
+
+      {/* Health Checks tab */}
+      {activeTab === "health" && (
+        <>
+          <div className="space-y-2">
+            {DIAGNOSTIC_CATEGORIES.map((cat) => (
+              <CategoryRow key={cat.id} category={cat} result={results.get(cat.id) ?? null}
+                isExpanded={expandedCategories.has(cat.id)} isRunning={runningCategories.has(cat.id)}
+                isRunAllActive={isRunningAll} onToggleExpand={() => toggleExpand(cat.id)} onRun={() => runCategory(cat.id)} />
+            ))}
+          </div>
+          <SummaryFooter results={results} />
+        </>
+      )}
+
+      {/* AI Pipeline tab */}
+      {activeTab === "pipeline" && (
+        <div className="rounded-xl bg-card border border-border p-6 text-center space-y-4">
+          <div className="flex justify-center">
+            <div className="h-14 w-14 rounded-2xl bg-indigo-500/10 flex items-center justify-center">
+              <Workflow className="h-7 w-7 text-indigo-500" />
+            </div>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold mb-1">AI Pipeline</h3>
+            <p className="text-sm text-muted-foreground max-w-md mx-auto">
+              Configure and run the 8-stage AI workflow — from photo upload to cross-platform publishing.
+            </p>
+          </div>
+          <a
+            href="/workflow"
+            className="inline-flex items-center gap-2 rounded-xl bg-indigo-500 text-white px-6 py-2.5 text-sm font-semibold hover:bg-indigo-600 transition-colors shadow-md"
+          >
+            <Play className="h-4 w-4" />
+            Open Pipeline
+          </a>
+        </div>
+      )}
+
+      {/* Audit Log tab */}
+      {activeTab === "audit" && <AuditLogTab />}
+    </div>
+  );
+}
+
+/* ── Audit Log Tab ── */
+
+function AuditLogTab() {
+  const [events, setEvents] = useState<{ id: string; type: string; title: string; platform: string; detail: string; severity: string; ts: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<"all" | "error" | "success" | "info">("all");
+
+  useEffect(() => {
+    fetch("/api/ops/summary").then((r) => r.json()).then((d) => {
+      setEvents(d.events || []);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, []);
+
+  const filtered = filter === "all" ? events : events.filter((e) => e.severity === filter);
+  const fmtDate = (iso: string) => new Date(iso).toLocaleString();
+
+  const severityDot: Record<string, string> = {
+    info: "bg-slate-400", success: "bg-emerald-400", warning: "bg-amber-400", error: "bg-red-400",
+  };
+
+  if (loading) return <div className="flex items-center justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
+
+  return (
+    <div className="space-y-3">
+      {/* Filters */}
+      <div className="flex items-center gap-1">
+        {(["all", "error", "success", "info"] as const).map((f) => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={`px-3 py-1.5 rounded-lg text-[12px] font-medium capitalize transition-colors ${
+              filter === f ? "bg-[var(--primary)] text-[var(--primary-foreground)]" : "bg-muted text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {f}
+          </button>
+        ))}
+        <span className="ml-auto text-[12px] text-muted-foreground">{filtered.length} events</span>
+      </div>
+
+      {/* Events table */}
+      {filtered.length === 0 ? (
+        <div className="text-center py-12 text-muted-foreground text-sm">No events found</div>
+      ) : (
+        <div className="rounded-xl bg-card border border-border overflow-hidden">
+          {/* Header */}
+          <div className="grid grid-cols-[auto_1fr_auto_auto_auto] gap-3 px-4 py-2 bg-muted/30 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
+            <span className="w-2" />
+            <span>Event</span>
+            <span className="hidden sm:block">Platform</span>
+            <span>Severity</span>
+            <span>Time</span>
+          </div>
+
+          {/* Rows */}
+          {filtered.map((event) => (
+            <div key={event.id} className="grid grid-cols-[auto_1fr_auto_auto_auto] gap-3 px-4 py-2.5 border-b border-border last:border-b-0 hover:bg-muted/20 transition-colors items-center">
+              <span className={`h-2 w-2 rounded-full shrink-0 ${severityDot[event.severity] || "bg-slate-400"}`} />
+              <div className="min-w-0">
+                <p className="text-[13px] font-medium truncate">{event.type.replace(/_/g, " ")} — {event.title}</p>
+                {event.detail && <p className="text-[11px] text-muted-foreground truncate mt-0.5">{event.detail}</p>}
+              </div>
+              <span className="text-[11px] text-muted-foreground capitalize hidden sm:block">{event.platform || "—"}</span>
+              <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                event.severity === "error" ? "bg-red-500/10 text-red-500" :
+                event.severity === "success" ? "bg-emerald-500/10 text-emerald-500" :
+                event.severity === "warning" ? "bg-amber-500/10 text-amber-500" :
+                "bg-muted text-muted-foreground"
+              }`}>{event.severity}</span>
+              <span className="text-[11px] text-muted-foreground tabular-nums whitespace-nowrap">{fmtDate(event.ts)}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

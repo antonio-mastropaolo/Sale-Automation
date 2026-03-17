@@ -59,8 +59,11 @@ export function PipelineNode({
 
   return (
     <div
-      className="absolute select-none touch-none transition-shadow duration-200"
-      style={{ left: x, top: y, zIndex: isSelected ? 50 : 10 }}
+      className="absolute select-none touch-none"
+      style={{
+        left: x, top: y, zIndex: isSelected ? 50 : 10,
+        animation: `nodeEntrance 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${index * 0.06}s both`,
+      }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
@@ -68,7 +71,9 @@ export function PipelineNode({
       <div
         className={cn(
           "relative rounded-2xl border bg-card cursor-grab active:cursor-grabbing shadow-lg",
-          "w-[200px] transition-all duration-200",
+          "w-[200px] transition-all duration-300",
+          isRunning && "animate-glow-pulse",
+          isCompleted && "animate-[completePop_0.3s_ease-out]",
           isSelected && "ring-2 ring-[var(--primary)]",
           isRunning && "ring-2",
           isPaused && "ring-2 ring-amber-500/60",
