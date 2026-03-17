@@ -84,8 +84,14 @@ export async function POST(
 
     await logActivity({ type: "publish_failed", title: listing.title, platform, severity: "error", detail: error instanceof Error ? error.message : "Unknown" });
 
+    const errMsg = error instanceof Error ? error.message : "Publishing failed";
+    const isBackendDown = errMsg.includes("ECONNREFUSED") || errMsg.includes("fetch failed") || errMsg.includes("timeout");
+    const userMessage = isBackendDown
+      ? `Could not reach the automation backend. Make sure the publishing service is running.`
+      : errMsg;
+
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Publishing failed" },
+      { error: userMessage, detail: errMsg },
       { status: 500 }
     );
   }
