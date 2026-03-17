@@ -22,6 +22,8 @@ import {
   Eye,
   ChevronLeft,
   ChevronRight,
+  FileDown,
+  Loader2,
 } from "lucide-react";
 import { platformBadge, statusStyles } from "@/lib/colors";
 
@@ -92,6 +94,28 @@ export default function Dashboard() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 text-[13px] gap-1.5"
+            onClick={async () => {
+              const btn = document.activeElement as HTMLButtonElement;
+              btn?.setAttribute("disabled", "true");
+              btn?.querySelector("svg")?.classList.add("animate-spin");
+              try {
+                const { generatePDFReport } = await import("@/lib/pdf-report");
+                await generatePDFReport();
+              } catch (err) {
+                const { toast } = await import("sonner");
+                toast.error("Failed to generate report");
+              }
+              btn?.removeAttribute("disabled");
+              btn?.querySelector("svg")?.classList.remove("animate-spin");
+            }}
+          >
+            <FileDown className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Report</span>
+          </Button>
           <Link href="/listings/smart" className="flex-1 sm:flex-none">
             <Button variant="outline" size="sm" className="w-full sm:w-auto h-9 text-[13px] gap-1.5">
               <Camera className="h-3.5 w-3.5" />
