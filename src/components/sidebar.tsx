@@ -242,7 +242,7 @@ export function Sidebar({ className }: { className?: string }) {
           indented && "pl-6",
           isActive
             ? "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-md shadow-[var(--primary)]/20"
-            : "text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
+            : "text-[var(--foreground)]/70 hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
         )}
       >
         <Icon className="h-4 w-4 shrink-0" />
@@ -268,7 +268,7 @@ export function Sidebar({ className }: { className?: string }) {
             "w-full flex items-center gap-2 rounded-md px-2.5 py-[6px] text-[14px] font-medium transition-all duration-200",
             hasActive && !isOpen
               ? "text-[var(--foreground)]"
-              : "text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
+              : "text-[var(--foreground)]/70 hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
           )}
         >
           <GroupIcon className={cn("h-4 w-4 shrink-0", hasActive && "text-[var(--primary)]")} />
@@ -439,7 +439,7 @@ export function Sidebar({ className }: { className?: string }) {
                       "flex h-8 w-8 items-center justify-center rounded-md mx-auto transition-all duration-200",
                       isActive
                         ? "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-md shadow-[var(--primary)]/20"
-                        : "text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
+                        : "text-[var(--foreground)]/70 hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
                     )}
                   >
                     <Icon className="h-4 w-4" />

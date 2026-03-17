@@ -86,6 +86,23 @@ function generateMockResults(query: string): SearchResult[] {
   });
 }
 
+// ── Search cache — keeps last 10 searches in memory ──
+const MAX_CACHED_SEARCHES = 10;
+const searchCache = new Map<string, SearchResult[]>();
+
+function getCachedResults(key: string): SearchResult[] | null {
+  return searchCache.get(key) ?? null;
+}
+
+function setCachedResults(key: string, results: SearchResult[]) {
+  // Evict oldest if at capacity
+  if (searchCache.size >= MAX_CACHED_SEARCHES && !searchCache.has(key)) {
+    const oldest = searchCache.keys().next().value;
+    if (oldest !== undefined) searchCache.delete(oldest);
+  }
+  searchCache.set(key, results);
+}
+
 export default function CrossMarketSearchPage() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -98,17 +115,34 @@ export default function CrossMarketSearchPage() {
   const [priceMax, setPriceMax] = useState("");
   const [selectedResult, setSelectedResult] = useState<SearchResult | null>(null);
   const [searchPage, setSearchPage] = useState(1);
+  const [fromCache, setFromCache] = useState(false);
   const SEARCH_PAGE_SIZE = 9;
 
   const handleSearch = useCallback(async () => {
     if (!query.trim()) return;
+    const cacheKey = query.trim().toLowerCase();
+
+    // Check cache first
+    const cached = getCachedResults(cacheKey);
+    if (cached) {
+      setResults(cached);
+      setSearchPage(1);
+      setSearched(true);
+      setSelectedResult(null);
+      setFromCache(true);
+      toast.success(`${cached.length} results (cached)`);
+      return;
+    }
+
     setLoading(true);
     setSearched(true);
     setSelectedResult(null);
+    setFromCache(false);
     // Simulate AI-powered search delay
     await new Promise((r) => setTimeout(r, 1500));
     const mockResults = generateMockResults(query);
     setResults(mockResults);
+    setCachedResults(cacheKey, mockResults);
     setSearchPage(1);
     setLoading(false);
     toast.success(`Found ${mockResults.length} results across ${selectedPlatforms.size} platforms`);
@@ -250,6 +284,7 @@ export default function CrossMarketSearchPage() {
           <div className="flex items-center justify-between mb-3">
             <p className="text-[12px] text-muted-foreground">
               <span className="font-semibold text-foreground">{sortedResults.length}</span> results across <span className="font-semibold text-foreground">{new Set(sortedResults.map((r) => r.platform)).size}</span> platforms
+              {fromCache && <span className="ml-1.5 text-[10px] text-emerald-500 font-medium">⚡ cached</span>}
               {totalSearchPages > 1 && <span> · Page {searchPage}/{totalSearchPages}</span>}
             </p>
           </div>
@@ -455,7 +490,7 @@ export default function CrossMarketSearchPage() {
           <p className="text-sm text-muted-foreground max-w-md mb-6">
             Find the best deals on sneakers, streetwear, and luxury items. AI ranks results by value, authenticity signals, and resale potential.
           </p>
-          <div className="flex flex-wrap justify-center gap-2">
+          <div className="flex flex-wrap justify-center gap-2 mb-6">
             {["Supreme Box Logo", "Jordan 1 Retro", "Arc'teryx Alpha SV", "Vintage Levi's 501", "Balenciaga Track"].map((s) => (
               <button
                 key={s}
@@ -466,6 +501,35 @@ export default function CrossMarketSearchPage() {
               </button>
             ))}
           </div>
+
+          {/* Recent searches from cache */}
+          {searchCache.size > 0 && (
+            <div className="mt-4 pt-4 border-t border-border max-w-md mx-auto">
+              <p className="text-[11px] text-muted-foreground font-medium mb-2 text-center">Recent Searches</p>
+              <div className="flex flex-wrap justify-center gap-1.5">
+                {[...searchCache.keys()].reverse().map((key) => (
+                  <button
+                    key={key}
+                    onClick={() => {
+                      setQuery(key);
+                      const cached = getCachedResults(key);
+                      if (cached) {
+                        setResults(cached);
+                        setSearchPage(1);
+                        setSearched(true);
+                        setFromCache(true);
+                      }
+                    }}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted/50 text-[11px] text-muted-foreground hover:bg-[var(--primary)]/10 hover:text-[var(--primary)] transition-colors"
+                  >
+                    <Search className="h-3 w-3" />
+                    {key}
+                    <span className="text-[9px] text-muted-foreground/40">{searchCache.get(key)?.length}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
