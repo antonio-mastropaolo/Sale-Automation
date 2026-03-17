@@ -69,6 +69,7 @@ function generateMockResults(query: string): SearchResult[] {
       condition: conditions[i % conditions.length],
       size: sizes[i % sizes.length],
       brand,
+      imageUrl: `https://picsum.photos/seed/${encodeURIComponent(brand + q + i)}/400/400`,
       listingUrl: "#",
       likes: Math.floor(Math.random() * 50),
       views: Math.floor(Math.random() * 200),
@@ -268,10 +269,16 @@ export default function CrossMarketSearchPage() {
                     isSelected ? "ring-2 ring-[var(--primary)] shadow-lg" : "border-[var(--border)]"
                   )}
                 >
-                  {/* Product image placeholder */}
+                  {/* Product image */}
                   <a href={result.listingUrl} target="_blank" rel="noopener noreferrer" className="block relative">
-                    <div className="h-44 bg-gradient-to-br from-muted/50 to-muted flex items-center justify-center relative overflow-hidden">
-                      <ShoppingBag className="h-12 w-12 text-muted-foreground/15" />
+                    <div className="h-48 bg-muted relative overflow-hidden">
+                      {result.imageUrl ? (
+                        <img src={result.imageUrl} alt={result.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <ShoppingBag className="h-12 w-12 text-muted-foreground/15" />
+                        </div>
+                      )}
                       {/* Platform badge */}
                       <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/50 backdrop-blur-sm">
                         <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: result.platformColor }} />
