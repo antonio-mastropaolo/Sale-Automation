@@ -5,7 +5,7 @@ import { Sidebar } from "@/components/sidebar";
 import { RightRail } from "@/components/right-rail";
 import { Toaster } from "@/components/ui/sonner";
 import { HelpProvider } from "@/components/help-context";
-import { HelpAssistant } from "@/components/help-assistant";
+// import { HelpAssistant } from "@/components/help-assistant"; // Removed: AI assistant now accessible from right rail Actions
 // Footer removed — user profile + branding moved to sidebar
 import { InboxNotifications } from "@/components/inbox-notifications";
 import { PageTransition } from "@/components/page-transition";
@@ -140,7 +140,7 @@ export default function RootLayout({
             {/* Right rail — live ops telemetry */}
             <RightRail />
           </div>
-          <HelpAssistant />
+          {/* HelpAssistant removed — AI assistant will be accessible from right rail Actions */}
           <InboxNotifications />
           <Toaster position="bottom-right" richColors />
         </HelpProvider>

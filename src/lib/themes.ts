@@ -510,6 +510,63 @@ export const DESIGN_STYLES: DesignStyle[] = [
       sidebar: "rgba(255,255,255,0.60)", sidebarBorder: "rgba(0,0,0,0.04)",
     },
   },
+  {
+    id: "stripe",
+    label: "Stripe",
+    description: "Information-dense, precise spacing",
+    preview: "linear-gradient(135deg, #0A2540 0%, #1a3a5c 100%)",
+    layout: { radius: "0.5rem", borderWidth: "1px", shadow: "0 2px 4px rgba(0,0,0,0.1)", shadowHover: "0 4px 12px rgba(0,0,0,0.15)", cardPadding: "1.25rem", backdropBlur: "none", fontWeight: "600", spacing: "1.25rem", iconStroke: "1.5", buttonRadius: "0.375rem" },
+    dark: {
+      background: "#0A2540", card: "#0f2d4d", cardForeground: "#e8ecf0",
+      popover: "#143759", secondary: "#143759", secondaryForeground: "#e2e8f0",
+      muted: "#143759", mutedForeground: "#8898aa", border: "rgba(136,152,170,0.15)",
+      input: "#143759", sidebar: "rgba(10,37,64,0.98)", sidebarForeground: "#8898aa",
+      sidebarBorder: "rgba(136,152,170,0.08)",
+    },
+    light: {
+      background: "#f6f9fc", card: "#ffffff", secondary: "#e3e8ee",
+      muted: "#e3e8ee", mutedForeground: "#6b7c93", border: "rgba(0,0,0,0.06)",
+      sidebar: "rgba(246,249,252,0.95)", sidebarBorder: "rgba(0,0,0,0.04)",
+    },
+  },
+  {
+    id: "raycast",
+    label: "Raycast",
+    description: "Deep vibrancy with frosted glass",
+    preview: "linear-gradient(138deg, #20235B 22%, #070921 82%)",
+    layout: { radius: "0.75rem", borderWidth: "1px", shadow: "inset 0 1px 0 rgba(255,255,255,0.10), 0 4px 24px rgba(0,0,0,0.25)", shadowHover: "inset 0 1px 0 rgba(255,255,255,0.12), 0 8px 32px rgba(0,0,0,0.35)", cardPadding: "1.25rem", backdropBlur: "blur(20px)", fontWeight: "600", spacing: "1.25rem", iconStroke: "1.5", buttonRadius: "0.625rem" },
+    dark: {
+      background: "#070921", card: "rgba(255,255,255,0.05)", cardForeground: "rgba(255,255,255,0.92)",
+      popover: "rgba(255,255,255,0.07)", secondary: "rgba(255,255,255,0.04)", secondaryForeground: "rgba(255,255,255,0.85)",
+      muted: "rgba(255,255,255,0.04)", mutedForeground: "rgba(255,255,255,0.42)", border: "rgba(255,255,255,0.10)",
+      input: "rgba(255,255,255,0.06)", sidebar: "rgba(7,9,33,0.95)", sidebarForeground: "rgba(255,255,255,0.42)",
+      sidebarBorder: "rgba(255,255,255,0.06)",
+    },
+    light: {
+      background: "#f0f0f5", card: "rgba(255,255,255,0.70)", secondary: "rgba(255,255,255,0.50)",
+      muted: "rgba(0,0,0,0.03)", mutedForeground: "#6b7280", border: "rgba(0,0,0,0.06)",
+      sidebar: "rgba(255,255,255,0.60)", sidebarBorder: "rgba(0,0,0,0.04)",
+    },
+  },
+  {
+    id: "supabase",
+    label: "Supabase",
+    description: "Developer-native emerald terminal",
+    preview: "linear-gradient(135deg, #171717 0%, #1c1c1c 50%, #111111 100%)",
+    layout: { radius: "0.5rem", borderWidth: "1px", shadow: "0 1px 2px rgba(0,0,0,0.15)", shadowHover: "0 4px 8px rgba(0,0,0,0.2)", cardPadding: "1.25rem", backdropBlur: "none", fontWeight: "600", spacing: "1.25rem", iconStroke: "1.5", buttonRadius: "0.5rem" },
+    dark: {
+      background: "#171717", card: "#1f1f1f", cardForeground: "#ededed",
+      popover: "#232323", secondary: "#232323", secondaryForeground: "#ededed",
+      muted: "#232323", mutedForeground: "#a0a0a0", border: "rgba(255,255,255,0.06)",
+      input: "#232323", sidebar: "rgba(23,23,23,0.98)", sidebarForeground: "#a0a0a0",
+      sidebarBorder: "rgba(255,255,255,0.04)",
+    },
+    light: {
+      background: "#f8f9fa", card: "#ffffff", secondary: "#f1f3f5",
+      muted: "#f1f3f5", mutedForeground: "#6c757d", border: "rgba(0,0,0,0.06)",
+      sidebar: "rgba(248,249,250,0.95)", sidebarBorder: "rgba(0,0,0,0.04)",
+    },
+  },
 ];
 
 export const DEFAULT_DESIGN_STYLE = "ios";
@@ -531,6 +588,9 @@ const DESIGN_STYLE_TO_LAYOUT: Record<string, string> = {
   liquidglass: "glassmorphism",
   vercel: "flat",
   ambient: "glassmorphism",
+  stripe: "default",
+  raycast: "glassmorphism",
+  supabase: "default",
   // Color-palette-only styles use "default" layout
   midnight: "default",
   dracula: "default",

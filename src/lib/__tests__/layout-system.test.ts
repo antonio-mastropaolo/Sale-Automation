@@ -180,7 +180,7 @@ describe("A. Layout Mapping Integrity", () => {
   });
 
   it("A27: mapping covers all design styles", () => {
-    expect(ALL_DESIGN_STYLE_IDS).toHaveLength(17);
+    expect(ALL_DESIGN_STYLE_IDS).toHaveLength(20);
     ALL_DESIGN_STYLE_IDS.forEach((id) => {
       expect(typeof getLayoutForDesignStyle(id)).toBe("string");
     });
@@ -1030,8 +1030,8 @@ describe("F. Footer & Auth Routes", () => {
     expect(layoutTsx).toContain("2xl:px-12");
   });
 
-  it("F18: layout.tsx has HelpAssistant", () => {
-    expect(layoutTsx).toContain("<HelpAssistant");
+  it("F18: HelpAssistant removed from layout (accessible from right rail)", () => {
+    expect(layoutTsx).not.toContain("<HelpAssistant");
   });
 
   it("F19: layout.tsx has Toaster", () => {

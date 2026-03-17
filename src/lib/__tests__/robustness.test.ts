@@ -202,12 +202,12 @@ describe("R1. Crash Resistance", () => {
   // Registry immutability after stress
   it("R1.38: DIAGNOSTIC_CATEGORIES length unchanged", () => { expect(DIAGNOSTIC_CATEGORIES).toHaveLength(7); });
   it("R1.39: TOTAL_CHECK_COUNT unchanged", () => { expect(TOTAL_CHECK_COUNT).toBe(20); });
-  it("R1.40: DESIGN_STYLES length unchanged", () => { expect(DESIGN_STYLES).toHaveLength(17); });
+  it("R1.40: DESIGN_STYLES length unchanged", () => { expect(DESIGN_STYLES).toHaveLength(20); });
   it("R1.41: THEMES count unchanged", () => { expect(Object.keys(THEMES)).toHaveLength(10); });
   it("R1.42: first category is auth", () => { expect(DIAGNOSTIC_CATEGORIES[0].id).toBe("auth"); });
   it("R1.43: last category is performance", () => { expect(DIAGNOSTIC_CATEGORIES[6].id).toBe("performance"); });
   it("R1.44: first style is flat", () => { expect(DESIGN_STYLES[0].id).toBe("flat"); });
-  it("R1.45: last style is ambient", () => { expect(DESIGN_STYLES[DESIGN_STYLES.length - 1].id).toBe("ambient"); });
+  it("R1.45: last style is supabase", () => { expect(DESIGN_STYLES[DESIGN_STYLES.length - 1].id).toBe("supabase"); });
 
   // Prototype safety
   it("R1.46: no __proto__ in categories", () => { DIAGNOSTIC_CATEGORIES.forEach((c) => expect("__proto__" in c && c.hasOwnProperty("__proto__")).toBe(false)); });
@@ -367,7 +367,7 @@ describe("R2. Correctness — Mathematical Properties", () => {
   // Style correctness
   it("R2.21: every style has distinct dark identity", () => {
     const sigs = DESIGN_STYLES.map((s) => `${s.dark.background}|${s.dark.card}|${s.dark.mutedForeground}`);
-    expect(new Set(sigs).size).toBe(17);
+    expect(new Set(sigs).size).toBe(20);
   });
   it("R2.22: dark.bg ≠ light.bg for all styles", () => {
     DESIGN_STYLES.forEach((s) => expect(s.dark.background).not.toBe(s.light.background));
@@ -509,7 +509,7 @@ describe("R3. Security", () => {
   it("R3.21: cannot modify DESIGN_STYLES via spread", () => {
     const copy = [...DESIGN_STYLES];
     copy.length = 0;
-    expect(DESIGN_STYLES).toHaveLength(17);
+    expect(DESIGN_STYLES).toHaveLength(20);
   });
 
   // URL injection in style previews
@@ -641,7 +641,7 @@ describe("R3. Security", () => {
       THEMES[Object.keys(THEMES)[i % 10]].light;
     }
     expect(DIAGNOSTIC_CATEGORIES).toHaveLength(7);
-    expect(DESIGN_STYLES).toHaveLength(17);
+    expect(DESIGN_STYLES).toHaveLength(20);
     expect(Object.keys(THEMES)).toHaveLength(10);
     expect(TOTAL_CHECK_COUNT).toBe(20);
   });

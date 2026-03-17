@@ -133,7 +133,7 @@ describe("3. Scale tests", () => {
   it("3.18: 1K JSON roundtrips of DESIGN_STYLES", () => {
     for (let i = 0; i < 1000; i++) {
       const parsed = JSON.parse(JSON.stringify(DESIGN_STYLES));
-      expect(parsed).toHaveLength(17);
+      expect(parsed).toHaveLength(20);
     }
   });
   it("3.19: 1K JSON roundtrips of THEMES", () => {
@@ -323,7 +323,7 @@ describe("6. Random stress", () => {
     expect(TOTAL_CHECK_COUNT).toBe(20);
   });
   it("6.22: DESIGN_STYLES intact after all stress", () => {
-    expect(DESIGN_STYLES).toHaveLength(17);
+    expect(DESIGN_STYLES).toHaveLength(20);
   });
   it("6.23: THEMES intact after all stress", () => {
     expect(Object.keys(THEMES)).toHaveLength(10);

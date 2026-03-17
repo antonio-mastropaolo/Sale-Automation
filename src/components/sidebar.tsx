@@ -447,6 +447,16 @@ export function Sidebar({ className }: { className?: string }) {
                 );
               })}
             </nav>
+            {/* Collapsed user avatar */}
+            <div className="shrink-0 border-t border-[var(--sidebar-border)] flex justify-center py-2">
+              {profilePic ? (
+                <img src={profilePic} alt="" className="h-7 w-7 rounded-full object-cover" />
+              ) : (
+                <div className="h-7 w-7 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-[9px] font-bold">
+                  {userInitials}
+                </div>
+              )}
+            </div>
           </>
         ) : (
           navContent
