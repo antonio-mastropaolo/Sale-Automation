@@ -9,7 +9,7 @@ import {
   Truck, Target, Calendar, Stethoscope,
   MessageCircle, FlaskConical, ChevronDown, ChevronUp,
   Flame, Layers, Menu, X, Moon, Sun, LogOut, Settings2, Columns2,
-  ShoppingBag, Zap, Package, Store,
+  ShoppingBag, Zap, Package, Store, Search, Sparkles, Tag,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useEffect, useState, useCallback, useRef, useMemo } from "react";
@@ -39,6 +39,7 @@ const navStructure: NavEntry[] = [
     ],
   },
   { href: "/inventory", label: "Products", icon: Package },
+  { href: "/search", label: "Cross-Market Search", icon: Search },
   {
     id: "marketplace",
     label: "Marketplace",
@@ -46,7 +47,7 @@ const navStructure: NavEntry[] = [
     children: [
       { href: "/inbox", label: "Inbox", icon: MessageCircle },
       { href: "/alignment", label: "Store Sync", icon: Layers },
-      { href: "/shipping", label: "Shipping", icon: Truck },
+      { href: "/shipping", label: "Shipping Hub", icon: Truck },
     ],
   },
   {
@@ -134,7 +135,10 @@ export function Sidebar({ className }: { className?: string }) {
     applyDesignStyle(getSavedDesignStyle(), d);
     applyTheme(getSavedTheme(), d);
     if (localStorage.getItem("sidebar-collapsed") === "true") setCollapsed(true);
-    try { const savedGroups = localStorage.getItem("sidebar-groups"); if (savedGroups) setOpenGroups(JSON.parse(savedGroups)); } catch {}
+    // Always expand all groups on page load
+    const allExpanded: Record<string, boolean> = {};
+    navStructure.forEach((e) => { if ("children" in e) allExpanded[e.id] = true; });
+    setOpenGroups(allExpanded);
     try { const pic = localStorage.getItem("listblitz-profile-pic"); if (pic) setProfilePic(pic); } catch {}
     fetch("/api/auth/me").then((r) => r.json()).then((data) => {
       const u = data.user;

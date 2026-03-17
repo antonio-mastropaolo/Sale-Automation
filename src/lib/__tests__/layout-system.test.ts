@@ -505,8 +505,8 @@ describe("C. Nav Structure Integrity", () => {
     });
   });
 
-  it("C07: total nav items is 19", () => {
-    expect(navItems).toHaveLength(19);
+  it("C07: total nav items is 20", () => {
+    expect(navItems).toHaveLength(20);
   });
 
   // No duplicate hrefs

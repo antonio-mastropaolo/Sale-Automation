@@ -1,481 +1,316 @@
 "use client";
 
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { FadeInUp, StaggerContainer, StaggerItem } from "@/components/motion";
 import {
-  Truck,
-  Package,
-  DollarSign,
-  TrendingDown,
-  Shield,
-  ArrowRightLeft,
-  Check,
+  Truck, Package, MapPin, Clock, CheckCircle2, AlertTriangle,
+  Bell, ExternalLink, Search, Filter, ChevronRight, Copy,
+  Check, Loader2, Printer, QrCode, RefreshCw, ArrowRight,
+  DollarSign, Shield, Box,
 } from "lucide-react";
-import { platformBranding } from "@/lib/colors";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
-/* ── Weight tier rate table ── */
-interface RateRow {
-  maxOz: number;
-  usps: number;
-  ups: number;
-  fedex: number;
-  uspsPriority?: boolean;
+/* ── Types ── */
+
+interface ShipmentLabel {
+  id: string;
+  orderId: string;
+  platform: string;
+  platformColor: string;
+  buyer: string;
+  buyerCity: string;
+  carrier: string;
+  trackingNumber: string;
+  status: "label_created" | "in_transit" | "delivered" | "exception";
+  shippingCost: number;
+  weight: string;
+  createdAt: string;
+  estimatedDelivery?: string;
+  itemTitle: string;
 }
 
-const rateTiers: RateRow[] = [
-  { maxOz: 4, usps: 4.5, ups: 10, fedex: 9.5 },
-  { maxOz: 8, usps: 5.25, ups: 11, fedex: 10.5 },
-  { maxOz: 16, usps: 6.0, ups: 12, fedex: 11.5 },
-  { maxOz: 32, usps: 8.5, ups: 13, fedex: 12.5, uspsPriority: true },
-  { maxOz: 80, usps: 12, ups: 15, fedex: 14, uspsPriority: true },
-  { maxOz: 160, usps: 16, ups: 19, fedex: 18, uspsPriority: true },
-  { maxOz: Infinity, usps: 22, ups: 25, fedex: 24, uspsPriority: true },
-];
+type FilterStatus = "all" | "label_created" | "in_transit" | "delivered" | "exception";
 
-function getTier(oz: number): RateRow {
-  return rateTiers.find((t) => oz <= t.maxOz)!;
+const PLATFORM_COLORS: Record<string, string> = {
+  depop: "#FF2300", grailed: "#333", poshmark: "#7B2D8E", mercari: "#4DC4FF",
+  ebay: "#E53238", vinted: "#09B1BA", facebook: "#1877F2", vestiaire: "#1A1A1A",
+};
+
+const STATUS_META: Record<string, { label: string; color: string; icon: typeof Clock }> = {
+  label_created: { label: "Label Created", color: "text-blue-400", icon: QrCode },
+  in_transit: { label: "In Transit", color: "text-amber-400", icon: Truck },
+  delivered: { label: "Delivered", color: "text-emerald-400", icon: CheckCircle2 },
+  exception: { label: "Exception", color: "text-red-400", icon: AlertTriangle },
+};
+
+/* ── Mock data generator ── */
+function generateMockLabels(): ShipmentLabel[] {
+  const items = [
+    "Nike Air Max 90 OG", "Supreme Box Logo Hoodie", "Jordan 1 Retro High", "Arc'teryx Alpha SV",
+    "Vintage Levi's 501", "Stussy 8-Ball Tee", "Palace Tri-Ferg", "New Balance 990v5",
+    "Balenciaga Track Runner", "Issey Miyake Pleats", "Chrome Hearts Ring", "Salomon XT-6",
+  ];
+  const buyers = ["alex_m", "sneaker.head", "vintage_finds", "streetwear_ny", "resell_la", "grail_hunter"];
+  const cities = ["Brooklyn, NY", "Los Angeles, CA", "Chicago, IL", "Houston, TX", "Miami, FL", "Portland, OR"];
+  const carriers = ["USPS", "UPS", "FedEx"];
+  const statuses: ShipmentLabel["status"][] = ["label_created", "in_transit", "delivered", "exception"];
+  const platforms = Object.keys(PLATFORM_COLORS);
+
+  return Array.from({ length: 12 }, (_, i) => ({
+    id: `ship-${i}`,
+    orderId: `ORD-${String(1000 + i).padStart(4, "0")}`,
+    platform: platforms[i % platforms.length],
+    platformColor: PLATFORM_COLORS[platforms[i % platforms.length]],
+    buyer: buyers[i % buyers.length],
+    buyerCity: cities[i % cities.length],
+    carrier: carriers[i % carriers.length],
+    trackingNumber: `${["1Z", "94", "7"][i % 3]}${Math.random().toString(36).slice(2, 14).toUpperCase()}`,
+    status: statuses[i % statuses.length],
+    shippingCost: 4.5 + Math.floor(Math.random() * 12),
+    weight: `${(0.5 + Math.random() * 4).toFixed(1)} lb`,
+    createdAt: new Date(Date.now() - i * 3600000 * (2 + Math.random() * 24)).toISOString(),
+    estimatedDelivery: i % statuses.length !== 2 ? new Date(Date.now() + (2 + Math.random() * 5) * 86400000).toISOString().split("T")[0] : undefined,
+    itemTitle: items[i % items.length],
+  }));
 }
 
-/* ── Platform fee helpers ── */
-interface PlatformFee {
-  key: string;
-  label: string;
-  description: string;
-  calc: (price: number) => number;
-}
+export default function ShippingHubPage() {
+  const [labels, setLabels] = useState<ShipmentLabel[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<FilterStatus>("all");
+  const [search, setSearch] = useState("");
+  const [selectedLabel, setSelectedLabel] = useState<ShipmentLabel | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
-const platformFees: PlatformFee[] = [
-  {
-    key: "depop",
-    label: "Depop",
-    description: "10% seller fee",
-    calc: (p) => p * 0.1,
-  },
-  {
-    key: "grailed",
-    label: "Grailed",
-    description: "9% + PayPal 3.49%",
-    calc: (p) => p * 0.09 + p * 0.0349,
-  },
-  {
-    key: "poshmark",
-    label: "Poshmark",
-    description: "20% (or $2.95 under $15)",
-    calc: (p) => (p < 15 ? 2.95 : p * 0.2),
-  },
-  {
-    key: "mercari",
-    label: "Mercari",
-    description: "10% seller fee",
-    calc: (p) => p * 0.1,
-  },
-];
+  useEffect(() => {
+    // Simulate fetching from platforms
+    setTimeout(() => {
+      setLabels(generateMockLabels());
+      setLoading(false);
+    }, 800);
+  }, []);
 
-/* ── Carrier result type ── */
-interface CarrierResult {
-  name: string;
-  cost: number;
-  note: string;
-  icon: string;
-}
-
-export default function ShippingPage() {
-  const [weightVal, setWeightVal] = useState("");
-  const [weightUnit, setWeightUnit] = useState<"oz" | "lbs">("oz");
-  const [dimL, setDimL] = useState("");
-  const [dimW, setDimW] = useState("");
-  const [dimH, setDimH] = useState("");
-  const [originZip, setOriginZip] = useState("");
-  const [destZip, setDestZip] = useState("");
-  const [results, setResults] = useState<CarrierResult[] | null>(null);
-  const [salePrice, setSalePrice] = useState("");
-
-  const calculate = () => {
-    const raw = parseFloat(weightVal);
-    if (!raw || raw <= 0) return;
-    const oz = weightUnit === "lbs" ? raw * 16 : raw;
-    const tier = getTier(oz);
-
-    const carriers: CarrierResult[] = [];
-
-    if (oz <= 16) {
-      carriers.push({
-        name: "USPS First Class",
-        cost: tier.usps,
-        note: "2-5 business days",
-        icon: "usps",
-      });
-    }
-
-    carriers.push({
-      name: tier.uspsPriority ? "USPS Priority Mail" : "USPS First Class",
-      cost: tier.uspsPriority ? tier.usps : tier.usps,
-      note: tier.uspsPriority ? "1-3 business days" : "2-5 business days",
-      icon: "usps",
-    });
-
-    // avoid duplicate if First Class was already added and this would be same
-    if (oz <= 16 && !tier.uspsPriority) {
-      carriers.pop();
-    }
-
-    carriers.push({
-      name: "UPS Ground",
-      cost: tier.ups,
-      note: "3-5 business days",
-      icon: "ups",
-    });
-
-    carriers.push({
-      name: "FedEx Ground",
-      cost: tier.fedex,
-      note: "3-5 business days",
-      icon: "fedex",
-    });
-
-    carriers.push({
-      name: "Pirate Ship (USPS)",
-      cost: parseFloat((tier.usps * 0.85).toFixed(2)),
-      note: "~15% discount on USPS",
-      icon: "pirate",
-    });
-
-    // sort cheapest first
-    carriers.sort((a, b) => a.cost - b.cost);
-    setResults(carriers);
+  const handleCopy = (text: string, id: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+    toast.success("Tracking number copied");
   };
 
-  const cheapest = results ? results[0] : null;
-  const price = parseFloat(salePrice) || 0;
+  const filteredLabels = labels.filter((l) => {
+    if (filter !== "all" && l.status !== filter) return false;
+    if (search) {
+      const q = search.toLowerCase();
+      return l.itemTitle.toLowerCase().includes(q) || l.buyer.toLowerCase().includes(q) || l.trackingNumber.toLowerCase().includes(q) || l.orderId.toLowerCase().includes(q);
+    }
+    return true;
+  });
+
+  const stats = {
+    total: labels.length,
+    created: labels.filter((l) => l.status === "label_created").length,
+    transit: labels.filter((l) => l.status === "in_transit").length,
+    delivered: labels.filter((l) => l.status === "delivered").length,
+    exceptions: labels.filter((l) => l.status === "exception").length,
+  };
+
+  const fmtDate = (iso: string) => new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const fmtTime = (iso: string) => new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
 
   return (
-    <div className="space-y-6">
-      {/* ── Header ── */}
-      <FadeInUp>
-        <div className="flex items-center gap-3">
-          <div className="bg-primary p-2.5 rounded-xl">
-            <Truck className="h-5 w-5 text-primary-foreground" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold">Shipping Calculator</h1>
-            <p className="text-muted-foreground text-sm">
-              Compare carrier rates and estimate profit after fees
-            </p>
-          </div>
+    <div className="space-y-5 animate-fade-in">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">Shipping Hub</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm mt-0.5">
+            All your shipping labels from every platform in one place
+          </p>
         </div>
-      </FadeInUp>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" className="h-9 text-xs gap-1.5" onClick={() => { setLoading(true); setTimeout(() => { setLabels(generateMockLabels()); setLoading(false); toast.success("Labels refreshed"); }, 600); }}>
+            <RefreshCw className="h-3.5 w-3.5" />
+            Sync All
+          </Button>
+          <Button variant="outline" size="sm" className="h-9 text-xs gap-1.5">
+            <Bell className="h-3.5 w-3.5" />
+            Notifications
+          </Button>
+        </div>
+      </div>
 
-      {/* ── Input Form ── */}
-      <FadeInUp delay={0.05}>
-        <Card className="border-0 shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Package className="h-5 w-5 text-primary" />
-              Package Details
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Weight */}
-            <div className="space-y-2">
-              <Label>Weight</Label>
-              <div className="flex gap-2">
-                <Input
-                  type="number"
-                  placeholder="e.g. 12"
-                  value={weightVal}
-                  onChange={(e) => setWeightVal(e.target.value)}
-                  className="h-11 flex-1"
-                  min={0}
-                />
-                <Button
-                  variant={weightUnit === "oz" ? "default" : "outline"}
-                  className="h-11 w-16"
-                  onClick={() => setWeightUnit("oz")}
-                >
-                  oz
-                </Button>
-                <Button
-                  variant={weightUnit === "lbs" ? "default" : "outline"}
-                  className="h-11 w-16"
-                  onClick={() => setWeightUnit("lbs")}
-                >
-                  lbs
-                </Button>
-              </div>
+      {/* Stats bar */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { label: "Label Created", value: stats.created, icon: QrCode, color: "text-blue-400", bg: "bg-blue-500/10" },
+          { label: "In Transit", value: stats.transit, icon: Truck, color: "text-amber-400", bg: "bg-amber-500/10" },
+          { label: "Delivered", value: stats.delivered, icon: CheckCircle2, color: "text-emerald-400", bg: "bg-emerald-500/10" },
+          { label: "Exceptions", value: stats.exceptions, icon: AlertTriangle, color: "text-red-400", bg: "bg-red-500/10" },
+        ].map((s) => (
+          <div key={s.label} className="rounded-xl bg-card border border-[var(--border)] p-4 flex items-center gap-3">
+            <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center shrink-0", s.bg)}>
+              <s.icon className={cn("h-5 w-5", s.color)} />
             </div>
-
-            {/* Dimensions */}
-            <div className="space-y-2">
-              <Label>Dimensions (inches)</Label>
-              <div className="grid grid-cols-3 gap-2">
-                <Input
-                  type="number"
-                  placeholder="L"
-                  value={dimL}
-                  onChange={(e) => setDimL(e.target.value)}
-                  className="h-11"
-                  min={0}
-                />
-                <Input
-                  type="number"
-                  placeholder="W"
-                  value={dimW}
-                  onChange={(e) => setDimW(e.target.value)}
-                  className="h-11"
-                  min={0}
-                />
-                <Input
-                  type="number"
-                  placeholder="H"
-                  value={dimH}
-                  onChange={(e) => setDimH(e.target.value)}
-                  className="h-11"
-                  min={0}
-                />
-              </div>
+            <div>
+              <p className="text-xl font-bold tabular-nums">{s.value}</p>
+              <p className="text-[10px] text-muted-foreground">{s.label}</p>
             </div>
-
-            {/* Zip codes */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Origin Zip Code</Label>
-                <Input
-                  placeholder="e.g. 10001"
-                  value={originZip}
-                  onChange={(e) => setOriginZip(e.target.value)}
-                  className="h-11"
-                  maxLength={5}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Destination Zip Code</Label>
-                <Input
-                  placeholder="e.g. 90210"
-                  value={destZip}
-                  onChange={(e) => setDestZip(e.target.value)}
-                  className="h-11"
-                  maxLength={5}
-                />
-              </div>
-            </div>
-
-            <Button onClick={calculate} className="w-full h-11">
-              <ArrowRightLeft className="h-4 w-4 mr-2" />
-              Calculate Shipping Rates
-            </Button>
-          </CardContent>
-        </Card>
-      </FadeInUp>
-
-      {/* ── Carrier Results ── */}
-      {results && (
-        <FadeInUp delay={0.1}>
-          <div className="space-y-3">
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              <Truck className="h-5 w-5 text-primary" />
-              Carrier Comparison
-            </h2>
-            <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {results.map((r) => {
-                const isCheapest = r.name === cheapest?.name;
-                return (
-                  <StaggerItem key={r.name}>
-                    <Card
-                      className={`border-0 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden ${
-                        isCheapest
-                          ? "ring-2 ring-emerald-500/50"
-                          : ""
-                      }`}
-                    >
-                      {isCheapest && (
-                        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
-                      )}
-                      <CardContent className="pt-5 pb-4 space-y-3">
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <h3 className="font-semibold text-sm">
-                              {r.name}
-                            </h3>
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                              {r.note}
-                            </p>
-                          </div>
-                          {isCheapest && (
-                            <Badge className="bg-emerald-600 text-white border-0 text-xs shrink-0">
-                              <Check className="h-3 w-3 mr-1" />
-                              Best Price
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-2xl font-bold">
-                          ${r.cost.toFixed(2)}
-                        </p>
-                        {isCheapest && (
-                          <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                            <TrendingDown className="h-3 w-3" />
-                            Cheapest option
-                          </p>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </StaggerItem>
-                );
-              })}
-            </StaggerContainer>
           </div>
-        </FadeInUp>
-      )}
+        ))}
+      </div>
 
-      {/* ── Platform Fees ── */}
-      <FadeInUp delay={0.15}>
-        <Card className="border-0 shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-primary" />
-              Platform Fees
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {platformFees.map((pf) => {
-                const branding = platformBranding[pf.key];
-                return (
-                  <div
-                    key={pf.key}
-                    className="flex items-center gap-3 p-3 bg-muted/30 rounded-xl"
-                  >
-                    <div
-                      className={`w-9 h-9 rounded-lg ${branding?.bg ?? "bg-muted"} ${
-                        branding?.color ?? "text-foreground"
-                      } flex items-center justify-center font-bold text-sm`}
-                    >
-                      {branding?.icon ?? pf.label.charAt(0)}
+      {/* Search + filter */}
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by item, buyer, tracking #, or order ID..." className="pl-10 h-9" />
+        </div>
+        <div className="flex gap-1">
+          {(["all", "label_created", "in_transit", "delivered", "exception"] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={cn("px-2.5 py-1.5 rounded-lg text-[10px] font-medium capitalize transition-colors whitespace-nowrap",
+                filter === f ? "bg-[var(--primary)] text-[var(--primary-foreground)]" : "bg-muted text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {f === "all" ? "All" : STATUS_META[f]?.label || f}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Labels list */}
+      {loading ? (
+        <div className="flex flex-col items-center py-16">
+          <Loader2 className="h-8 w-8 animate-spin text-[var(--primary)] mb-3" />
+          <p className="text-sm text-muted-foreground">Syncing labels from all platforms...</p>
+        </div>
+      ) : filteredLabels.length === 0 ? (
+        <div className="flex flex-col items-center py-16 text-center">
+          <Package className="h-10 w-10 text-muted-foreground/30 mb-3" />
+          <h3 className="text-sm font-semibold mb-1">No shipments found</h3>
+          <p className="text-xs text-muted-foreground">Labels will appear here when orders are placed on your connected platforms</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {filteredLabels.map((label) => {
+            const statusMeta = STATUS_META[label.status];
+            const StatusIcon = statusMeta.icon;
+            const isSelected = selectedLabel?.id === label.id;
+
+            return (
+              <div
+                key={label.id}
+                className={cn(
+                  "rounded-xl bg-card border overflow-hidden transition-all duration-200",
+                  isSelected ? "ring-2 ring-[var(--primary)] shadow-lg" : "border-[var(--border)] hover:shadow-md"
+                )}
+              >
+                {/* Main row */}
+                <button
+                  onClick={() => setSelectedLabel(isSelected ? null : label)}
+                  className="w-full flex items-center gap-3 p-4 text-left"
+                >
+                  {/* Status icon */}
+                  <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center shrink-0", label.status === "exception" ? "bg-red-500/10" : label.status === "delivered" ? "bg-emerald-500/10" : label.status === "in_transit" ? "bg-amber-500/10" : "bg-blue-500/10")}>
+                    <StatusIcon className={cn("h-5 w-5", statusMeta.color)} />
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-[13px] font-semibold truncate">{label.itemTitle}</span>
+                      <Badge variant="outline" className="text-[8px] px-1 py-0 shrink-0 capitalize">{label.platform}</Badge>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-semibold ${branding?.color ?? ""}`}>
-                        {pf.label}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {pf.description}
-                      </p>
+                    <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                      <span>@{label.buyer}</span>
+                      <span>·</span>
+                      <span>{label.buyerCity}</span>
+                      <span>·</span>
+                      <span>{label.carrier}</span>
                     </div>
-                    {price > 0 && (
-                      <Badge variant="outline" className="text-xs shrink-0">
-                        -${pf.calc(price).toFixed(2)}
-                      </Badge>
+                  </div>
+
+                  {/* Right: price + status */}
+                  <div className="text-right shrink-0">
+                    <p className="text-[13px] font-bold tabular-nums">${label.shippingCost.toFixed(2)}</p>
+                    <p className={cn("text-[10px] font-semibold", statusMeta.color)}>{statusMeta.label}</p>
+                  </div>
+
+                  <ChevronRight className={cn("h-4 w-4 text-muted-foreground/30 shrink-0 transition-transform", isSelected && "rotate-90")} />
+                </button>
+
+                {/* Expanded detail */}
+                {isSelected && (
+                  <div className="border-t border-[var(--border)] p-4 bg-muted/10 space-y-4 animate-fade-in">
+                    {/* Tracking */}
+                    <div className="flex items-center justify-between rounded-lg bg-card border border-[var(--border)] p-3">
+                      <div>
+                        <p className="text-[10px] text-muted-foreground mb-0.5">Tracking Number</p>
+                        <p className="text-[13px] font-mono font-semibold">{label.trackingNumber}</p>
+                      </div>
+                      <div className="flex gap-1.5">
+                        <Button variant="outline" size="sm" className="h-7 text-[10px] gap-1" onClick={(e) => { e.stopPropagation(); handleCopy(label.trackingNumber, label.id); }}>
+                          {copiedId === label.id ? <Check className="h-3 w-3 text-emerald-500" /> : <Copy className="h-3 w-3" />}
+                          Copy
+                        </Button>
+                        <Button variant="outline" size="sm" className="h-7 text-[10px] gap-1">
+                          <ExternalLink className="h-3 w-3" /> Track
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Details grid */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <div className="rounded-lg bg-card border border-[var(--border)] p-2.5">
+                        <p className="text-[9px] text-muted-foreground mb-0.5">Order ID</p>
+                        <p className="text-[12px] font-semibold">{label.orderId}</p>
+                      </div>
+                      <div className="rounded-lg bg-card border border-[var(--border)] p-2.5">
+                        <p className="text-[9px] text-muted-foreground mb-0.5">Weight</p>
+                        <p className="text-[12px] font-semibold">{label.weight}</p>
+                      </div>
+                      <div className="rounded-lg bg-card border border-[var(--border)] p-2.5">
+                        <p className="text-[9px] text-muted-foreground mb-0.5">Created</p>
+                        <p className="text-[12px] font-semibold">{fmtDate(label.createdAt)} {fmtTime(label.createdAt)}</p>
+                      </div>
+                      <div className="rounded-lg bg-card border border-[var(--border)] p-2.5">
+                        <p className="text-[9px] text-muted-foreground mb-0.5">Est. Delivery</p>
+                        <p className="text-[12px] font-semibold">{label.estimatedDelivery ? fmtDate(label.estimatedDelivery) : "Delivered"}</p>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-2">
+                      <Button size="sm" className="h-8 text-[11px] gap-1.5 flex-1">
+                        <Printer className="h-3.5 w-3.5" /> Print Label
+                      </Button>
+                      <Button variant="outline" size="sm" className="h-8 text-[11px] gap-1.5 flex-1">
+                        <Shield className="h-3.5 w-3.5" /> File Claim
+                      </Button>
+                    </div>
+
+                    {/* Exception alert */}
+                    {label.status === "exception" && (
+                      <div className="rounded-lg bg-red-500/5 border border-red-500/20 p-3 flex items-start gap-2">
+                        <AlertTriangle className="h-4 w-4 text-red-400 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-[12px] font-semibold text-red-400 mb-0.5">Delivery Exception</p>
+                          <p className="text-[11px] text-muted-foreground">Package could not be delivered. Check tracking for details or contact the carrier.</p>
+                        </div>
+                      </div>
                     )}
                   </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      </FadeInUp>
-
-      {/* ── Profit Preview ── */}
-      <FadeInUp delay={0.2}>
-        <Card className="border-0 shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Shield className="h-5 w-5 text-primary" />
-              Profit Preview
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Sale Price ($)</Label>
-              <Input
-                type="number"
-                placeholder="e.g. 45.00"
-                value={salePrice}
-                onChange={(e) => setSalePrice(e.target.value)}
-                className="h-11"
-                min={0}
-                step={0.01}
-              />
-            </div>
-
-            {price > 0 && (
-              <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {platformFees.map((pf) => {
-                  const fee = pf.calc(price);
-                  const shipping = cheapest?.cost ?? 0;
-                  const net = price - fee - shipping;
-                  const branding = platformBranding[pf.key];
-                  return (
-                    <StaggerItem key={pf.key}>
-                      <Card
-                        className={`border-0 shadow-sm overflow-hidden`}
-                      >
-                        <div className={`h-1 ${branding?.accent ?? "bg-muted"}`} />
-                        <CardContent className="pt-4 pb-4 space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span
-                              className={`text-sm font-semibold ${
-                                branding?.color ?? ""
-                              }`}
-                            >
-                              {pf.label}
-                            </span>
-                            <span
-                              className={`text-lg font-bold ${
-                                net >= 0
-                                  ? "text-emerald-600 dark:text-emerald-400"
-                                  : "text-red-600 dark:text-red-400"
-                              }`}
-                            >
-                              ${net.toFixed(2)}
-                            </span>
-                          </div>
-                          <div className="space-y-1 text-xs text-muted-foreground">
-                            <div className="flex justify-between">
-                              <span>Sale price</span>
-                              <span>${price.toFixed(2)}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>Platform fee</span>
-                              <span className="text-red-500">
-                                -${fee.toFixed(2)}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>
-                                Shipping{" "}
-                                {cheapest
-                                  ? `(${cheapest.name})`
-                                  : "(estimate)"}
-                              </span>
-                              <span className="text-red-500">
-                                -${shipping.toFixed(2)}
-                              </span>
-                            </div>
-                            <div className="border-t pt-1 mt-1 flex justify-between font-medium text-foreground">
-                              <span>Net profit</span>
-                              <span>${net.toFixed(2)}</span>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </StaggerItem>
-                  );
-                })}
-              </StaggerContainer>
-            )}
-
-            {price > 0 && !results && (
-              <p className="text-xs text-muted-foreground text-center">
-                Calculate shipping above to include shipping costs in the profit
-                breakdown.
-              </p>
-            )}
-          </CardContent>
-        </Card>
-      </FadeInUp>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

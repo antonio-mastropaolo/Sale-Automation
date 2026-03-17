@@ -560,19 +560,16 @@ export function RightRail() {
               API Keys
               <ChevronRight className="ml-auto h-3 w-3 text-[var(--muted-foreground)]/20" />
             </Link>
+
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent("toggle-help-assistant"))}
+              className="flex w-full items-center gap-2 rounded-lg bg-gradient-to-r from-blue-500/10 to-indigo-500/10 border border-blue-500/20 px-2.5 py-2 text-[11px] font-medium text-blue-400 transition-colors hover:from-blue-500/20 hover:to-indigo-500/20"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              AI Assistant
+            </button>
           </div>
         </Collapsible>
-      </div>
-
-      {/* AI Assistant button at bottom */}
-      <div className="shrink-0 border-t border-[var(--border)] p-3.5">
-        <button
-          onClick={() => window.dispatchEvent(new CustomEvent("toggle-help-assistant"))}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 px-3 py-2.5 text-[11px] font-semibold text-white shadow-lg shadow-blue-500/20 transition-all hover:shadow-blue-500/30 hover:scale-[1.02] active:scale-[0.98]"
-        >
-          <Sparkles className="h-4 w-4" />
-          AI Assistant
-        </button>
       </div>
 
     </aside>
