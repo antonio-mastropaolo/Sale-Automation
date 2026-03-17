@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
   Sparkles,
@@ -24,9 +23,14 @@ import {
   ShoppingBag,
   ArrowRight,
   Star,
+  ChevronDown,
+  ChevronUp,
+  Info,
+  ArrowUpRight,
 } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 // ── Types ───────────────────────────────────────────────────────────
 
@@ -62,6 +66,13 @@ const demandBadge = (level: string) => {
   if (l.includes("high")) return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-300 dark:border-emerald-700";
   if (l.includes("medium")) return "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-300 dark:border-amber-700";
   return "bg-red-500/10 text-red-600 dark:text-red-400 border-red-300 dark:border-red-700";
+};
+
+const demandDot = (level: string) => {
+  const l = (level || "").toLowerCase();
+  if (l.includes("high")) return "bg-emerald-500";
+  if (l.includes("medium")) return "bg-amber-500";
+  return "bg-red-500";
 };
 
 const platformLabel: Record<string, string> = {
@@ -122,9 +133,9 @@ function ProductImage({
   const sizeClasses = {
     sm: "h-12 w-12",
     md: "h-24 w-full",
-    lg: "h-32 w-full",
+    lg: "h-44 w-full",
   };
-  const iconSizes = { sm: "h-5 w-5", md: "h-8 w-8", lg: "h-10 w-10" };
+  const iconSizes = { sm: "h-5 w-5", md: "h-8 w-8", lg: "h-12 w-12" };
 
   const [failed, setFailed] = useState(false);
   const hasImage = product._imageUrl && !failed;
@@ -137,11 +148,11 @@ function ProductImage({
 
   return (
     <div
-      className={`${sizeClasses[size]} rounded-lg overflow-hidden relative flex items-center justify-center shrink-0`}
+      className={`${sizeClasses[size]} overflow-hidden relative flex items-center justify-center shrink-0`}
       style={{
         background: hasImage
           ? "var(--muted)"
-          : `linear-gradient(135deg, hsl(${hue}, 40%, 85%), hsl(${(hue + 40) % 360}, 35%, 75%))`,
+          : `linear-gradient(135deg, hsl(${hue}, 45%, 80%), hsl(${(hue + 50) % 360}, 40%, 65%))`,
       }}
     >
       {hasImage ? (
@@ -153,10 +164,10 @@ function ProductImage({
           loading="lazy"
         />
       ) : (
-        <div className="flex flex-col items-center gap-1 text-white/80">
+        <div className="flex flex-col items-center gap-1.5 text-white/70">
           <ShoppingBag className={iconSizes[size]} />
           {size !== "sm" && product.colorway && (
-            <span className="text-[9px] font-medium opacity-70 px-1 truncate max-w-full">
+            <span className="text-[10px] font-medium opacity-60 px-2 truncate max-w-full">
               {product.colorway}
             </span>
           )}
@@ -164,7 +175,7 @@ function ProductImage({
       )}
       {/* Loading shimmer while image loads */}
       {product._imageUrl === undefined && (
-        <div className="absolute inset-0 bg-muted animate-pulse rounded-lg" />
+        <div className="absolute inset-0 bg-muted animate-pulse" />
       )}
     </div>
   );
@@ -191,6 +202,10 @@ export default function CompetitorPage() {
   // Step 3 — Analysis
   const [analyzing, setAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
+
+  // UI state
+  const [strategyOpen, setStrategyOpen] = useState(false);
+  const [insightOpen, setInsightOpen] = useState(true);
 
   // ── Step 1: Discover products ──────────────────────────────────
 
@@ -280,6 +295,13 @@ export default function CompetitorPage() {
     setSku("");
   };
 
+  // ── Markup percentage helper ───────────────────────────────────
+
+  const calcMarkup = (retail: number, resale: number) => {
+    if (!retail || retail === 0) return 0;
+    return Math.round(((resale - retail) / retail) * 100);
+  };
+
   // ═══════════════════════════════════════════════════════════════
   // RENDER
   // ═══════════════════════════════════════════════════════════════
@@ -298,9 +320,9 @@ export default function CompetitorPage() {
           <div>
             <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">Competitor Analysis</h1>
             <p className="text-muted-foreground text-xs sm:text-sm mt-0.5">
-              {step === "discover" && "Discover products to analyze in any brand or category"}
-              {step === "select" && `Select a ${brand || category} product to deep-dive`}
-              {step === "analyze" && `Full analysis: ${selectedProduct?.name}`}
+              {step === "discover" && "Discover trending resale products and analyze the competition"}
+              {step === "select" && `Found ${discovery?.products?.length || 0} products for ${brand || category} -- pick one to analyze`}
+              {step === "analyze" && `Deep analysis: ${selectedProduct?.name}`}
             </p>
           </div>
         </div>
@@ -338,157 +360,261 @@ export default function CompetitorPage() {
       </div>
 
       {/* ═══════════════════════════════════════════════════════════ */}
-      {/* STEP 1: DISCOVER */}
+      {/* STEP 1: DISCOVER                                          */}
       {/* ═══════════════════════════════════════════════════════════ */}
       {step === "discover" && (
-        <Card className="border border-border">
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Search className="h-5 w-5" style={{ color: "var(--primary)" }} />
-              What are you selling?
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Brand</Label>
+        <div className="space-y-6">
+          {/* Hero search area */}
+          <div className="rounded-xl border border-border bg-card p-6 sm:p-8">
+            <div className="max-w-2xl mx-auto text-center mb-6">
+              <div className="h-14 w-14 rounded-2xl bg-[var(--primary)]/10 flex items-center justify-center mb-4 mx-auto">
+                <Search className="h-7 w-7 text-[var(--primary)]" />
+              </div>
+              <h2 className="text-lg font-semibold mb-1">What are you selling?</h2>
+              <p className="text-sm text-muted-foreground">
+                Enter a brand and category to discover the hottest resale products and competitor pricing
+              </p>
+            </div>
+
+            <div className="max-w-2xl mx-auto space-y-4">
+              {/* Main search row */}
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <ShoppingBag className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Brand — Nike, Supreme, Arc'teryx..."
+                    value={brand}
+                    onChange={(e) => setBrand(e.target.value)}
+                    className="pl-10 h-12 text-[14px]"
+                    onKeyDown={(e) => e.key === "Enter" && discoverProducts()}
+                  />
+                </div>
+                <div className="relative flex-1">
+                  <Tag className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Category — Sneakers, Jackets, Bags..."
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="pl-10 h-12 text-[14px]"
+                    onKeyDown={(e) => e.key === "Enter" && discoverProducts()}
+                  />
+                </div>
+              </div>
+
+              {/* Optional SKU row */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="e.g., Nike, Supreme, Levi's, Arc'teryx"
-                  value={brand}
-                  onChange={(e) => setBrand(e.target.value)}
-                  className="h-11"
+                  placeholder="SKU or model number (optional) — CW2288-111, 501-0115, FW23..."
+                  value={sku}
+                  onChange={(e) => setSku(e.target.value)}
+                  className="pl-10 h-11 font-mono text-sm"
                   onKeyDown={(e) => e.key === "Enter" && discoverProducts()}
                 />
               </div>
-              <div className="space-y-2">
-                <Label>Category</Label>
-                <Input
-                  placeholder="e.g., Sneakers, Jackets, Denim, Bags"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="h-11"
-                  onKeyDown={(e) => e.key === "Enter" && discoverProducts()}
-                />
-              </div>
+
+              {/* Search button */}
+              <Button
+                className="w-full h-12 text-[14px] gap-2"
+                onClick={discoverProducts}
+                disabled={discovering || (!brand.trim() && !category.trim())}
+              >
+                {discovering ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Sparkles className="h-4 w-4" />
+                )}
+                {discovering ? "Scanning resale markets..." : "Discover Products"}
+              </Button>
+
+              <p className="text-[11px] text-muted-foreground text-center">
+                AI scans Depop, Grailed, eBay, Poshmark, Mercari, and more to find trending items
+              </p>
             </div>
-            <div className="space-y-2">
-              <Label>SKU / Model Number <span className="text-muted-foreground font-normal">(optional)</span></Label>
-              <Input
-                placeholder="e.g., CW2288-111, 501-0115, FW23 — leave empty to discover all"
-                value={sku}
-                onChange={(e) => setSku(e.target.value)}
-                className="h-11 font-mono text-sm"
-                onKeyDown={(e) => e.key === "Enter" && discoverProducts()}
-              />
-            </div>
-            <Button
-              className="w-full h-11"
-              onClick={discoverProducts}
-              disabled={discovering || (!brand.trim() && !category.trim())}
-            >
-              {discovering ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              ) : (
-                <Sparkles className="h-4 w-4 mr-2" />
-              )}
-              {discovering ? "Scanning resale markets..." : "Discover Products"}
-            </Button>
-            <p className="text-[11px] text-muted-foreground text-center">
-              AI will find the most popular resale items for this brand/category
-            </p>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
       {/* ═══════════════════════════════════════════════════════════ */}
-      {/* STEP 2: SELECT PRODUCT */}
+      {/* STEP 2: SELECT PRODUCT (card grid)                        */}
       {/* ═══════════════════════════════════════════════════════════ */}
       {step === "select" && discovery && (
         <div className="space-y-4">
-          {/* Market insight banner */}
+          {/* Collapsible market insight banner */}
           {discovery.marketInsight && (
-            <div className="rounded-xl border border-border bg-[var(--accent)] p-4">
-              <div className="flex items-start gap-3">
-                <Lightbulb className="h-5 w-5 shrink-0 mt-0.5" style={{ color: "var(--primary)" }} />
-                <div>
-                  <p className="text-sm font-medium mb-1" style={{ color: "var(--accent-foreground)" }}>
-                    Market Insight
-                  </p>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
+            <button
+              onClick={() => setInsightOpen(!insightOpen)}
+              className="w-full text-left rounded-xl border border-border bg-[var(--accent)] overflow-hidden transition-all"
+            >
+              <div className="flex items-center justify-between p-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-lg bg-[var(--primary)]/10 flex items-center justify-center shrink-0">
+                    <Lightbulb className="h-4 w-4 text-[var(--primary)]" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium" style={{ color: "var(--accent-foreground)" }}>
+                      Market Insight
+                    </p>
+                    {!insightOpen && (
+                      <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+                        {discovery.marketInsight}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                {insightOpen ? (
+                  <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0" />
+                ) : (
+                  <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
+                )}
+              </div>
+              {insightOpen && (
+                <div className="px-4 pb-4 pt-0">
+                  <p className="text-sm text-muted-foreground leading-relaxed pl-11">
                     {discovery.marketInsight}
                   </p>
                 </div>
-              </div>
-            </div>
+              )}
+            </button>
           )}
 
-          {/* Product grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-            {(discovery.products || []).map((product, i) => (
-              <button
-                key={i}
-                onClick={() => runAnalysis(product)}
-                className="group text-left rounded-xl border border-border bg-card overflow-hidden hover:border-[var(--primary)] hover:shadow-md transition-all duration-200"
-              >
-                {/* Product image */}
-                <ProductImage product={product} size="lg" />
+          {/* Product card grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+            {(discovery.products || []).map((product, i) => {
+              const markup = calcMarkup(product.retailPrice, product.avgResalePrice);
+              const isPositiveMarkup = markup > 0;
 
-                <div className="p-4">
-                <div className="flex items-start justify-between gap-2 mb-1">
-                  <h3 className="text-sm font-semibold line-clamp-2 group-hover:text-[var(--primary)] transition-colors">
-                    {product.name}
-                  </h3>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-[var(--primary)] shrink-0 mt-0.5 transition-colors" />
-                </div>
-                <div className="flex items-center gap-2 mb-3 flex-wrap">
-                  {product.subtitle && (
-                    <span className="text-[11px] text-muted-foreground">{product.subtitle}</span>
+              return (
+                <div
+                  key={i}
+                  className={cn(
+                    "rounded-xl bg-card border overflow-hidden transition-all duration-200 hover:shadow-lg group",
+                    "border-[var(--border)]"
                   )}
-                  {product.sku && product.sku !== "N/A" && product.sku !== "Various" && (
-                    <span className="text-[10px] font-mono bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
-                      {product.sku}
-                    </span>
-                  )}
-                </div>
+                >
+                  {/* Product image area with overlays */}
+                  <button
+                    onClick={() => runAnalysis(product)}
+                    className="block w-full relative text-left"
+                  >
+                    <ProductImage product={product} size="lg" />
 
-                <div className="flex items-center gap-2 mb-3">
-                  <Badge variant="outline" className={demandBadge(product.demandLevel)}>
-                    <Flame className="h-3 w-3 mr-1" />
-                    {product.demandLevel}
-                  </Badge>
-                  <Badge variant="outline" className={platformBadgeColor[product.bestPlatform] || "bg-muted"}>
-                    {platformLabel[product.bestPlatform] || product.bestPlatform}
-                  </Badge>
-                </div>
+                    {/* Demand badge overlay — top left */}
+                    <div className="absolute top-2.5 left-2.5">
+                      <div className={cn(
+                        "flex items-center gap-1 px-2 py-0.5 rounded-full backdrop-blur-sm",
+                        product.demandLevel.toLowerCase().includes("high")
+                          ? "bg-emerald-500/80"
+                          : product.demandLevel.toLowerCase().includes("medium")
+                            ? "bg-amber-500/80"
+                            : "bg-red-500/80"
+                      )}>
+                        <Flame className="h-2.5 w-2.5 text-white" />
+                        <span className="text-[9px] font-bold text-white">{product.demandLevel}</span>
+                      </div>
+                    </div>
 
-                <div className="grid grid-cols-3 gap-2 mb-3">
-                  <div className="text-center p-2 bg-muted/40 rounded-lg">
-                    <p className="text-[10px] text-muted-foreground">Resale</p>
-                    <p className="text-sm font-bold">${product.avgResalePrice}</p>
-                  </div>
-                  <div className="text-center p-2 bg-muted/40 rounded-lg">
-                    <p className="text-[10px] text-muted-foreground">Retail</p>
-                    <p className="text-sm font-mono text-muted-foreground">${product.retailPrice}</p>
-                  </div>
-                  <div className="text-center p-2 bg-emerald-500/5 rounded-lg">
-                    <p className="text-[10px] text-muted-foreground">Margin</p>
-                    <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{product.profitMargin}</p>
-                  </div>
-                </div>
+                    {/* Profit margin overlay — top right */}
+                    <div className="absolute top-2.5 right-2.5">
+                      <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/50 backdrop-blur-sm">
+                        <TrendingUp className="h-2.5 w-2.5 text-emerald-400" />
+                        <span className="text-[9px] font-bold text-emerald-400">{product.profitMargin} margin</span>
+                      </div>
+                    </div>
 
-                <p className="text-[11px] text-muted-foreground leading-relaxed">
-                  <Star className="h-3 w-3 inline mr-1 text-amber-500" />
-                  {product.quickTip}
-                </p>
+                    {/* Platform badge — bottom left */}
+                    <div className="absolute bottom-2.5 left-2.5">
+                      <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/50 backdrop-blur-sm">
+                        <Star className="h-2.5 w-2.5 text-white/70" />
+                        <span className="text-[9px] font-semibold text-white">
+                          Best on {platformLabel[product.bestPlatform] || product.bestPlatform}
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Card body */}
+                  <div className="p-3.5">
+                    {/* Title + arrow */}
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <button
+                        onClick={() => runAnalysis(product)}
+                        className="text-left"
+                      >
+                        <h3 className="text-[13px] font-semibold line-clamp-2 group-hover:text-[var(--primary)] transition-colors">
+                          {product.name}
+                        </h3>
+                      </button>
+                      <ArrowUpRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-[var(--primary)] shrink-0 mt-0.5 transition-colors" />
+                    </div>
+
+                    {/* Subtitle + SKU */}
+                    <div className="flex items-center gap-2 mb-3 flex-wrap">
+                      {product.subtitle && (
+                        <span className="text-[11px] text-muted-foreground">{product.subtitle}</span>
+                      )}
+                      {product.sku && product.sku !== "N/A" && product.sku !== "Various" && (
+                        <span className="text-[10px] font-mono bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
+                          {product.sku}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Price comparison row */}
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-lg font-bold">${product.avgResalePrice}</span>
+                        <span className="text-[12px] text-muted-foreground line-through">${product.retailPrice}</span>
+                      </div>
+                      {markup !== 0 && (
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "text-[10px] font-bold px-1.5 py-0",
+                            isPositiveMarkup
+                              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-300 dark:border-emerald-700"
+                              : "bg-red-500/10 text-red-600 dark:text-red-400 border-red-300 dark:border-red-700"
+                          )}
+                        >
+                          {isPositiveMarkup ? "+" : ""}{markup}% markup
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* Quick tip info box */}
+                    {product.quickTip && (
+                      <div className="flex items-start gap-1.5 rounded-lg bg-[var(--primary)]/5 border border-[var(--primary)]/10 px-2.5 py-1.5 mb-3">
+                        <Info className="h-3 w-3 text-[var(--primary)] shrink-0 mt-0.5" />
+                        <p className="text-[10px] text-[var(--primary)] leading-snug">{product.quickTip}</p>
+                      </div>
+                    )}
+
+                    {/* Bottom row: seasonality + analyze button */}
+                    <div className="flex items-center justify-between pt-2.5 border-t border-border">
+                      <span className="text-[10px] text-muted-foreground">
+                        {product.seasonality}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-[11px] gap-1 px-2 text-[var(--primary)] hover:text-[var(--primary)]"
+                        onClick={() => runAnalysis(product)}
+                      >
+                        Analyze <ArrowRight className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-              </button>
-            ))}
+              );
+            })}
           </div>
 
           {discovery.products?.length === 0 && (
-            <div className="text-center py-12">
-              <Search className="h-8 w-8 text-muted-foreground/30 mx-auto mb-3" />
-              <p className="text-sm font-medium mb-1">No products found</p>
+            <div className="flex flex-col items-center py-16 text-center">
+              <div className="h-14 w-14 rounded-2xl bg-muted flex items-center justify-center mb-4">
+                <Search className="h-7 w-7 text-muted-foreground/30" />
+              </div>
+              <p className="text-sm font-semibold mb-1">No products found</p>
               <p className="text-xs text-muted-foreground mb-4">Try a different brand or category</p>
               <Button variant="outline" size="sm" onClick={goBack}>Try Again</Button>
             </div>
@@ -497,7 +623,7 @@ export default function CompetitorPage() {
       )}
 
       {/* ═══════════════════════════════════════════════════════════ */}
-      {/* STEP 3: DEEP ANALYSIS */}
+      {/* STEP 3: DEEP ANALYSIS                                     */}
       {/* ═══════════════════════════════════════════════════════════ */}
       {step === "analyze" && (
         <div className="space-y-4">
@@ -591,51 +717,71 @@ export default function CompetitorPage() {
                 </CardContent>
               </Card>
 
-              {/* Strategies + Tips */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card className="border border-border">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm flex items-center gap-2">
-                      <Users className="h-4 w-4 text-orange-500" />
-                      What Competitors Do
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="space-y-2">
-                      {(analysis?.competitorStrategies || []).map((s: Record<string, string> | string, i: number) => (
-                        <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                          <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-orange-500 shrink-0" />
-                          <span>{typeof s === "string" ? s : (s.strategy || s.detail || JSON.stringify(s))}</span>
-                        </li>
-                      ))}
-                      {(!analysis?.competitorStrategies || analysis.competitorStrategies.length === 0) && (
-                        <li className="text-sm text-muted-foreground">No data available</li>
-                      )}
-                    </ul>
-                  </CardContent>
-                </Card>
+              {/* Collapsible Strategies + Tips */}
+              <div className="rounded-xl border border-border bg-card overflow-hidden">
+                <button
+                  onClick={() => setStrategyOpen(!strategyOpen)}
+                  className="w-full flex items-center justify-between p-4 hover:bg-muted/30 transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <Users className="h-5 w-5 text-orange-500" />
+                    <span className="text-sm font-semibold">Competitor Strategies & Differentiation</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] text-muted-foreground">
+                      {(analysis?.competitorStrategies?.length || 0) + (analysis?.differentiationTips?.length || 0)} insights
+                    </span>
+                    {strategyOpen ? (
+                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </div>
+                </button>
 
-                <Card className="border border-border">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm flex items-center gap-2">
-                      <Zap className="h-4 w-4 text-emerald-500" />
-                      How to Stand Out
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="space-y-2">
-                      {(analysis?.differentiationTips || []).map((t: Record<string, string> | string, i: number) => (
-                        <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                          <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
-                          <span>{typeof t === "string" ? t : (t.tip || t.detail || JSON.stringify(t))}</span>
-                        </li>
-                      ))}
-                      {(!analysis?.differentiationTips || analysis.differentiationTips.length === 0) && (
-                        <li className="text-sm text-muted-foreground">No data available</li>
-                      )}
-                    </ul>
-                  </CardContent>
-                </Card>
+                {strategyOpen && (
+                  <div className="border-t border-border animate-fade-in">
+                    <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border">
+                      {/* What Competitors Do */}
+                      <div className="p-4">
+                        <p className="text-xs font-semibold text-muted-foreground mb-3 flex items-center gap-1.5">
+                          <Users className="h-3.5 w-3.5 text-orange-500" />
+                          What Competitors Do
+                        </p>
+                        <ul className="space-y-2">
+                          {(analysis?.competitorStrategies || []).map((s: Record<string, string> | string, i: number) => (
+                            <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                              <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-orange-500 shrink-0" />
+                              <span>{typeof s === "string" ? s : (s.strategy || s.detail || JSON.stringify(s))}</span>
+                            </li>
+                          ))}
+                          {(!analysis?.competitorStrategies || analysis.competitorStrategies.length === 0) && (
+                            <li className="text-sm text-muted-foreground">No data available</li>
+                          )}
+                        </ul>
+                      </div>
+
+                      {/* How to Stand Out */}
+                      <div className="p-4">
+                        <p className="text-xs font-semibold text-muted-foreground mb-3 flex items-center gap-1.5">
+                          <Zap className="h-3.5 w-3.5 text-emerald-500" />
+                          How to Stand Out
+                        </p>
+                        <ul className="space-y-2">
+                          {(analysis?.differentiationTips || []).map((t: Record<string, string> | string, i: number) => (
+                            <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                              <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
+                              <span>{typeof t === "string" ? t : (t.tip || t.detail || JSON.stringify(t))}</span>
+                            </li>
+                          ))}
+                          {(!analysis?.differentiationTips || analysis.differentiationTips.length === 0) && (
+                            <li className="text-sm text-muted-foreground">No data available</li>
+                          )}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Keywords */}

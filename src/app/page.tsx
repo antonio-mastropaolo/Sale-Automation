@@ -259,6 +259,64 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* ═══ LIVE STATS DASHBOARD ═══ */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+        {/* Revenue Breakdown */}
+        <div className="rounded-xl bg-card p-4 sm:p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold">Revenue by Platform</h3>
+            <span className="text-[10px] text-muted-foreground">Last 30 days</span>
+          </div>
+          <div className="space-y-3">
+            {stats.platformStats.filter(p => p.revenue > 0).length > 0 ? (
+              stats.platformStats.filter(p => p.revenue > 0).sort((a, b) => b.revenue - a.revenue).slice(0, 5).map((p) => {
+                const maxRev = Math.max(...stats.platformStats.map(s => s.revenue), 1);
+                const pct = Math.round((p.revenue / maxRev) * 100);
+                return (
+                  <div key={p.platform} className="space-y-1">
+                    <div className="flex items-center justify-between text-[12px]">
+                      <span className="capitalize font-medium">{p.platform}</span>
+                      <span className="font-semibold tabular-nums">${p.revenue.toLocaleString()}</span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full rounded-full bg-[var(--primary)] transition-all duration-1000 ease-out" style={{ width: `${pct}%`, opacity: 0.7 + (pct / 300) }} />
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <p className="text-[12px] text-muted-foreground text-center py-4">No revenue data yet</p>
+            )}
+          </div>
+        </div>
+
+        {/* Listing Status Breakdown */}
+        <div className="rounded-xl bg-card p-4 sm:p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold">Listing Pipeline</h3>
+            <span className="text-[10px] text-muted-foreground">{stats.totalListings} total</span>
+          </div>
+          <div className="space-y-3">
+            {[
+              { label: "Draft", count: stats.totalListings - stats.activeListings - (listings.filter(l => l.status === "sold").length), color: "bg-amber-500", pct: Math.round(((stats.totalListings - stats.activeListings) / Math.max(stats.totalListings, 1)) * 100) },
+              { label: "Active", count: stats.activeListings, color: "bg-blue-500", pct: Math.round((stats.activeListings / Math.max(stats.totalListings, 1)) * 100) },
+              { label: "Published", count: totalPublished, color: "bg-emerald-500", pct: Math.round((totalPublished / Math.max(stats.totalListings, 1)) * 100) },
+              { label: "Sold", count: listings.filter(l => l.status === "sold").length, color: "bg-violet-500", pct: Math.round((listings.filter(l => l.status === "sold").length / Math.max(stats.totalListings, 1)) * 100) },
+            ].map((item) => (
+              <div key={item.label} className="flex items-center gap-3">
+                <div className={`h-2.5 w-2.5 rounded-full ${item.color} shrink-0`} />
+                <span className="text-[12px] font-medium flex-1">{item.label}</span>
+                <span className="text-[12px] font-semibold tabular-nums">{item.count}</span>
+                <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div className={`h-full rounded-full ${item.color} transition-all duration-1000`} style={{ width: `${item.pct}%` }} />
+                </div>
+                <span className="text-[10px] text-muted-foreground tabular-nums w-8 text-right">{item.pct}%</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* Listings Section */}
       <div className="rounded-xl bg-card overflow-hidden">
         {/* Header with search and filter — stacks on mobile */}
