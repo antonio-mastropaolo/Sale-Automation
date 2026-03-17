@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,11 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { StageCard } from "@/components/pipeline/stage-card";
+import { PipelineToolbar } from "@/components/pipeline/pipeline-toolbar";
+import { DataInspector } from "@/components/pipeline/data-inspector";
+import { usePipelineReducer } from "@/components/pipeline/use-pipeline-reducer";
+import type { StageStatus } from "@/components/pipeline/use-pipeline-reducer";
 
 // ── Pipeline stages ─────────────────────────────────────────
 
@@ -29,18 +34,18 @@ interface Stage {
 }
 
 const STAGES: Stage[] = [
-  { id: "smart_list", label: "AI Vision", shortLabel: "Vision", description: "Upload a photo — AI identifies the item, brand, condition, and generates a full listing draft with pricing suggestions.", icon: Camera, color: "#007AFF", aiFeature: "smart_list_system", inputLabel: "Product Photo", inputExample: "JPEG/PNG image of the item from multiple angles", outputLabel: "Listing Draft", outputExample: "{ title, description, brand, category, size, condition, price, hashtags[] }" },
-  { id: "enhance", label: "Description", shortLabel: "Desc", description: "Rough notes are polished into a professional, SEO-optimized listing description with keywords.", icon: Wand2, color: "#34C759", aiFeature: "enhance", inputLabel: "Rough Notes", inputExample: '"vintage nike windbreaker, 90s colorblock, size L, good condition"', outputLabel: "Polished Description", outputExample: "Full-length, SEO-rich product description ready for any marketplace." },
-  { id: "optimize", label: "Platform Optimize", shortLabel: "Optimize", description: "The listing is rewritten for each marketplace's tone, audience, character limits, and algorithm.", icon: Target, color: "#FF9500", aiFeature: "optimize", inputLabel: "Base Listing", inputExample: "Title + description + category + brand + price", outputLabel: "8 Platform Versions", outputExample: "Depop, Grailed, Poshmark, Mercari, eBay, Vinted, Facebook, Vestiaire" },
-  { id: "price_intel", label: "Price Intelligence", shortLabel: "Price", description: "AI analyzes competitor pricing, sell-through rates, and suggests optimal price per platform.", icon: DollarSign, color: "#AF52DE", aiFeature: "price_intel", inputLabel: "Item Details", inputExample: "Brand, category, condition, size, your asking price", outputLabel: "Pricing Strategy", outputExample: "Per-platform price recommendations, market analysis, competitor data." },
-  { id: "health_score", label: "Health Score", shortLabel: "Health", description: "Grades your listing on title quality, description, photos, pricing strategy, and platform coverage.", icon: ShieldCheck, color: "#FF3B30", aiFeature: "health_score", inputLabel: "Complete Listing", inputExample: "The full listing with all fields filled", outputLabel: "Score & Improvements", outputExample: "Overall score (0-100), per-category grades, improvement recommendations." },
-  { id: "publish", label: "Cross-Publish", shortLabel: "Publish", description: "Publishes optimized listings to all connected platforms using your saved credentials.", icon: Send, color: "#0A84FF", aiFeature: "", inputLabel: "Optimized Listings", inputExample: "Platform-specific listing versions from the Optimize stage", outputLabel: "Live on 8 Platforms", outputExample: "Published URLs for each connected platform." },
-  { id: "negotiate", label: "Negotiation", shortLabel: "Negotiate", description: "AI drafts responses to buyer messages with 3 strategy options per conversation.", icon: MessageCircle, color: "#30D158", aiFeature: "negotiate_response", inputLabel: "Buyer Message", inputExample: '"Would you take $120 for this?" + listing context', outputLabel: "3 Reply Options", outputExample: "FIRM (hold price), NEGOTIATE (counter-offer), ACCEPT (close the deal)." },
-  { id: "trends", label: "Market Trends", shortLabel: "Trends", description: "Real-time trend reports with category heat, brand rankings, sleeper picks, and seasonal advice.", icon: Radar, color: "#FF9F0A", aiFeature: "trends", inputLabel: "Market Data", inputExample: "Current date, resale market conditions, seasonal context", outputLabel: "Trend Report", outputExample: "Trending categories, hot brands, sleeper picks with ROI estimates." },
+  { id: "smart_list", label: "AI Vision", shortLabel: "Vision", description: "Upload a photo — AI identifies the item, brand, condition, and generates a full listing draft with pricing suggestions.", icon: Camera, color: "#007AFF", aiFeature: "smart_list_system", inputLabel: "Product Photo", inputExample: "JPEG/PNG image of the item from multiple angles", outputLabel: "Listing Draft", outputExample: '{ "title": "Nike Air Max 90 OG", "brand": "Nike", "price": 120 }' },
+  { id: "enhance", label: "Description", shortLabel: "Desc", description: "Rough notes are polished into a professional, SEO-optimized listing description with keywords.", icon: Wand2, color: "#34C759", aiFeature: "enhance", inputLabel: "Rough Notes", inputExample: '"vintage nike windbreaker, 90s, size L"', outputLabel: "Polished Description", outputExample: "Full SEO-optimized product description." },
+  { id: "optimize", label: "Platform Optimize", shortLabel: "Optimize", description: "The listing is rewritten for each marketplace's tone, audience, and algorithm.", icon: Target, color: "#FF9500", aiFeature: "optimize", inputLabel: "Base Listing", inputExample: "Title + description + category + brand", outputLabel: "8 Platform Versions", outputExample: "Depop, Grailed, Poshmark, Mercari..." },
+  { id: "price_intel", label: "Price Intelligence", shortLabel: "Price", description: "AI analyzes competitor pricing and suggests optimal price per platform.", icon: DollarSign, color: "#AF52DE", aiFeature: "price_intel", inputLabel: "Item Details", inputExample: "Brand, category, condition, size", outputLabel: "Pricing Strategy", outputExample: "Per-platform price recommendations." },
+  { id: "health_score", label: "Health Score", shortLabel: "Health", description: "Grades your listing on title quality, description, photos, pricing, and coverage.", icon: ShieldCheck, color: "#FF3B30", aiFeature: "health_score", inputLabel: "Complete Listing", inputExample: "The full listing with all fields", outputLabel: "Score & Fixes", outputExample: "Score: 87/100, 3 improvements." },
+  { id: "publish", label: "Cross-Publish", shortLabel: "Publish", description: "Publishes optimized listings to all connected platforms.", icon: Send, color: "#0A84FF", aiFeature: "", inputLabel: "Optimized Listings", inputExample: "Platform-specific versions", outputLabel: "Live on Platforms", outputExample: "Published URLs for each platform." },
+  { id: "negotiate", label: "Negotiation", shortLabel: "Negotiate", description: "AI drafts responses to buyer messages with 3 strategy options.", icon: MessageCircle, color: "#30D158", aiFeature: "negotiate_response", inputLabel: "Buyer Message", inputExample: '"Would you take $120?"', outputLabel: "3 Reply Options", outputExample: "FIRM, NEGOTIATE, ACCEPT." },
+  { id: "trends", label: "Market Trends", shortLabel: "Trends", description: "Real-time trend reports with category heat, brand rankings, and seasonal advice.", icon: Radar, color: "#FF9F0A", aiFeature: "trends", inputLabel: "Market Data", inputExample: "Current market conditions", outputLabel: "Trend Report", outputExample: "Trending categories, hot brands." },
 ];
 
 const AI_MODELS: Record<string, { label: string; models: string[] }> = {
-  openai: { label: "OpenAI", models: ["gpt-5.4", "gpt-5.4-pro", "gpt-5.2", "gpt-5.2-pro", "gpt-5.1", "gpt-5", "gpt-5-mini", "gpt-5-nano"] },
+  openai: { label: "OpenAI", models: ["gpt-5.4", "gpt-5.4-pro", "gpt-5.2", "gpt-5-mini"] },
   google: { label: "Gemini", models: ["gemini-3.1-pro-preview", "gemini-2.5-pro", "gemini-2.5-flash"] },
   groq: { label: "Groq", models: ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"] },
 };
@@ -48,7 +53,8 @@ const AI_MODELS: Record<string, { label: string; models: string[] }> = {
 // ═══════════════════════════════════════════════════════════════
 
 export default function WorkflowPage() {
-  const [expandedStage, setExpandedStage] = useState<string | null>(null);
+  const [pipelineState, dispatch] = usePipelineReducer(STAGES.map((s) => s.id));
+  const [configStage, setConfigStage] = useState<string | null>(null);
   const [stageConfigs, setStageConfigs] = useState<Record<string, { provider: string; model: string; apiKey: string }>>({});
   const [prompts, setPrompts] = useState<Record<string, string>>({});
   const [editingPrompt, setEditingPrompt] = useState<string | null>(null);
@@ -58,23 +64,99 @@ export default function WorkflowPage() {
   const [testResult, setTestResult] = useState<string | null>(null);
   const [showKey, setShowKey] = useState(false);
   const [defaultModel, setDefaultModel] = useState("gpt-5.4");
+  const runRef = useRef<string | null>(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [connectors, setConnectors] = useState<{ x1: number; y1: number; x2: number; y2: number; color: string }[]>([]);
 
+  // Load settings
   useEffect(() => {
     fetch("/api/settings").then((r) => r.json()).then((data: Record<string, string>) => {
       setDefaultModel(data.ai_model || "gpt-5.4");
       const configs: Record<string, { provider: string; model: string; apiKey: string }> = {};
-      for (const stage of STAGES) {
-        configs[stage.id] = { provider: data[`workflow_${stage.id}_provider`] || data.ai_provider || "openai", model: data[`workflow_${stage.id}_model`] || "", apiKey: data[`workflow_${stage.id}_key`] || "" };
-      }
+      STAGES.forEach((s) => { configs[s.id] = { provider: data[`workflow_${s.id}_provider`] || data.ai_provider || "openai", model: data[`workflow_${s.id}_model`] || "", apiKey: data[`workflow_${s.id}_key`] || "" }; });
       setStageConfigs(configs);
     }).catch(() => {});
     fetch("/api/settings/prompts").then((r) => r.json()).then((data: { featureKey: string; prompt: string }[]) => {
-      const map: Record<string, string> = {};
-      for (const p of data) map[p.featureKey] = p.prompt;
-      setPrompts(map);
+      const m: Record<string, string> = {};
+      data.forEach((p) => { m[p.featureKey] = p.prompt; });
+      setPrompts(m);
     }).catch(() => {});
   }, []);
 
+  // Compute SVG connector positions
+  useEffect(() => {
+    const compute = () => {
+      if (!containerRef.current) return;
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const paths: typeof connectors = [];
+      for (let i = 0; i < STAGES.length - 1; i++) {
+        const from = cardRefs.current[i];
+        const to = cardRefs.current[i + 1];
+        if (!from || !to) continue;
+        const r1 = from.getBoundingClientRect();
+        const r2 = to.getBoundingClientRect();
+        paths.push({
+          x1: r1.left + r1.width / 2 - containerRect.left,
+          y1: r1.bottom - containerRect.top,
+          x2: r2.left + r2.width / 2 - containerRect.left,
+          y2: r2.top - containerRect.top,
+          color: STAGES[i].color,
+        });
+      }
+      setConnectors(paths);
+    };
+    compute();
+    window.addEventListener("resize", compute);
+    const observer = new MutationObserver(compute);
+    if (containerRef.current) observer.observe(containerRef.current, { childList: true, subtree: true, attributes: true });
+    return () => { window.removeEventListener("resize", compute); observer.disconnect(); };
+  }, [configStage, pipelineState.stages]);
+
+  // Pipeline execution engine
+  const runPipeline = useCallback(async () => {
+    dispatch({ type: "RUN_PIPELINE", stageIds: STAGES.map((s) => s.id) });
+    const runId = crypto.randomUUID();
+    runRef.current = runId;
+    const delay = [2000, 1000, 500][pipelineState.speed - 1] || 2000;
+
+    for (let i = 0; i < STAGES.length; i++) {
+      if (runRef.current !== runId) return; // stopped
+
+      dispatch({ type: "STAGE_START", stageId: STAGES[i].id, index: i });
+
+      // Check for breakpoint BEFORE running
+      if (pipelineState.breakpoints.has(STAGES[i].id)) {
+        dispatch({ type: "STAGE_PAUSE", stageId: STAGES[i].id, data: STAGES[i].outputExample });
+        // Wait for resume — polling approach (reducer will change status)
+        await new Promise<void>((resolve) => {
+          const check = setInterval(() => {
+            if (runRef.current !== runId) { clearInterval(check); resolve(); return; }
+            // Check if stage was resumed or pipeline stopped
+            const el = cardRefs.current[i];
+            if (el?.dataset.status === "running" || el?.dataset.status === "completed") { clearInterval(check); resolve(); }
+          }, 200);
+        });
+        if (runRef.current !== runId) return;
+      }
+
+      // Simulate work
+      await new Promise((r) => setTimeout(r, delay));
+      if (runRef.current !== runId) return;
+
+      dispatch({ type: "STAGE_COMPLETE", stageId: STAGES[i].id });
+      await new Promise((r) => setTimeout(r, 300)); // brief pause between stages
+    }
+
+    toast.success("Pipeline completed!");
+  }, [pipelineState.speed, pipelineState.breakpoints, dispatch]);
+
+  const stopPipeline = () => {
+    runRef.current = null;
+    dispatch({ type: "RESET", stageIds: STAGES.map((s) => s.id) });
+  };
+
+  // Config helpers
   const updateStageConfig = (stageId: string, field: string, value: string) => {
     setStageConfigs((prev) => ({ ...prev, [stageId]: { ...prev[stageId], [field]: value } }));
   };
@@ -85,8 +167,8 @@ export default function WorkflowPage() {
     if (!config) { setSaving(false); return; }
     try {
       await fetch("/api/settings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ settings: { [`workflow_${stageId}_provider`]: config.provider, [`workflow_${stageId}_model`]: config.model, ...(config.apiKey ? { [`workflow_${stageId}_key`]: config.apiKey } : {}) } }) });
-      toast.success(`Saved ${STAGES.find((s) => s.id === stageId)?.label} config`);
-    } catch { toast.error("Failed to save"); }
+      toast.success("Saved");
+    } catch { toast.error("Failed"); }
     setSaving(false);
   };
 
@@ -97,7 +179,7 @@ export default function WorkflowPage() {
       setPrompts((prev) => ({ ...prev, [featureKey]: promptDraft }));
       setEditingPrompt(null);
       toast.success("Prompt saved");
-    } catch { toast.error("Failed to save prompt"); }
+    } catch { toast.error("Failed"); }
     setSaving(false);
   };
 
@@ -106,267 +188,213 @@ export default function WorkflowPage() {
       await fetch(`/api/settings/prompts?featureKey=${featureKey}`, { method: "DELETE" });
       setPrompts((prev) => { const n = { ...prev }; delete n[featureKey]; return n; });
       setEditingPrompt(null);
-      toast.success("Prompt reset to default");
       const res = await fetch("/api/settings/prompts");
       const data = await res.json();
-      const map: Record<string, string> = {};
-      for (const p of data) map[p.featureKey] = p.prompt;
-      setPrompts(map);
-    } catch { toast.error("Failed to reset"); }
+      const m: Record<string, string> = {};
+      data.forEach((p: { featureKey: string; prompt: string }) => { m[p.featureKey] = p.prompt; });
+      setPrompts(m);
+    } catch { toast.error("Failed"); }
   };
 
   const testStage = async (stage: Stage) => {
-    setTesting(true);
-    setTestResult(null);
+    setTesting(true); setTestResult(null);
     try {
       const res = await fetch("/api/settings/test-prompt", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ featureKey: stage.aiFeature }) });
       const data = await res.json();
       setTestResult(typeof data === "string" ? data : JSON.stringify(data, null, 2));
-    } catch { setTestResult("Test failed — check your API key and provider settings."); }
+    } catch { setTestResult("Test failed."); }
     setTesting(false);
   };
 
+  const pausedStageId = Object.entries(pipelineState.stages).find(([, s]) => s === "paused")?.[0];
+  const pausedStage = pausedStageId ? STAGES.find((s) => s.id === pausedStageId) : null;
+
   return (
-    <div className="space-y-5 animate-fade-in">
+    <div className="space-y-4 animate-fade-in">
       {/* Header */}
       <div>
         <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">AI Workflow Pipeline</h1>
         <p className="text-muted-foreground text-xs sm:text-sm mt-0.5">
-          {STAGES.length} stages &middot; Default model: <span className="font-mono text-foreground">{defaultModel}</span>
+          {STAGES.length} stages &middot; Default model: <span className="font-mono text-foreground">{defaultModel}</span> &middot; Set breakpoints to pause &amp; inspect data
         </p>
       </div>
 
-      {/* ═══ PIPELINE GRID — 3 per row on desktop, 2 on md, 1 on mobile ═══ */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {STAGES.map((stage, i) => {
-          const Icon = stage.icon;
-          const isExpanded = expandedStage === stage.id;
-          const config = stageConfigs[stage.id];
-          const hasCustomModel = config?.model && config.model !== defaultModel && config.model !== "";
-          const isAI = !!stage.aiFeature;
-          const isLast = i === STAGES.length - 1;
+      {/* Toolbar */}
+      <PipelineToolbar
+        state={pipelineState}
+        totalStages={STAGES.length}
+        onRun={runPipeline}
+        onStop={stopPipeline}
+        onReset={() => dispatch({ type: "RESET", stageIds: STAGES.map((s) => s.id) })}
+        onSpeedChange={(s) => dispatch({ type: "SET_SPEED", speed: s })}
+        onModeChange={(m) => dispatch({ type: "SET_MODE", mode: m })}
+      />
 
-          return (
-            <div
-              key={stage.id}
-              className={cn(
-                "relative rounded-2xl border transition-all duration-300 overflow-hidden",
-                isExpanded
-                  ? "border-transparent shadow-xl"
-                  : "border-[var(--border)] hover:border-[var(--muted-foreground)]/20 hover:shadow-md"
-              )}
-              style={isExpanded ? { boxShadow: `0 0 0 2px ${stage.color}40, 0 8px 32px ${stage.color}15` } : undefined}
-            >
-              {/* ── Card header (always visible) ── */}
-              <div className="bg-card p-5">
-                {/* Step badge */}
-                <span
-                  className="absolute top-3 left-3 h-6 w-6 rounded-full text-[10px] font-bold flex items-center justify-center text-white shadow-lg z-10"
-                  style={{ background: stage.color, boxShadow: `0 0 12px ${stage.color}40` }}
-                >
-                  {i + 1}
-                </span>
+      {/* ═══ PIPELINE CANVAS ═══ */}
+      <div ref={containerRef} className="relative">
+        {/* SVG connector overlay */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none z-10" style={{ overflow: "visible" }}>
+          {connectors.map((c, i) => {
+            const stage = STAGES[i];
+            const status = pipelineState.stages[stage.id] as StageStatus;
+            const nextStatus = pipelineState.stages[STAGES[i + 1]?.id] as StageStatus;
+            const isFlowing = status === "completed" && (nextStatus === "running" || nextStatus === "completed");
+            const isCompleted = status === "completed" && nextStatus === "completed";
 
-                {/* Top section: icon + title + expand toggle */}
-                <div className="flex items-start gap-4 pl-6">
-                  <div
-                    className="h-12 w-12 rounded-xl flex items-center justify-center shrink-0"
-                    style={{ backgroundColor: `${stage.color}12`, color: stage.color }}
-                  >
-                    <Icon className="h-6 w-6" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-sm font-semibold">{stage.label}</h3>
-                      {isAI ? (
-                        <Badge className="text-[8px] px-1.5 py-0 h-4 border-0" style={{ backgroundColor: `${stage.color}20`, color: stage.color }}>AI</Badge>
-                      ) : (
-                        <Badge variant="outline" className="text-[8px] px-1.5 py-0 h-4">Auto</Badge>
-                      )}
+            // Bezier control points
+            const midY = (c.y1 + c.y2) / 2;
+            const path = `M ${c.x1} ${c.y1} C ${c.x1} ${midY}, ${c.x2} ${midY}, ${c.x2} ${c.y2}`;
+
+            return (
+              <g key={i}>
+                {/* Base path */}
+                <path
+                  d={path}
+                  stroke={c.color}
+                  strokeWidth={isFlowing ? 2.5 : 1.5}
+                  strokeDasharray={isCompleted ? "none" : "6 4"}
+                  fill="none"
+                  opacity={isFlowing ? 0.6 : isCompleted ? 0.4 : 0.15}
+                  className={!isCompleted && !isFlowing ? "animate-dash" : ""}
+                  strokeLinecap="round"
+                />
+
+                {/* Flowing particle */}
+                {isFlowing && (
+                  <>
+                    <circle r="3" fill={c.color} opacity="0.9">
+                      <animateMotion dur="1.5s" repeatCount="indefinite" path={path} />
+                    </circle>
+                    <circle r="6" fill={c.color} opacity="0.15">
+                      <animateMotion dur="1.5s" repeatCount="indefinite" path={path} />
+                    </circle>
+                    {/* Second particle, staggered */}
+                    <circle r="2.5" fill={c.color} opacity="0.7">
+                      <animateMotion dur="1.5s" repeatCount="indefinite" path={path} begin="0.7s" />
+                    </circle>
+                  </>
+                )}
+
+                {/* Completed check */}
+                {isCompleted && (
+                  <circle cx={c.x2} cy={c.y2 - 4} r="0" fill={c.color} opacity="0">
+                    {/* invisible — just keeping the structure */}
+                  </circle>
+                )}
+              </g>
+            );
+          })}
+        </svg>
+
+        {/* Stage cards — zigzag on xl+, 2-col on md, 1-col on mobile */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          {STAGES.map((stage, i) => {
+            const config = stageConfigs[stage.id];
+            const hasCustomModel = config?.model && config.model !== defaultModel && config.model !== "";
+            const isConfigOpen = configStage === stage.id;
+
+            return (
+              <div key={stage.id} ref={(el) => { cardRefs.current[i] = el; }} data-status={pipelineState.stages[stage.id]}>
+                <StageCard
+                  index={i}
+                  label={stage.label}
+                  shortLabel={stage.shortLabel}
+                  description={stage.description}
+                  icon={stage.icon}
+                  color={stage.color}
+                  status={pipelineState.stages[stage.id] as StageStatus}
+                  isAI={!!stage.aiFeature}
+                  hasBreakpoint={pipelineState.breakpoints.has(stage.id)}
+                  inputLabel={stage.inputLabel}
+                  outputLabel={stage.outputLabel}
+                  modelBadge={hasCustomModel ? config.model : `default · ${defaultModel}`}
+                  onToggleBreakpoint={() => dispatch({ type: "SET_BREAKPOINT", stageId: stage.id })}
+                  onClick={() => { setConfigStage(isConfigOpen ? null : stage.id); setTestResult(null); setEditingPrompt(null); }}
+                />
+
+                {/* Inline config panel */}
+                {isConfigOpen && config && (
+                  <div className="mt-2 rounded-xl border border-[var(--border)] bg-card p-4 space-y-4 animate-fade-in">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-semibold" style={{ color: stage.color }}>Configure {stage.label}</span>
+                      <button onClick={() => setConfigStage(null)} className="text-muted-foreground hover:text-foreground"><X className="h-3.5 w-3.5" /></button>
                     </div>
-                    <p className="text-[11px] text-muted-foreground leading-relaxed">{stage.description}</p>
-                  </div>
-                </div>
 
-                {/* Data flow: Input → Output */}
-                <div className="mt-4 pl-6 grid grid-cols-2 gap-3">
-                  <div className="rounded-lg bg-muted/30 p-3">
-                    <div className="flex items-center gap-1 mb-1.5">
-                      <Zap className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Input</span>
-                    </div>
-                    <p className="text-[11px] font-medium">{stage.inputLabel}</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">{stage.inputExample}</p>
-                  </div>
-                  <div className="rounded-lg bg-muted/30 p-3">
-                    <div className="flex items-center gap-1 mb-1.5">
-                      <ChevronRight className="h-3 w-3" style={{ color: stage.color }} />
-                      <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Output</span>
-                    </div>
-                    <p className="text-[11px] font-medium" style={{ color: stage.color }}>{stage.outputLabel}</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">{stage.outputExample}</p>
-                  </div>
-                </div>
-
-                {/* Model badge + expand button */}
-                <div className="mt-3 pl-6 flex items-center justify-between">
-                  <span className={cn(
-                    "text-[9px] font-mono px-2 py-0.5 rounded-full",
-                    isAI
-                      ? hasCustomModel ? "bg-amber-500/10 text-amber-500" : "bg-muted text-muted-foreground"
-                      : "bg-blue-500/10 text-blue-500"
-                  )}>
-                    {isAI ? (hasCustomModel ? config?.model : `default · ${defaultModel}`) : "auto"}
-                  </span>
-
-                  <button
-                    onClick={() => { setExpandedStage(isExpanded ? null : stage.id); setTestResult(null); setEditingPrompt(null); }}
-                    className={cn(
-                      "flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-medium transition-colors",
-                      isExpanded
-                        ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                    )}
-                  >
-                    {isExpanded ? "Close" : "Configure"}
-                    <ChevronDown className={cn("h-3 w-3 transition-transform", isExpanded && "rotate-180")} />
-                  </button>
-                </div>
-              </div>
-
-              {/* ── Expanded config section (inside card) ── */}
-              {isExpanded && config && (
-                <div className="border-t border-[var(--border)] bg-card p-5 space-y-4 animate-fade-in">
-                  {/* Prompt section */}
-                  {isAI && (
-                    <div className="rounded-xl border border-[var(--border)] p-4 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1.5">
-                          <Sparkles className="h-3.5 w-3.5" style={{ color: stage.color }} />
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Prompt Template</span>
-                        </div>
-                        <div className="flex gap-1">
+                    {stage.aiFeature ? (
+                      <>
+                        {/* Prompt */}
+                        <div className="rounded-lg border border-border p-3 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Prompt</span>
+                            {editingPrompt === stage.aiFeature ? (
+                              <div className="flex gap-1">
+                                <Button variant="ghost" size="sm" className="h-5 text-[9px] px-1.5" onClick={() => resetPrompt(stage.aiFeature)}><RotateCcw className="h-2.5 w-2.5 mr-0.5" />Reset</Button>
+                                <Button size="sm" className="h-5 text-[9px] px-1.5" onClick={() => savePrompt(stage.aiFeature)} disabled={saving}>{saving ? <Loader2 className="h-2.5 w-2.5 animate-spin" /> : <Check className="h-2.5 w-2.5 mr-0.5" />}Save</Button>
+                              </div>
+                            ) : (
+                              <Button variant="ghost" size="sm" className="h-5 text-[9px] px-1.5" onClick={() => { setEditingPrompt(stage.aiFeature); setPromptDraft(prompts[stage.aiFeature] || ""); }}><Pencil className="h-2.5 w-2.5 mr-0.5" />Edit</Button>
+                            )}
+                          </div>
                           {editingPrompt === stage.aiFeature ? (
-                            <>
-                              <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2" onClick={() => resetPrompt(stage.aiFeature)}>
-                                <RotateCcw className="h-2.5 w-2.5 mr-1" />Reset
-                              </Button>
-                              <Button size="sm" className="h-6 text-[10px] px-2" onClick={() => savePrompt(stage.aiFeature)} disabled={saving}>
-                                {saving ? <Loader2 className="h-2.5 w-2.5 animate-spin mr-1" /> : <Check className="h-2.5 w-2.5 mr-1" />}Save
-                              </Button>
-                            </>
+                            <textarea value={promptDraft} onChange={(e) => setPromptDraft(e.target.value)} className="w-full h-[140px] rounded border border-border bg-background p-2 text-[10px] font-mono resize-y focus:outline-none focus:ring-1 focus:ring-[var(--primary)]" />
                           ) : (
-                            <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2" onClick={() => { setEditingPrompt(stage.aiFeature); setPromptDraft(prompts[stage.aiFeature] || ""); }}>
-                              <Pencil className="h-2.5 w-2.5 mr-1" />Edit
-                            </Button>
+                            <pre className="text-[9px] font-mono text-muted-foreground whitespace-pre-wrap max-h-[100px] overflow-y-auto">{(prompts[stage.aiFeature] || "Loading...").slice(0, 300)}{(prompts[stage.aiFeature] || "").length > 300 ? "..." : ""}</pre>
                           )}
                         </div>
-                      </div>
-                      {editingPrompt === stage.aiFeature ? (
-                        <textarea
-                          value={promptDraft}
-                          onChange={(e) => setPromptDraft(e.target.value)}
-                          className="w-full h-[160px] rounded-lg border border-border bg-background p-3 text-[11px] font-mono leading-relaxed resize-y focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                        />
-                      ) : (
-                        <pre className="text-[10px] font-mono text-muted-foreground leading-relaxed whitespace-pre-wrap max-h-[120px] overflow-y-auto">
-                          {(prompts[stage.aiFeature] || "Loading...").slice(0, 400)}
-                          {(prompts[stage.aiFeature] || "").length > 400 && "..."}
-                        </pre>
-                      )}
-                    </div>
-                  )}
 
-                  {!isAI && (
-                    <div className="rounded-xl bg-muted/30 p-4">
-                      <p className="text-[11px] text-muted-foreground">This stage uses platform automation — no AI prompt needed. It runs automatically when listings are published.</p>
-                    </div>
-                  )}
-
-                  {/* Provider / model / key config */}
-                  {isAI && (
-                    <div className="space-y-3">
-                      {/* Provider pills */}
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-[10px] text-muted-foreground font-medium">Provider</span>
-                        {Object.entries(AI_MODELS).map(([id, p]) => (
-                          <button
-                            key={id}
-                            onClick={() => { updateStageConfig(stage.id, "provider", id); updateStageConfig(stage.id, "model", p.models[0]); }}
-                            className={cn("px-2.5 py-1 rounded-lg text-[10px] font-medium transition-colors",
-                              config.provider === id ? "bg-[var(--primary)] text-[var(--primary-foreground)]" : "bg-muted text-muted-foreground hover:text-foreground"
-                            )}
-                          >{p.label}</button>
-                        ))}
-                      </div>
-
-                      {/* Model + key row */}
-                      <div className="flex flex-wrap items-center gap-3">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] text-muted-foreground font-medium">Model</span>
-                          <select
-                            value={config.model || ""}
-                            onChange={(e) => updateStageConfig(stage.id, "model", e.target.value)}
-                            className="h-7 rounded-lg border border-border bg-background px-2 text-[10px] font-mono"
-                          >
-                            <option value="">Default ({defaultModel})</option>
-                            {(AI_MODELS[config.provider]?.models || []).map((m) => (
-                              <option key={m} value={m}>{m}</option>
-                            ))}
+                        {/* Provider + model */}
+                        <div className="flex flex-wrap items-center gap-2">
+                          {Object.entries(AI_MODELS).map(([id, p]) => (
+                            <button key={id} onClick={() => { updateStageConfig(stage.id, "provider", id); updateStageConfig(stage.id, "model", p.models[0]); }}
+                              className={cn("px-2 py-1 rounded-md text-[10px] font-medium", config.provider === id ? "bg-[var(--primary)] text-[var(--primary-foreground)]" : "bg-muted text-muted-foreground")}>{p.label}</button>
+                          ))}
+                          <select value={config.model || ""} onChange={(e) => updateStageConfig(stage.id, "model", e.target.value)} className="h-6 rounded border border-border bg-background px-1.5 text-[10px] font-mono">
+                            <option value="">Default</option>
+                            {(AI_MODELS[config.provider]?.models || []).map((m) => (<option key={m} value={m}>{m}</option>))}
                           </select>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] text-muted-foreground font-medium">Key</span>
                           <div className="relative">
-                            <Input type={showKey ? "text" : "password"} value={config.apiKey} onChange={(e) => updateStageConfig(stage.id, "apiKey", e.target.value)} placeholder="Global key" className="h-7 text-[10px] font-mono w-[130px] pr-7" />
-                            <button onClick={() => setShowKey(!showKey)} className="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground">
-                              {showKey ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-                            </button>
+                            <Input type={showKey ? "text" : "password"} value={config.apiKey} onChange={(e) => updateStageConfig(stage.id, "apiKey", e.target.value)} placeholder="Key" className="h-6 text-[10px] font-mono w-[100px] pr-6" />
+                            <button onClick={() => setShowKey(!showKey)} className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground">{showKey ? <EyeOff className="h-2.5 w-2.5" /> : <Eye className="h-2.5 w-2.5" />}</button>
                           </div>
                         </div>
-                      </div>
-                    </div>
-                  )}
 
-                  {/* Action buttons */}
-                  <div className="flex items-center gap-2 pt-1">
-                    {isAI && (
-                      <Button variant="outline" size="sm" className="h-7 text-[10px] gap-1" onClick={() => testStage(stage)} disabled={testing}>
-                        {testing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Play className="h-3 w-3" />}Test
-                      </Button>
+                        <div className="flex gap-1.5">
+                          <Button variant="outline" size="sm" className="h-6 text-[10px] gap-1" onClick={() => testStage(stage)} disabled={testing}>{testing ? <Loader2 className="h-2.5 w-2.5 animate-spin" /> : <Play className="h-2.5 w-2.5" />}Test</Button>
+                          <Button size="sm" className="h-6 text-[10px] gap-1" onClick={() => saveStageConfig(stage.id)} disabled={saving}>{saving ? <Loader2 className="h-2.5 w-2.5 animate-spin" /> : <Check className="h-2.5 w-2.5" />}Save</Button>
+                        </div>
+
+                        {testResult && (
+                          <div className="rounded-lg bg-muted/50 p-2">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-[9px] font-bold uppercase text-muted-foreground">Result</span>
+                              <button onClick={() => setTestResult(null)}><X className="h-2.5 w-2.5 text-muted-foreground" /></button>
+                            </div>
+                            <pre className="text-[10px] font-mono text-muted-foreground whitespace-pre-wrap max-h-[150px] overflow-y-auto">{testResult}</pre>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-[11px] text-muted-foreground">This stage uses platform automation — no AI prompt needed.</p>
                     )}
-                    <Button size="sm" className="h-7 text-[10px] gap-1" onClick={() => saveStageConfig(stage.id)} disabled={saving}>
-                      {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}Save Config
-                    </Button>
                   </div>
-
-                  {/* Test result */}
-                  {testResult && (
-                    <div className="rounded-lg bg-muted/50 p-3 space-y-1">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Test Result</span>
-                        <button onClick={() => setTestResult(null)} className="text-muted-foreground hover:text-foreground"><X className="h-3 w-3" /></button>
-                      </div>
-                      <pre className="text-[11px] font-mono text-muted-foreground leading-relaxed whitespace-pre-wrap max-h-[200px] overflow-y-auto">{testResult}</pre>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* ── Flow connector (between cards) ── */}
-              {!isLast && (
-                <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 z-10 hidden md:flex items-center justify-center">
-                  <div className="h-4 flex items-center">
-                    <svg width="2" height="16" viewBox="0 0 2 16">
-                      <line x1="1" y1="0" x2="1" y2="16" stroke={stage.color} strokeWidth="2" strokeDasharray="3 3" opacity="0.3" className="animate-dash-vertical" />
-                    </svg>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
+
+      {/* ═══ DATA INSPECTOR (breakpoint hit) ═══ */}
+      {pausedStage && pausedStageId && (
+        <DataInspector
+          stageLabel={pausedStage.label}
+          stageColor={pausedStage.color}
+          data={pipelineState.interceptedData[pausedStageId] || pausedStage.outputExample}
+          onDataChange={(data) => dispatch({ type: "SET_INTERCEPTED_DATA", stageId: pausedStageId, data })}
+          onContinue={() => dispatch({ type: "STAGE_RESUME", stageId: pausedStageId })}
+          onAbort={stopPipeline}
+        />
+      )}
     </div>
   );
 }

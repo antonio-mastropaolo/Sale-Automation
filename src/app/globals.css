@@ -533,6 +533,26 @@ body {
   animation: dashFlowVertical 1s linear infinite;
 }
 
+/* Pipeline stage animations */
+@keyframes progress-fill {
+  0% { width: 5%; }
+  50% { width: 60%; }
+  100% { width: 95%; }
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 var(--glow-color, rgba(59,130,246,0.3)); }
+  50% { box-shadow: 0 0 20px 4px var(--glow-color, rgba(59,130,246,0.3)); }
+}
+@keyframes particle-flow {
+  0% { offset-distance: 0%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { offset-distance: 100%; opacity: 0; }
+}
+.animate-glow-pulse {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
 .animate-fade-in { animation: fadeIn 0.3s ease-out; }
 .animate-fade-in-up { animation: fadeIn 0.4s ease-out both; }
 .animate-pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
