@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   Flame, Calendar, TrendingUp, ArrowUpRight, ArrowDownRight, Minus,
   RefreshCw, Loader2, Clock, DollarSign, ShoppingBag, Zap,
-  ChevronRight, Settings2, Eye, EyeOff,
+  ChevronRight, Settings2, Eye, EyeOff, AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -71,6 +71,7 @@ const directionIcon: Record<string, { icon: typeof ArrowUpRight; color: string }
 export default function DropsPage() {
   const [data, setData] = useState<DropFeed | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [visibleWidgets, setVisibleWidgets] = useState<Record<string, boolean>>(() => {
     if (typeof window === "undefined") return { upcomingDrops: true, recentDrops: true, trendingItems: true, weeklyInsight: true };
@@ -92,18 +93,27 @@ export default function DropsPage() {
   const fetchDrops = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
     else setLoading(true);
+    setError(null);
     try {
-      const res = await fetch("/api/ai/drops");
-      if (!res.ok) throw new Error();
-      setData(await res.json());
+      const res = await fetch(isRefresh ? "/api/ai/drops?refresh=true" : "/api/ai/drops");
+      const json = await res.json();
+      setData(json);
       if (isRefresh) toast.success("Drop feed refreshed");
-    } catch { toast.error("Failed to load drop feed"); }
-    finally { setLoading(false); setRefreshing(false); }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Network error";
+      setError(msg);
+      toast.error("Failed to load drop feed");
+      // Set empty data so the page doesn't stay stuck on loading spinner
+      setData({ upcomingDrops: [], recentDrops: [], trendingItems: [], weeklyInsight: "Failed to load. Check your AI provider settings and try again." });
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   }, []);
 
   useEffect(() => { fetchDrops(); }, [fetchDrops]);
 
-  if (loading || !data) {
+  if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center animate-fade-in">
         <div className="h-14 w-14 rounded-2xl flex items-center justify-center mb-4" style={{ background: "var(--accent)" }}>
@@ -119,6 +129,8 @@ export default function DropsPage() {
       </div>
     );
   }
+
+  if (!data) return null;
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -162,6 +174,33 @@ export default function DropsPage() {
               </button>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Error banner */}
+      {error && (
+        <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-4 flex items-start gap-3 animate-fade-in">
+          <AlertTriangle className="h-5 w-5 text-red-400 shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm font-semibold text-red-400 mb-1">Drop Feed Unavailable</h3>
+            <p className="text-xs text-muted-foreground">Check your AI provider settings and try again. The feed updates every 10 minutes once loaded.</p>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => fetchDrops(true)} disabled={refreshing} className="shrink-0 h-7 text-xs">
+            {refreshing ? <Loader2 className="h-3 w-3 animate-spin" /> : "Retry"}
+          </Button>
+        </div>
+      )}
+
+      {/* Empty state — all sections empty but no network error */}
+      {!error && data.upcomingDrops.length === 0 && data.recentDrops.length === 0 && data.trendingItems.length === 0 && !data.weeklyInsight && (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <Flame className="h-10 w-10 text-muted-foreground/30 mb-3" />
+          <h3 className="text-sm font-semibold mb-1">No drops available</h3>
+          <p className="text-xs text-muted-foreground max-w-xs mb-4">The AI didn&apos;t return any drop data. This can happen if the model timed out or returned an unexpected format.</p>
+          <Button variant="outline" size="sm" onClick={() => fetchDrops(true)} disabled={refreshing} className="h-8 text-xs gap-1.5">
+            {refreshing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+            Try Again
+          </Button>
         </div>
       )}
 

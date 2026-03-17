@@ -1,11 +1,39 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getAIClient } from "@/lib/settings";
 import { tokenParams } from "@/lib/ai";
+import { parseAIJson } from "@/lib/ai-utils";
+
+/** In-memory cache — avoids expensive AI calls on every page load */
+let cachedResult: { data: unknown; ts: number } | null = null;
+const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+
+const EMPTY_FEED = {
+  upcomingDrops: [],
+  recentDrops: [],
+  trendingItems: [],
+  weeklyInsight: "",
+};
 
 /** GET — AI-generated drop feed: upcoming releases, restocks, trending items */
-export async function GET() {
+export async function GET(req: Request) {
+  // Return cache if fresh (skip with ?refresh=true)
+  const url = new URL(req.url);
+  const forceRefresh = url.searchParams.get("refresh") === "true";
+
+  if (!forceRefresh && cachedResult && Date.now() - cachedResult.ts < CACHE_TTL) {
+    return NextResponse.json(cachedResult.data);
+  }
+
   try {
     const { client, model } = await getAIClient();
+
+    // Check if API key is actually configured
+    if (!client.apiKey) {
+      return NextResponse.json(
+        { ...EMPTY_FEED, weeklyInsight: "No AI provider configured. Go to Settings → AI Provider to add your API key.", error: "no_api_key" },
+        { status: 200 } // 200 so the frontend doesn't get stuck
+      );
+    }
 
     const today = new Date().toISOString().split("T")[0];
 
@@ -17,7 +45,7 @@ export async function GET() {
           role: "user",
           content: `You are a resale market expert specializing in sneakers, streetwear, and luxury fashion. Today is ${today}.
 
-Generate a drop feed for resellers. Return ONLY valid JSON (no markdown):
+Generate a drop feed for resellers. Return ONLY valid JSON (no markdown, no explanation):
 
 {
   "upcomingDrops": [
@@ -31,8 +59,7 @@ Generate a drop feed for resellers. Return ONLY valid JSON (no markdown):
       "resaleMultiplier": 1.9,
       "hype": 85,
       "platform": "Nike SNKRS|Adidas Confirmed|Supreme|Palace|SSENSE|etc",
-      "tip": "quick sourcing tip for resellers",
-      "image": null
+      "tip": "quick sourcing tip for resellers"
     }
   ],
   "recentDrops": [
@@ -69,26 +96,46 @@ Include 5-6 upcoming drops (next 2 weeks), 4-5 recent drops, and 4-5 trending it
     });
 
     const text = response.choices[0]?.message?.content || "{}";
+
+    let parsed: Record<string, unknown>;
     try {
-      const cleaned = text.replace(/```json\n?|\n?```/g, "").trim();
-      return NextResponse.json(JSON.parse(cleaned));
+      parsed = parseAIJson<Record<string, unknown>>(text);
     } catch {
-      return NextResponse.json({
-        upcomingDrops: [],
-        recentDrops: [],
-        trendingItems: [],
-        weeklyInsight: text,
-      });
+      // Last resort: if AI returned something but it's not JSON, show it as insight
+      parsed = { ...EMPTY_FEED, weeklyInsight: text.slice(0, 500) };
     }
-  } catch (err) {
+
+    // Validate structure — ensure all expected arrays exist
+    const result = {
+      upcomingDrops: Array.isArray(parsed.upcomingDrops) ? parsed.upcomingDrops : [],
+      recentDrops: Array.isArray(parsed.recentDrops) ? parsed.recentDrops : [],
+      trendingItems: Array.isArray(parsed.trendingItems) ? parsed.trendingItems : [],
+      weeklyInsight: typeof parsed.weeklyInsight === "string" ? parsed.weeklyInsight : "",
+    };
+
+    // Cache the result
+    cachedResult = { data: result, ts: Date.now() };
+
+    return NextResponse.json(result);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+
+    // Provide actionable error messages
+    let userMessage = "Failed to load drop feed. ";
+    if (message.includes("401") || message.includes("auth") || message.includes("API key")) {
+      userMessage += "Your AI API key appears to be invalid. Check Settings → AI Provider.";
+    } else if (message.includes("429") || message.includes("rate")) {
+      userMessage += "Rate limit hit. Try again in a minute.";
+    } else if (message.includes("timeout") || message.includes("ECONNREFUSED")) {
+      userMessage += "Could not reach AI provider. Check your connection.";
+    } else {
+      userMessage += message.slice(0, 150);
+    }
+
+    // Return 200 with error info so the frontend doesn't get stuck
     return NextResponse.json(
-      {
-        upcomingDrops: [],
-        recentDrops: [],
-        trendingItems: [],
-        weeklyInsight: "Failed to load drop feed. Check your AI provider settings.",
-      },
-      { status: 500 }
+      { ...EMPTY_FEED, weeklyInsight: userMessage, error: "api_error" },
+      { status: 200 }
     );
   }
 }
