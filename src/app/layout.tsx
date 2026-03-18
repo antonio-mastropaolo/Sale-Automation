@@ -143,23 +143,45 @@ const bootDismissScript = `
   var total=stepEls.length;
   var current=0;
   var dismissed=false;
+  var healthResult=null;
+  var appReady=false;
+  var minTime=Date.now()+3500; // Show for at least 3.5 seconds
 
   function dismiss(){
     if(dismissed)return;
-    dismissed=true;
-    if(bar)bar.style.width='100%';
-    stepEls.forEach(function(el){el.classList.add('done');el.classList.remove('active')});
+    // Wait until minimum display time
+    var wait=Math.max(0,minTime-Date.now());
     setTimeout(function(){
-      var el=document.getElementById('boot-screen');
-      if(el){el.classList.add('hidden');setTimeout(function(){el.remove()},600)}
-    },500);
+      dismissed=true;
+      if(bar)bar.style.width='100%';
+      stepEls.forEach(function(el){el.classList.add('done');el.classList.remove('active')});
+      // If health check found issues, show warning briefly
+      if(healthResult&&healthResult.status==='auto-fixed'){
+        var sub=document.querySelector('.boot-sub');
+        if(sub){sub.textContent='⚠ AI model switched: '+healthResult.previousModel+' → '+healthResult.newModel;sub.style.color='#f59e0b'}
+        setTimeout(doHide,1500);
+      } else if(healthResult&&healthResult.status==='unhealthy'){
+        var sub=document.querySelector('.boot-sub');
+        if(sub){sub.textContent='⚠ AI provider issue detected — check Settings';sub.style.color='#ef4444'}
+        setTimeout(doHide,2000);
+      } else {
+        setTimeout(doHide,400);
+      }
+    },wait);
+  }
+
+  function doHide(){
+    var el=document.getElementById('boot-screen');
+    if(el){el.classList.add('hidden');setTimeout(function(){el.remove()},600)}
   }
 
   function runStep(){
-    if(current>=total){dismiss();return;}
-    // Smooth progress
+    if(current>=total){
+      // All steps done — run health check before dismissing
+      runHealthCheck();
+      return;
+    }
     if(bar)bar.style.width=Math.round(((current+0.5)/total)*100)+'%';
-    // Update step states
     stepEls.forEach(function(el,i){
       el.classList.remove('active','done');
       if(i<current)el.classList.add('done');
@@ -167,35 +189,49 @@ const bootDismissScript = `
     });
     var statusEl=stepEls[current]&&stepEls[current].querySelector('.step-status');
     if(statusEl)statusEl.textContent='...';
-    // Each step takes 350-500ms for smooth feel
-    var delay=350+Math.random()*150;
+    var delay=300+Math.random()*150;
     setTimeout(function(){
       if(statusEl)statusEl.textContent='OK';
       if(bar)bar.style.width=Math.round(((current+1)/total)*100)+'%';
       stepEls[current].classList.remove('active');
       stepEls[current].classList.add('done');
       current++;
-      // Small gap between steps
-      setTimeout(runStep,80);
+      setTimeout(runStep,60);
     },delay);
   }
 
-  // Start after entrance animations finish
-  setTimeout(runStep,600);
+  function runHealthCheck(){
+    var sub=document.querySelector('.boot-sub');
+    if(sub)sub.textContent='Running health diagnostics...';
+    fetch('/api/health-check').then(function(r){return r.json()}).then(function(data){
+      healthResult=data;
+      dismiss();
+    }).catch(function(){
+      dismiss();
+    });
+  }
 
-  // React app signals ready — fast-forward
+  // Start after entrance animations
+  setTimeout(runStep,500);
+
+  // React app signals ready — note it but don't dismiss yet (wait for health check)
   window.addEventListener('app:ready',function(){
-    // Complete remaining steps quickly
+    appReady=true;
+    // If steps haven't finished, fast-forward them
     for(var i=current;i<total;i++){
       stepEls[i].classList.add('done');
       stepEls[i].classList.remove('active');
       var s=stepEls[i].querySelector('.step-status');
       if(s)s.textContent='OK';
     }
-    dismiss();
+    current=total;
+    if(bar)bar.style.width='95%';
+    // Health check will trigger dismiss
+    if(!healthResult)runHealthCheck();
   });
-  // Safety: never block longer than 6s
-  setTimeout(dismiss,6000);
+
+  // Safety: never block longer than 8s
+  setTimeout(function(){if(!dismissed)dismiss()},8000);
 })();
 `;
 
