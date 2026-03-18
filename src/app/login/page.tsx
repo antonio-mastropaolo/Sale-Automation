@@ -130,8 +130,8 @@ export default function LoginPage() {
               { name: "Vestiaire", color: "#C9A96E", icon: "/platforms/vestiaire.svg" },
             ].map((p, i) => (
               <div key={p.name} className="group animate-badge-pop" style={{ animationDelay: `${1 + i * 0.08}s` }}>
-                <div className="relative mx-auto w-14 h-14 rounded-2xl flex items-center justify-center border border-white/[0.03] bg-white/[0.02] transition-all duration-300 group-hover:scale-110 group-hover:border-white/[0.06]">
-                  <img src={p.icon} alt={p.name} className="h-7 w-7 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; (e.target as HTMLImageElement).parentElement!.innerHTML = `<span style="color:${p.color};font-weight:700;font-size:16px">${p.name[0]}</span>`; }} />
+                <div className="relative mx-auto w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110">
+                  <img src={p.icon} alt={p.name} className="h-10 w-10 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; (e.target as HTMLImageElement).parentElement!.innerHTML = `<span style="color:${p.color};font-weight:700;font-size:20px">${p.name[0]}</span>`; }} />
                 </div>
                 <p className="text-[10px] text-white/70 mt-1.5 font-medium">{p.name}</p>
               </div>
