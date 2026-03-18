@@ -89,7 +89,7 @@ const bootScreenStyle = `
 #boot-screen .progress-bar{
   height:100%;width:0%;border-radius:inherit;
   background:linear-gradient(90deg,#3b82f6,#8b5cf6);
-  transition:width .6s cubic-bezier(0.16,1,0.3,1);
+  transition:width .3s linear;
 }
 #boot-screen .boot-steps{width:100%;display:flex;flex-direction:column;gap:0}
 #boot-screen .boot-step{
@@ -144,18 +144,29 @@ const bootDismissScript = `
   var current=0;
   var dismissed=false;
   var healthResult=null;
-  var appReady=false;
-  var minTime=Date.now()+3500; // Show for at least 3.5 seconds
+  var progress=0;
+  var minTime=Date.now()+3500;
+
+  // Smooth continuous progress bar — ticks every 50ms
+  var progressTimer=setInterval(function(){
+    if(dismissed)return;
+    // Slow down as we approach 90%, never exceed 95% until done
+    var target=current>=total?92:Math.min(90,(current/total)*85+5);
+    var speed=progress<50?0.8:progress<80?0.4:0.15;
+    progress=Math.min(target,progress+speed);
+    if(bar)bar.style.width=progress+'%';
+  },50);
 
   function dismiss(){
     if(dismissed)return;
-    // Wait until minimum display time
     var wait=Math.max(0,minTime-Date.now());
     setTimeout(function(){
       dismissed=true;
+      clearInterval(progressTimer);
+      // Animate to 100%
+      progress=100;
       if(bar)bar.style.width='100%';
       stepEls.forEach(function(el){el.classList.add('done');el.classList.remove('active')});
-      // If health check found issues, show warning briefly
       if(healthResult&&healthResult.status==='auto-fixed'){
         var sub=document.querySelector('.boot-sub');
         if(sub){sub.textContent='⚠ AI model switched: '+healthResult.previousModel+' → '+healthResult.newModel;sub.style.color='#f59e0b'}
@@ -176,12 +187,7 @@ const bootDismissScript = `
   }
 
   function runStep(){
-    if(current>=total){
-      // All steps done — run health check before dismissing
-      runHealthCheck();
-      return;
-    }
-    if(bar)bar.style.width=Math.round(((current+0.5)/total)*100)+'%';
+    if(current>=total){runHealthCheck();return;}
     stepEls.forEach(function(el,i){
       el.classList.remove('active','done');
       if(i<current)el.classList.add('done');
@@ -189,48 +195,35 @@ const bootDismissScript = `
     });
     var statusEl=stepEls[current]&&stepEls[current].querySelector('.step-status');
     if(statusEl)statusEl.textContent='...';
-    var delay=300+Math.random()*150;
+    var delay=280+Math.random()*120;
     setTimeout(function(){
       if(statusEl)statusEl.textContent='OK';
-      if(bar)bar.style.width=Math.round(((current+1)/total)*100)+'%';
       stepEls[current].classList.remove('active');
       stepEls[current].classList.add('done');
       current++;
-      setTimeout(runStep,60);
+      setTimeout(runStep,50);
     },delay);
   }
 
   function runHealthCheck(){
     var sub=document.querySelector('.boot-sub');
-    if(sub)sub.textContent='Running health diagnostics...';
+    if(sub)sub.textContent='Running diagnostics...';
     fetch('/api/health-check').then(function(r){return r.json()}).then(function(data){
-      healthResult=data;
-      dismiss();
-    }).catch(function(){
-      dismiss();
-    });
+      healthResult=data;dismiss();
+    }).catch(function(){dismiss()});
   }
 
-  // Start after entrance animations
   setTimeout(runStep,500);
 
-  // React app signals ready — note it but don't dismiss yet (wait for health check)
   window.addEventListener('app:ready',function(){
-    appReady=true;
-    // If steps haven't finished, fast-forward them
     for(var i=current;i<total;i++){
-      stepEls[i].classList.add('done');
-      stepEls[i].classList.remove('active');
-      var s=stepEls[i].querySelector('.step-status');
-      if(s)s.textContent='OK';
+      stepEls[i].classList.add('done');stepEls[i].classList.remove('active');
+      var s=stepEls[i].querySelector('.step-status');if(s)s.textContent='OK';
     }
     current=total;
-    if(bar)bar.style.width='95%';
-    // Health check will trigger dismiss
     if(!healthResult)runHealthCheck();
   });
 
-  // Safety: never block longer than 8s
   setTimeout(function(){if(!dismissed)dismiss()},8000);
 })();
 `;
