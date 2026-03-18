@@ -317,55 +317,48 @@ export default function CrossMarketSearchPage() {
                 <div
                   key={result.id}
                   className={cn(
-                    "rounded-xl bg-card border overflow-hidden transition-all duration-200 hover:shadow-lg group",
+                    "rounded-xl bg-card border overflow-hidden transition-all duration-200 hover:shadow-lg group flex flex-col",
                     isSelected ? "ring-2 ring-[var(--primary)] shadow-lg" : "border-[var(--border)]"
                   )}
                 >
-                  {/* Product image carousel */}
-                  <div className="relative">
-                    <div className="h-48 overflow-x-auto overflow-y-hidden snap-x snap-mandatory flex scrollbar-none" style={{ scrollbarWidth: "none" }}>
-                      {result.images.map((img, imgIdx) => (
-                        <button key={imgIdx} onClick={() => openDetail(result)} className="h-full w-full shrink-0 snap-center cursor-pointer">
-                          <img src={img} alt={`${result.title} ${imgIdx + 1}`} className="w-full h-full object-cover" loading="lazy" />
-                        </button>
-                      ))}
+                  {/* Product image area */}
+                  <button onClick={() => openDetail(result)} className="relative h-44 cursor-pointer overflow-hidden">
+                    {/* Styled product placeholder with brand gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-muted/80 to-muted flex items-center justify-center">
+                      <div className="text-center px-4">
+                        <p className="text-[22px] font-bold text-foreground/15 leading-tight line-clamp-2">{result.brand}</p>
+                        <p className="text-[13px] text-foreground/8 mt-1">{["Hoodie","Crewneck","Tee","Jacket","Pants"][parseInt(result.id.split("-")[1]) % 5]}</p>
+                      </div>
                     </div>
-                    {result.images.length > 1 && (
-                      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
-                        {result.images.map((_, idx) => (
-                          <div key={idx} className="h-1 w-4 rounded-full bg-white/30" />
-                        ))}
+                    {/* Platform badge — with real icon */}
+                    <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-sm">
+                      <img src={`/platforms/${result.platform.toLowerCase().replace(" ", "")}.svg`} alt="" className="h-4 w-4 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                      <span className="text-[11px] font-semibold text-white">{result.platform}</span>
+                    </div>
+                    {/* AI score */}
+                    {result.aiScore && (
+                      <div className={cn(
+                        "absolute top-2.5 right-2.5 flex items-center gap-1 px-2 py-1 rounded-lg backdrop-blur-sm",
+                        result.aiScore >= 85 ? "bg-emerald-500/80" : result.aiScore >= 70 ? "bg-blue-500/80" : "bg-black/50"
+                      )}>
+                        <Sparkles className="h-3 w-3 text-white" />
+                        <span className="text-[11px] font-bold text-white">{result.aiScore}</span>
                       </div>
                     )}
-                      {/* Platform badge */}
-                      <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/50 backdrop-blur-sm">
-                        <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: result.platformColor }} />
-                        <span className="text-[9px] font-semibold text-white">{result.platform}</span>
+                    {/* Deal badge */}
+                    {dealPercent > 5 && (
+                      <div className="absolute bottom-2.5 left-2.5 px-2 py-1 rounded-lg bg-emerald-500/90 text-[10px] font-bold text-white flex items-center gap-1">
+                        <Zap className="h-3 w-3" /> {dealPercent}% below market
                       </div>
-                      {/* AI score badge */}
-                      {result.aiScore && (
-                        <div className={cn(
-                          "absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full backdrop-blur-sm",
-                          result.aiScore >= 85 ? "bg-emerald-500/80" : result.aiScore >= 70 ? "bg-blue-500/80" : "bg-black/50"
-                        )}>
-                          <Sparkles className="h-2.5 w-2.5 text-white" />
-                          <span className="text-[9px] font-bold text-white">{result.aiScore}</span>
-                        </div>
-                      )}
-                      {/* Deal badge */}
-                      {dealPercent > 5 && (
-                        <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-emerald-500/90 text-[9px] font-bold text-white flex items-center gap-0.5">
-                          <Zap className="h-2.5 w-2.5" /> {dealPercent}% below market
-                        </div>
-                      )}
-                      {/* Time badge */}
-                      <div className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded-full bg-black/40 backdrop-blur-sm text-[8px] text-white/70">
-                        {result.postedAgo} ago
-                      </div>
-                  </div>
+                    )}
+                    <div className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded-lg bg-black/40 backdrop-blur-sm text-[9px] text-white/70">
+                      {result.postedAgo} ago
+                    </div>
+                  </button>
 
-                  <div className="p-3.5">
-                    {/* Price */}
+                  {/* Card body — fixed structure for alignment */}
+                  <div className="p-3.5 flex-1 flex flex-col">
+                    {/* Price row */}
                     <div className="flex items-center justify-between mb-1.5">
                       <div className="flex items-center gap-2">
                         <span className="text-lg font-bold">${result.price}</span>
@@ -379,76 +372,53 @@ export default function CrossMarketSearchPage() {
                       </div>
                     </div>
 
-                    {/* Title */}
-                    <a href={result.listingUrl} target="_blank" rel="noopener noreferrer">
-                      <h3 className="text-[13px] font-semibold line-clamp-2 mb-2 group-hover:text-[var(--primary)] transition-colors">{result.title}</h3>
-                    </a>
+                    {/* Title — fixed 2 lines */}
+                    <h3 className="text-[13px] font-semibold line-clamp-2 mb-2 min-h-[36px] cursor-pointer group-hover:text-[var(--primary)] transition-colors" onClick={() => openDetail(result)}>{result.title}</h3>
 
                     {/* Metadata badges */}
-                    <div className="flex flex-wrap gap-1 mb-2.5">
+                    <div className="flex flex-wrap gap-1 mb-2.5 min-h-[22px]">
                       {result.brand && <Badge variant="outline" className="text-[9px] px-1.5 py-0">{result.brand}</Badge>}
                       {result.size && <Badge variant="outline" className="text-[9px] px-1.5 py-0">{result.size}</Badge>}
                       <Badge variant="outline" className="text-[9px] px-1.5 py-0">{result.condition}</Badge>
                     </div>
 
-                    {/* AI insight */}
-                    {result.aiInsight && (
-                      <div className="flex items-start gap-1.5 rounded-lg bg-[var(--primary)]/5 border border-[var(--primary)]/10 px-2.5 py-1.5 mb-2.5">
-                        <Sparkles className="h-3 w-3 text-[var(--primary)] shrink-0 mt-0.5" />
-                        <p className="text-[10px] text-[var(--primary)] leading-snug">{result.aiInsight}</p>
-                      </div>
-                    )}
+                    {/* AI insight — grows to fill */}
+                    <div className="flex-1 mb-2.5">
+                      {result.aiInsight && (
+                        <div className="flex items-start gap-1.5 rounded-lg bg-[var(--primary)]/5 border border-[var(--primary)]/10 px-2.5 py-1.5">
+                          <Sparkles className="h-3 w-3 text-[var(--primary)] shrink-0 mt-0.5" />
+                          <p className="text-[10px] text-[var(--primary)] leading-snug">{result.aiInsight}</p>
+                        </div>
+                      )}
+                    </div>
 
-                    {/* Seller + AI analysis row */}
+                    {/* Bottom row — always at same position */}
                     <div className="flex items-center justify-between pt-2 border-t border-border">
-                      <span className="text-[10px] text-muted-foreground truncate max-w-[100px]">@{result.seller}</span>
+                      <span className="text-[10px] text-muted-foreground truncate max-w-[80px]">@{result.seller}</span>
                       <div className="flex items-center gap-2">
-                        <span className="flex items-center gap-0.5 text-[9px] text-muted-foreground" title="Market average">
-                          <BarChart3 className="h-3 w-3" /> ${marketAvg}
-                        </span>
-                        <span className="flex items-center gap-0.5 text-[9px] text-emerald-500" title="Resale estimate">
-                          <TrendingUp className="h-3 w-3" /> ${resaleEst}
-                        </span>
+                        <span className="flex items-center gap-0.5 text-[9px] text-muted-foreground"><BarChart3 className="h-3 w-3" />${marketAvg}</span>
+                        <span className="flex items-center gap-0.5 text-[9px] text-emerald-500"><TrendingUp className="h-3 w-3" />${resaleEst}</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Actions (click to expand) */}
+                  {/* Quick actions toggle */}
                   <button
                     onClick={() => setSelectedResult(isSelected ? null : result)}
-                    className="w-full text-center py-1.5 border-t border-border text-[10px] font-medium text-muted-foreground hover:bg-muted/30 transition-colors"
+                    className="w-full text-center py-1.5 border-t border-border text-[10px] font-medium text-muted-foreground hover:bg-muted/30 transition-colors shrink-0"
                   >
                     {isSelected ? "Close" : "Quick Actions"}
                   </button>
 
                   {isSelected && (
-                    <div className="p-3.5 pt-0 space-y-2 animate-fade-in">
+                    <div className="p-3.5 pt-0 space-y-2 animate-fade-in shrink-0">
                       <div className="flex gap-2">
-                        <a href={result.listingUrl} target="_blank" rel="noopener noreferrer" className="flex-1">
-                          <Button size="sm" className="w-full h-8 text-[11px] gap-1.5">
-                            <ExternalLink className="h-3 w-3" /> View on {result.platform}
-                          </Button>
-                        </a>
+                        <Button size="sm" className="flex-1 h-8 text-[11px] gap-1.5" onClick={() => openDetail(result)}>
+                          <ExternalLink className="h-3 w-3" /> View Details
+                        </Button>
                         <Button variant="outline" size="sm" className="flex-1 h-8 text-[11px] gap-1.5">
                           <Tag className="h-3 w-3" /> Save to List
                         </Button>
-                      </div>
-                      <div className="grid grid-cols-3 gap-1.5 text-[10px]">
-                        <div className="rounded-lg bg-muted/30 p-2 text-center">
-                          <BarChart3 className="h-3.5 w-3.5 text-muted-foreground mx-auto mb-0.5" />
-                          <p className="font-semibold">${marketAvg}</p>
-                          <p className="text-[8px] text-muted-foreground">Market Avg</p>
-                        </div>
-                        <div className="rounded-lg bg-muted/30 p-2 text-center">
-                          <TrendingUp className="h-3.5 w-3.5 text-emerald-500 mx-auto mb-0.5" />
-                          <p className="font-semibold text-emerald-500">${resaleEst}</p>
-                          <p className="text-[8px] text-muted-foreground">Resale Est</p>
-                        </div>
-                        <div className="rounded-lg bg-muted/30 p-2 text-center">
-                          <Shield className="h-3.5 w-3.5 text-blue-500 mx-auto mb-0.5" />
-                          <p className="font-semibold text-blue-500">{result.aiScore}%</p>
-                          <p className="text-[8px] text-muted-foreground">AI Score</p>
-                        </div>
                       </div>
                     </div>
                   )}
