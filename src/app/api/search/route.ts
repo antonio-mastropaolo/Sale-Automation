@@ -77,44 +77,38 @@ export async function GET(request: NextRequest) {
     results,
     total: results.length,
     query: q,
-    imageSource: images.length > 0 ? "live" : "fallback",
+    imageSource: images.length > 0 ? "stockx" : "unavailable",
   });
 }
 
 /**
- * Fetch product images. Uses multiple strategies:
- * 1. Pexels API (free, no key for basic)
- * 2. Unsplash direct URLs (deterministic, always works)
+ * Try to fetch real product images from StockX.
+ * Falls back to empty array if StockX blocks the request.
  */
 async function searchImages(query: string): Promise<string[]> {
-  // Strategy: use direct Unsplash image URLs with specific photo IDs
-  // These are real fashion/clothing product photos that always load
-  const FASHION_PHOTOS: Record<string, string[]> = {
-    default: [
-      "photo-1556821840-3a63f95609a7", "photo-1620799140408-edc6dcb6d633",
-      "photo-1578768079470-1e3d02c2da68", "photo-1614975059251-992f11792571",
-      "photo-1618354691373-d851c5c3a990", "photo-1576566588028-4147f3842f27",
-      "photo-1521572163474-6864f9cf17ab", "photo-1583743814966-8936f5b7be1a",
-      "photo-1551028719-00167b16eac5", "photo-1544923246-77307dd270cb",
-      "photo-1591047139829-d91aecb6caea", "photo-1548883354-7622d03aca27",
-      "photo-1562157873-818bc0726f68", "photo-1503341504253-dff4815485f1",
-      "photo-1581655353564-df123a1eb820", "photo-1622470953794-aa9c70b0fb9d",
-      "photo-1542272604-787c3835535d", "photo-1473966968600-fa801b869a1a",
-      "photo-1541099649105-f69ad21f3246", "photo-1624378439575-d8705ad7ae80",
-      "photo-1525507119028-ed4c629a60a3", "photo-1434389677669-e08b4cda3a78",
-      "photo-1495105787522-5334e3ffa0ef", "photo-1487222477894-8943e31ef7b2",
-    ],
-  };
+  try {
+    // StockX product search API
+    const res = await fetch(`https://stockx.com/api/browse?_search=${encodeURIComponent(query)}&page=1&resultsPerPage=24&dataType=product`, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "application/json",
+        "App-Platform": "web",
+        "App-Version": "2024.01.01",
+      },
+      signal: AbortSignal.timeout(6000),
+    });
 
-  const photos = FASHION_PHOTOS.default;
+    if (!res.ok) return [];
+    const data = await res.json();
+    const products = data?.Products || [];
 
-  // Shuffle deterministically based on query
-  const seed = query.toLowerCase().split("").reduce((a, c, i) => a + c.charCodeAt(0) * (i + 1), 0);
-  const shuffled = [...photos];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = ((seed * (i + 7)) % (i + 1) + i + 1) % (i + 1);
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    return products
+      .map((p: { media?: { imageUrl?: string; thumbUrl?: string; smallImageUrl?: string } }) =>
+        p.media?.imageUrl || p.media?.thumbUrl || p.media?.smallImageUrl || null
+      )
+      .filter((url: string | null): url is string => !!url)
+      .slice(0, 24);
+  } catch {
+    return [];
   }
-
-  return shuffled.map((id) => `https://images.unsplash.com/${id}?w=400&h=400&fit=crop&auto=format`);
 }
