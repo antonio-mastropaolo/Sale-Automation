@@ -178,45 +178,65 @@ export default function LoginPage() {
 
         {/* Center content */}
         <div className="relative z-10 text-center px-12 max-w-lg">
+          {/* Logo */}
+          <div className="mb-8 animate-fade-up">
+            <img src="/logo-icon.svg" alt="" className="h-14 w-14 mx-auto mb-4 drop-shadow-[0_0_24px_rgba(59,130,246,0.3)]" />
+          </div>
+
           {/* Tagline */}
           <h2 className="text-4xl font-bold text-white tracking-tight mb-4 animate-fade-up">
             List once.
             <br />
-            <span className="bg-gradient-to-r from-[#3a7bd5] via-[#5b9bd5] to-[#f97316] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#3b82f6] via-[#8b5cf6] to-[#f97316] bg-clip-text text-transparent">
               Sell everywhere.
             </span>
           </h2>
-          <p className="text-[#6b7a8d] text-base leading-relaxed animate-fade-up-delay">
-            AI-powered cross-listing to Depop, Grailed, Poshmark, Mercari, eBay, Vinted, Facebook &amp; Vestiaire — in seconds.
+          <p className="text-[#6b7a8d] text-base leading-relaxed mb-10 animate-fade-up-delay">
+            AI-powered cross-listing to 8 marketplaces — in seconds.
           </p>
 
-          {/* Animated platform badges */}
-          <div className="mt-8 flex flex-wrap justify-center gap-2 animate-fade-up-delay-2">
-            {["Depop", "Grailed", "Poshmark", "Mercari", "eBay", "Vinted", "FB", "Vestiaire"].map((p, i) => (
-              <span
-                key={p}
-                className="px-3 py-1 rounded-full text-[11px] font-medium border border-white/10 text-white/50 backdrop-blur-sm animate-badge-pop"
-                style={{
-                  animationDelay: `${1.2 + i * 0.1}s`,
-                  background: "rgba(255,255,255,0.03)",
-                }}
-              >
-                {p}
-              </span>
+          {/* Platform icons grid */}
+          <div className="grid grid-cols-4 gap-3 max-w-xs mx-auto mb-10 animate-fade-up-delay-2">
+            {[
+              { name: "Depop", color: "#FF2300", letter: "d" },
+              { name: "Grailed", color: "#333333", letter: "G" },
+              { name: "Poshmark", color: "#7B2D8E", letter: "P" },
+              { name: "Mercari", color: "#4DC4FF", letter: "M" },
+              { name: "eBay", color: "#E53238", letter: "e" },
+              { name: "Vinted", color: "#09B1BA", letter: "V" },
+              { name: "Facebook", color: "#1877F2", letter: "f" },
+              { name: "Vestiaire", color: "#C9A96E", letter: "VC" },
+            ].map((p, i) => (
+              <div key={p.name} className="group animate-badge-pop" style={{ animationDelay: `${1 + i * 0.08}s` }}>
+                <div className="relative mx-auto w-14 h-14 rounded-2xl flex items-center justify-center border border-white/[0.08] bg-white/[0.03] backdrop-blur-sm transition-all duration-300 group-hover:scale-110 group-hover:border-white/20 group-hover:bg-white/[0.06]"
+                  style={{ boxShadow: `0 0 0 0 ${p.color}00` }}>
+                  <span className="text-[16px] font-bold" style={{ color: p.color }}>{p.letter}</span>
+                </div>
+                <p className="text-[9px] text-white/30 mt-1.5 font-medium">{p.name}</p>
+              </div>
             ))}
           </div>
 
-          {/* Stats */}
-          <div className="mt-10 grid grid-cols-3 gap-6 animate-fade-up-delay-2">
+          {/* Feature highlights */}
+          <div className="grid grid-cols-3 gap-4 animate-fade-up-delay-2">
             {[
-              { value: "8", label: "Platforms" },
-              { value: "10s", label: "Per listing" },
-              { value: "AI", label: "Powered" },
+              { value: "8", label: "Platforms", sub: "Connected" },
+              { value: "<10s", label: "Per Listing", sub: "AI Speed" },
+              { value: "20+", label: "Design Themes", sub: "Customizable" },
             ].map((stat) => (
               <div key={stat.label} className="text-center">
-                <p className="text-2xl font-bold text-white">{stat.value}</p>
-                <p className="text-[11px] text-[#4a5568] uppercase tracking-wider mt-0.5">{stat.label}</p>
+                <p className="text-2xl font-bold text-white tracking-tight">{stat.value}</p>
+                <p className="text-[10px] text-white/25 uppercase tracking-wider mt-0.5">{stat.label}</p>
               </div>
+            ))}
+          </div>
+
+          {/* Feature list */}
+          <div className="mt-8 flex flex-wrap justify-center gap-2 animate-fade-up-delay-2">
+            {["AI Vision", "Smart Repricer", "Photo Studio", "Cross-Market Search", "Shipping Hub", "Pipeline"].map((f) => (
+              <span key={f} className="px-2.5 py-1 rounded-full text-[10px] font-medium border border-white/[0.06] text-white/30 bg-white/[0.02]">
+                {f}
+              </span>
             ))}
           </div>
         </div>
