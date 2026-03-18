@@ -58,7 +58,7 @@ export function PipelineToolbar({ state, totalStages, onRun, onStop, onReset, on
       )}
 
       {/* Reset */}
-      <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={onReset} disabled={!isRunning && completedCount === 0}>
+      <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={onReset}>
         <RotateCcw className="h-3 w-3" />
         Reset
       </Button>

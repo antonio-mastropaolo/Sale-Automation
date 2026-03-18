@@ -46,11 +46,11 @@ const STORAGE_KEY = "listblitz-pipeline-positions";
 /** Generate default positions: serpentine flow */
 function defaultPositions(): Record<string, { x: number; y: number }> {
   const pos: Record<string, { x: number; y: number }> = {};
-  const cols = 4;
-  const gapX = 230;
-  const gapY = 180;
-  const startX = 40;
-  const startY = 20;
+  const cols = 3;
+  const gapX = 260;
+  const gapY = 170;
+  const startX = 30;
+  const startY = 15;
   STAGES.forEach((s, i) => {
     const row = Math.floor(i / cols);
     const col = row % 2 === 0 ? i % cols : cols - 1 - (i % cols); // serpentine
@@ -122,7 +122,7 @@ export default function WorkflowPage() {
   const resetPositions = useCallback(() => {
     const pos = defaultPositions();
     setPositions(pos);
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(pos)); } catch {}
+    try { localStorage.removeItem(STORAGE_KEY); } catch {}
   }, []);
 
   // Pipeline execution
@@ -221,7 +221,7 @@ export default function WorkflowPage() {
     const from = positions[stage.id];
     const to = positions[STAGES[i + 1].id];
     if (!from || !to) return null;
-    const nodeW = 200;
+    const nodeW = 220;
     const x1 = from.x + nodeW / 2;
     const y1 = from.y + 110; // bottom of node
     const x2 = to.x + nodeW / 2;
@@ -262,7 +262,7 @@ export default function WorkflowPage() {
         totalStages={STAGES.length}
         onRun={runPipeline}
         onStop={stopPipeline}
-        onReset={() => dispatch({ type: "RESET", stageIds: STAGES.map((s) => s.id) })}
+        onReset={() => { dispatch({ type: "RESET", stageIds: STAGES.map((s) => s.id) }); resetPositions(); }}
         onSpeedChange={(s) => dispatch({ type: "SET_SPEED", speed: s })}
         onModeChange={(m) => dispatch({ type: "SET_MODE", mode: m })}
       />

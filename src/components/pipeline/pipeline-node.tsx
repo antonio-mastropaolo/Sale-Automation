@@ -71,7 +71,7 @@ export function PipelineNode({
       <div
         className={cn(
           "relative rounded-2xl border bg-card cursor-grab active:cursor-grabbing shadow-lg",
-          "w-[200px] transition-all duration-300",
+          "w-[220px] transition-all duration-300",
           isRunning && "animate-glow-pulse",
           isCompleted && "animate-[completePop_0.3s_ease-out]",
           isSelected && "ring-2 ring-[var(--primary)]",
