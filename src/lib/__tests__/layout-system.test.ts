@@ -866,8 +866,8 @@ describe("E. Boot Screen & Page Transition", () => {
     expect(layoutTsx).toContain("boot-screen");
   });
 
-  it("E02: boot screen has spinner", () => {
-    expect(layoutTsx).toContain("spinner");
+  it("E02: boot screen has progress steps", () => {
+    expect(layoutTsx).toContain("boot-step");
   });
 
   it("E03: boot screen has progress bar", () => {
@@ -887,8 +887,8 @@ describe("E. Boot Screen & Page Transition", () => {
     expect(layoutTsx).toContain("app:ready");
   });
 
-  it("E07: boot screen has 6-second fallback", () => {
-    expect(layoutTsx).toContain("6000");
+  it("E07: boot screen has 8-second fallback", () => {
+    expect(layoutTsx).toContain("8000");
   });
 
   it("E08: boot screen hidden class fades out", () => {

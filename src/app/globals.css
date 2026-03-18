@@ -481,6 +481,10 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
+/* Hide scrollbar for image carousels */
+.scrollbar-none::-webkit-scrollbar { display: none; }
+.scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+
 /* Custom scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }

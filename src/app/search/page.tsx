@@ -34,7 +34,7 @@ interface SearchResult {
   condition: string;
   size?: string;
   brand?: string;
-  imageUrl?: string;
+  images: string[];
   listingUrl: string;
   likes?: number;
   views?: number;
@@ -69,7 +69,11 @@ function generateMockResults(query: string): SearchResult[] {
       condition: conditions[i % conditions.length],
       size: sizes[i % sizes.length],
       brand,
-      imageUrl: `https://picsum.photos/seed/${encodeURIComponent(brand + q + i)}/400/400`,
+      images: [
+        `https://placehold.co/400x400/1a1a2e/ffffff?text=${encodeURIComponent(brand + "\n" + ["Hoodie","Crewneck","Tee","Jacket","Pants"][i%5])}`,
+        `https://placehold.co/400x400/2d2d3e/ffffff?text=${encodeURIComponent("Detail")}`,
+        `https://placehold.co/400x400/3d3d4e/ffffff?text=${encodeURIComponent("Tag")}`,
+      ],
       listingUrl: "#",
       likes: Math.floor(Math.random() * 50),
       views: Math.floor(Math.random() * 200),
@@ -304,16 +308,22 @@ export default function CrossMarketSearchPage() {
                     isSelected ? "ring-2 ring-[var(--primary)] shadow-lg" : "border-[var(--border)]"
                   )}
                 >
-                  {/* Product image */}
-                  <a href={result.listingUrl} target="_blank" rel="noopener noreferrer" className="block relative">
-                    <div className="h-48 bg-muted relative overflow-hidden">
-                      {result.imageUrl ? (
-                        <img src={result.imageUrl} alt={result.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <ShoppingBag className="h-12 w-12 text-muted-foreground/15" />
-                        </div>
-                      )}
+                  {/* Product image carousel */}
+                  <div className="relative">
+                    <div className="h-48 overflow-x-auto overflow-y-hidden snap-x snap-mandatory flex scrollbar-none" style={{ scrollbarWidth: "none" }}>
+                      {result.images.map((img, imgIdx) => (
+                        <a key={imgIdx} href={result.listingUrl} target="_blank" rel="noopener noreferrer" className="h-full w-full shrink-0 snap-center">
+                          <img src={img} alt={`${result.title} ${imgIdx + 1}`} className="w-full h-full object-cover" loading="lazy" />
+                        </a>
+                      ))}
+                    </div>
+                    {result.images.length > 1 && (
+                      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                        {result.images.map((_, idx) => (
+                          <div key={idx} className="h-1 w-4 rounded-full bg-white/30" />
+                        ))}
+                      </div>
+                    )}
                       {/* Platform badge */}
                       <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/50 backdrop-blur-sm">
                         <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: result.platformColor }} />
@@ -339,8 +349,7 @@ export default function CrossMarketSearchPage() {
                       <div className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded-full bg-black/40 backdrop-blur-sm text-[8px] text-white/70">
                         {result.postedAgo} ago
                       </div>
-                    </div>
-                  </a>
+                  </div>
 
                   <div className="p-3.5">
                     {/* Price */}
