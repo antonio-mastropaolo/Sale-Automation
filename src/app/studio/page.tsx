@@ -128,17 +128,174 @@ export default function PhotoStudioPage() {
     handleUpload(e.dataTransfer.files);
   }, [handleUpload]);
 
-  const simulateProcess = async (toolName: string) => {
+  /** Process image on Canvas and produce a real edited result */
+  const processImage = async (toolName: string, processFn: (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, img: HTMLImageElement) => void) => {
+    if (!activePhoto) return;
     setProcessing(true);
     toast.info(`Processing: ${toolName}...`);
-    await new Promise((r) => setTimeout(r, 1500 + Math.random() * 1000));
-    // In production, this would call an AI API (remove.bg, Photoroom, etc.)
-    // For now, simulate by applying CSS filter to generate "edited" version
-    if (activePhoto) {
-      setPhotos((prev) => prev.map((p) => p.id === activePhoto.id ? { ...p, editedUrl: p.url } : p));
+
+    try {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error("Failed to load image"));
+        img.src = activePhoto.editedUrl || activePhoto.url;
+      });
+
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(img, 0, 0);
+
+      processFn(ctx, canvas, img);
+
+      const editedUrl = canvas.toDataURL("image/png");
+      setPhotos((prev) => prev.map((p) => p.id === activePhoto.id ? { ...p, editedUrl } : p));
+      toast.success(`${toolName} complete`);
+    } catch (err) {
+      toast.error(`${toolName} failed: ${err instanceof Error ? err.message : "Unknown error"}`);
     }
     setProcessing(false);
-    toast.success(`${toolName} complete`);
+  };
+
+  const removeBackground = () => processImage("Remove Background", (ctx, canvas) => {
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    // Sample corners to detect background color
+    const samples = [
+      [0, 0], [canvas.width - 1, 0], [0, canvas.height - 1], [canvas.width - 1, canvas.height - 1],
+      [Math.floor(canvas.width / 2), 0], [0, Math.floor(canvas.height / 2)],
+    ];
+    let bgR = 0, bgG = 0, bgB = 0;
+    samples.forEach(([x, y]) => {
+      const i = (y * canvas.width + x) * 4;
+      bgR += data[i]; bgG += data[i + 1]; bgB += data[i + 2];
+    });
+    bgR = Math.round(bgR / samples.length);
+    bgG = Math.round(bgG / samples.length);
+    bgB = Math.round(bgB / samples.length);
+    // Remove pixels similar to background color
+    const tolerance = 60;
+    for (let i = 0; i < data.length; i += 4) {
+      const dr = Math.abs(data[i] - bgR);
+      const dg = Math.abs(data[i + 1] - bgG);
+      const db = Math.abs(data[i + 2] - bgB);
+      if (dr < tolerance && dg < tolerance && db < tolerance) {
+        data[i + 3] = 0; // Make transparent
+      }
+    }
+    ctx.putImageData(imageData, 0, 0);
+  });
+
+  const replaceBackground = () => processImage("Replace Background", (ctx, canvas) => {
+    // First remove background
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    const samples = [[0, 0], [canvas.width - 1, 0], [0, canvas.height - 1], [canvas.width - 1, canvas.height - 1]];
+    let bgR = 0, bgG = 0, bgB = 0;
+    samples.forEach(([x, y]) => { const i = (y * canvas.width + x) * 4; bgR += data[i]; bgG += data[i + 1]; bgB += data[i + 2]; });
+    bgR = Math.round(bgR / samples.length); bgG = Math.round(bgG / samples.length); bgB = Math.round(bgB / samples.length);
+    // Get replacement color from preset
+    const preset = BG_PRESETS.find((p) => p.id === selectedBg);
+    const hexColor = preset?.color?.startsWith("#") ? preset.color : "#ffffff";
+    const newR = parseInt(hexColor.slice(1, 3), 16) || 255;
+    const newG = parseInt(hexColor.slice(3, 5), 16) || 255;
+    const newB = parseInt(hexColor.slice(5, 7), 16) || 255;
+    for (let i = 0; i < data.length; i += 4) {
+      const dr = Math.abs(data[i] - bgR); const dg = Math.abs(data[i + 1] - bgG); const db = Math.abs(data[i + 2] - bgB);
+      if (dr < 60 && dg < 60 && db < 60) {
+        data[i] = newR; data[i + 1] = newG; data[i + 2] = newB; data[i + 3] = 255;
+      }
+    }
+    ctx.putImageData(imageData, 0, 0);
+  });
+
+  const autoEnhance = () => processImage("Auto Enhance", (ctx, canvas) => {
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    // Auto-levels: find min/max brightness and stretch
+    let minBr = 255, maxBr = 0;
+    for (let i = 0; i < data.length; i += 4) {
+      const br = (data[i] + data[i + 1] + data[i + 2]) / 3;
+      if (br < minBr) minBr = br;
+      if (br > maxBr) maxBr = br;
+    }
+    const range = maxBr - minBr || 1;
+    // Contrast stretch + slight saturation boost
+    for (let i = 0; i < data.length; i += 4) {
+      for (let c = 0; c < 3; c++) {
+        data[i + c] = Math.min(255, Math.max(0, Math.round(((data[i + c] - minBr) / range) * 255)));
+      }
+      // Saturation boost
+      const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+      for (let c = 0; c < 3; c++) {
+        data[i + c] = Math.min(255, Math.max(0, Math.round(avg + (data[i + c] - avg) * 1.15)));
+      }
+    }
+    ctx.putImageData(imageData, 0, 0);
+    // Sharpen with unsharp mask approximation
+    ctx.globalCompositeOperation = "overlay";
+    ctx.globalAlpha = 0.15;
+    ctx.drawImage(canvas, 0, 0);
+    ctx.globalCompositeOperation = "source-over";
+    ctx.globalAlpha = 1;
+  });
+
+  const smartCrop = () => processImage("Smart Crop", (ctx, canvas, img) => {
+    const ratio = CROP_RATIOS.find((r) => r.label === selectedCrop);
+    if (!ratio || ratio.w === 0) return; // free crop = no change
+    const targetRatio = ratio.w / ratio.h;
+    const imgRatio = canvas.width / canvas.height;
+    let sx = 0, sy = 0, sw = canvas.width, sh = canvas.height;
+    if (imgRatio > targetRatio) {
+      sw = Math.round(canvas.height * targetRatio);
+      sx = Math.round((canvas.width - sw) / 2);
+    } else {
+      sh = Math.round(canvas.width / targetRatio);
+      sy = Math.round((canvas.height - sh) / 2);
+    }
+    const cropped = ctx.getImageData(sx, sy, sw, sh);
+    canvas.width = sw;
+    canvas.height = sh;
+    ctx.putImageData(cropped, 0, 0);
+  });
+
+  const addWatermark = () => processImage("Watermark", (ctx, canvas) => {
+    if (!watermarkText) return;
+    const fontSize = Math.max(14, Math.round(canvas.width / 30));
+    ctx.font = `bold ${fontSize}px system-ui, sans-serif`;
+    ctx.fillStyle = "rgba(255,255,255,0.35)";
+    ctx.strokeStyle = "rgba(0,0,0,0.2)";
+    ctx.lineWidth = 1;
+    const metrics = ctx.measureText(watermarkText);
+    const x = canvas.width - metrics.width - 20;
+    const y = canvas.height - 20;
+    ctx.strokeText(watermarkText, x, y);
+    ctx.fillText(watermarkText, x, y);
+  });
+
+  const generateResize = (platform: string, w: number, h: number) => {
+    if (!activePhoto) return;
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d")!;
+      // Cover-fit
+      const scale = Math.max(w / img.naturalWidth, h / img.naturalHeight);
+      const sw = img.naturalWidth * scale;
+      const sh = img.naturalHeight * scale;
+      ctx.drawImage(img, (w - sw) / 2, (h - sh) / 2, sw, sh);
+      const link = document.createElement("a");
+      link.href = canvas.toDataURL("image/png");
+      link.download = `listblitz-${platform.toLowerCase()}-${w}x${h}.png`;
+      link.click();
+    };
+    img.src = activePhoto.editedUrl || activePhoto.url;
   };
 
   const downloadPhoto = () => {
@@ -150,9 +307,13 @@ export default function PhotoStudioPage() {
   };
 
   const downloadAll = () => {
+    if (!activePhoto) return;
+    let delay = 0;
     PLATFORM_SIZES.forEach((ps) => {
-      toast.success(`Generated ${ps.platform} (${ps.size})`);
+      setTimeout(() => generateResize(ps.platform, ps.w, ps.h), delay);
+      delay += 300;
     });
+    toast.success(`Exporting ${PLATFORM_SIZES.length} sizes...`);
   };
 
   const removePhoto = (id: string) => {
@@ -317,7 +478,7 @@ export default function PhotoStudioPage() {
             {/* Tool-specific controls */}
             {activeTool === "bg-remove" && (
               <div className="space-y-3">
-                <Button className="w-full h-10 gap-2" onClick={() => simulateProcess("Background Removal")} disabled={processing || !activePhoto}>
+                <Button className="w-full h-10 gap-2" onClick={removeBackground} disabled={processing || !activePhoto}>
                   {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
                   Remove Background
                 </Button>
@@ -341,7 +502,7 @@ export default function PhotoStudioPage() {
                     />
                   ))}
                 </div>
-                <Button className="w-full h-10 gap-2" onClick={() => simulateProcess("Background Replace")} disabled={processing || !activePhoto}>
+                <Button className="w-full h-10 gap-2" onClick={replaceBackground} disabled={processing || !activePhoto}>
                   {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <PaintBucket className="h-4 w-4" />}
                   Apply Background
                 </Button>
@@ -350,7 +511,7 @@ export default function PhotoStudioPage() {
 
             {activeTool === "enhance" && (
               <div className="space-y-3">
-                <Button className="w-full h-10 gap-2" onClick={() => simulateProcess("Auto Enhancement")} disabled={processing || !activePhoto}>
+                <Button className="w-full h-10 gap-2" onClick={autoEnhance} disabled={processing || !activePhoto}>
                   {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
                   Auto Enhance
                 </Button>
@@ -382,7 +543,7 @@ export default function PhotoStudioPage() {
                     </button>
                   ))}
                 </div>
-                <Button className="w-full h-10 gap-2" onClick={() => simulateProcess("Smart Crop")} disabled={processing || !activePhoto}>
+                <Button className="w-full h-10 gap-2" onClick={smartCrop} disabled={processing || !activePhoto}>
                   <Crop className="h-4 w-4" /> Apply Crop
                 </Button>
               </div>
@@ -399,7 +560,7 @@ export default function PhotoStudioPage() {
                     </div>
                   ))}
                 </div>
-                <Button className="w-full h-10 gap-2" onClick={() => { simulateProcess("Multi-Platform Resize"); downloadAll(); }} disabled={processing || !activePhoto}>
+                <Button className="w-full h-10 gap-2" onClick={downloadAll} disabled={processing || !activePhoto}>
                   <Maximize2 className="h-4 w-4" /> Generate All Sizes
                 </Button>
               </div>
@@ -415,7 +576,7 @@ export default function PhotoStudioPage() {
                     </button>
                   ))}
                 </div>
-                <Button className="w-full h-10 gap-2" onClick={() => simulateProcess("Watermark")} disabled={processing || !activePhoto || !watermarkText}>
+                <Button className="w-full h-10 gap-2" onClick={addWatermark} disabled={processing || !activePhoto || !watermarkText}>
                   <Shield className="h-4 w-4" /> Apply Watermark
                 </Button>
               </div>
@@ -423,7 +584,18 @@ export default function PhotoStudioPage() {
 
             {activeTool === "flatlay" && (
               <div className="space-y-3">
-                <Button className="w-full h-10 gap-2" onClick={() => simulateProcess("Flatlay Generation")} disabled={processing || !activePhoto}>
+                <Button className="w-full h-10 gap-2" onClick={() => processImage("Flatlay Generation", (ctx, canvas) => {
+                  // Add a styled border/frame effect
+                  const border = Math.round(canvas.width * 0.05);
+                  const temp = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                  canvas.width += border * 2; canvas.height += border * 2;
+                  ctx.fillStyle = "#f5f5f0"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                  ctx.putImageData(temp, border, border);
+                  // Add shadow effect
+                  ctx.shadowColor = "rgba(0,0,0,0.1)"; ctx.shadowBlur = 20; ctx.shadowOffsetY = 10;
+                  ctx.strokeStyle = "rgba(0,0,0,0.05)"; ctx.lineWidth = 1;
+                  ctx.strokeRect(border, border, temp.width, temp.height);
+                })} disabled={processing || !activePhoto}>
                   {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Grid3X3 className="h-4 w-4" />}
                   Generate Flatlay
                 </Button>
@@ -468,11 +640,16 @@ export default function PhotoStudioPage() {
               <div className="space-y-3">
                 <p className="text-[11px] text-muted-foreground">Apply the same processing to all {photos.length} photos at once.</p>
                 <div className="space-y-1.5">
-                  {["Remove Background", "Auto Enhance", "Smart Crop (1:1)", "Add Watermark"].map((action) => (
-                    <Button key={action} variant="outline" className="w-full h-9 text-[11px] justify-start gap-2" onClick={() => simulateProcess(`Batch: ${action}`)} disabled={processing}>
-                      <Wand2 className="h-3.5 w-3.5" /> {action} ({photos.length} photos)
-                    </Button>
-                  ))}
+                  <Button variant="outline" className="w-full h-9 text-[11px] justify-start gap-2" onClick={async () => {
+                    for (const p of photos) { setSelectedPhoto(p.id); await new Promise(r => setTimeout(r, 100)); await removeBackground(); }
+                  }} disabled={processing}>
+                    <Wand2 className="h-3.5 w-3.5" /> Remove Background ({photos.length} photos)
+                  </Button>
+                  <Button variant="outline" className="w-full h-9 text-[11px] justify-start gap-2" onClick={async () => {
+                    for (const p of photos) { setSelectedPhoto(p.id); await new Promise(r => setTimeout(r, 100)); await autoEnhance(); }
+                  }} disabled={processing}>
+                    <Wand2 className="h-3.5 w-3.5" /> Auto Enhance ({photos.length} photos)
+                  </Button>
                 </div>
               </div>
             )}

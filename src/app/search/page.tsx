@@ -70,9 +70,9 @@ function generateMockResults(query: string): SearchResult[] {
       size: sizes[i % sizes.length],
       brand,
       images: [
-        `https://placehold.co/400x400/1a1a2e/ffffff?text=${encodeURIComponent(brand + "\n" + ["Hoodie","Crewneck","Tee","Jacket","Pants"][i%5])}`,
-        `https://placehold.co/400x400/2d2d3e/ffffff?text=${encodeURIComponent("Detail")}`,
-        `https://placehold.co/400x400/3d3d4e/ffffff?text=${encodeURIComponent("Tag")}`,
+        `https://source.unsplash.com/400x400/?${encodeURIComponent(brand + " " + ["hoodie","crewneck","t-shirt","jacket","pants"][i%5] + " fashion")}&sig=${i}`,
+        `https://source.unsplash.com/400x400/?${encodeURIComponent(brand + " clothing streetwear")}&sig=${i + 100}`,
+        `https://source.unsplash.com/400x400/?${encodeURIComponent(["sneakers","fashion","streetwear","luxury","vintage"][i%5] + " detail")}&sig=${i + 200}`,
       ],
       listingUrl: "#",
       likes: Math.floor(Math.random() * 50),
@@ -452,7 +452,7 @@ export default function CrossMarketSearchPage() {
                 size="sm"
                 className="h-8 text-xs"
                 disabled={searchPage <= 1}
-                onClick={() => { setSearchPage((p) => p - 1); setSelectedResult(null); }}
+                onClick={() => { setSearchPage((p) => p - 1); setSelectedResult(null); window.scrollTo({ top: 0, behavior: "smooth" }); }}
               >
                 Previous
               </Button>
@@ -463,7 +463,7 @@ export default function CrossMarketSearchPage() {
                   return (
                     <button
                       key={p}
-                      onClick={() => { setSearchPage(p); setSelectedResult(null); }}
+                      onClick={() => { setSearchPage(p); setSelectedResult(null); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                       className={cn(
                         "h-8 w-8 rounded-md text-xs font-medium transition-colors",
                         p === searchPage ? "bg-[var(--primary)] text-[var(--primary-foreground)]" : "bg-muted text-muted-foreground hover:text-foreground"
@@ -479,7 +479,7 @@ export default function CrossMarketSearchPage() {
                 size="sm"
                 className="h-8 text-xs"
                 disabled={searchPage >= totalSearchPages}
-                onClick={() => { setSearchPage((p) => p + 1); setSelectedResult(null); }}
+                onClick={() => { setSearchPage((p) => p + 1); setSelectedResult(null); window.scrollTo({ top: 0, behavior: "smooth" }); }}
               >
                 Next
               </Button>
