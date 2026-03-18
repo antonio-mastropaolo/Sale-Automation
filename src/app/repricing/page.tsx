@@ -4,8 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  DollarSign, TrendingDown, TrendingUp, Minus, RefreshCw, Loader2,
-  Check, ArrowRight, AlertTriangle, Clock, Zap, BarChart3, ChevronDown,
+  TrendingDown, TrendingUp, Minus, RefreshCw, Loader2,
+  Check, ArrowRight, AlertTriangle, Clock, Zap, BarChart3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -111,7 +111,11 @@ export default function RepricingPage() {
           <Button variant="outline" size="sm" className="h-9 text-xs gap-1.5" onClick={fetchSuggestions}>
             <RefreshCw className="h-3.5 w-3.5" /> Refresh
           </Button>
-          <Button size="sm" className="h-9 text-xs gap-1.5" onClick={applyAll} disabled={filtered.filter((s) => s.action !== "hold" && !applied.has(s.id)).length === 0}>
+          <Button size="sm" className="h-9 text-xs gap-1.5" onClick={() => {
+            const count = filtered.filter((s) => s.action !== "hold" && !applied.has(s.id)).length;
+            if (count > 5 && !confirm(`Apply ${count} price changes? This cannot be undone.`)) return;
+            applyAll();
+          }} disabled={filtered.filter((s) => s.action !== "hold" && !applied.has(s.id)).length === 0}>
             <Zap className="h-3.5 w-3.5" /> Apply All ({filtered.filter((s) => s.action !== "hold" && !applied.has(s.id)).length})
           </Button>
         </div>
@@ -226,6 +230,8 @@ export default function RepricingPage() {
                     </Button>
                   ) : isApplied ? (
                     <Badge className="bg-emerald-500/10 text-emerald-500 border-0 text-[10px]">Applied</Badge>
+                  ) : s.action === "hold" ? (
+                    <Badge variant="outline" className="text-[10px] text-muted-foreground">Competitive</Badge>
                   ) : null}
                 </div>
               </div>

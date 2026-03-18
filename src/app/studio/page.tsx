@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
-  Upload, ImagePlus, Wand2, Sparkles, Download, RotateCcw,
-  Layers, Crop, Sun, Contrast, Droplets, PaintBucket,
-  Maximize2, Grid3X3, Type, Shield, Camera, ChevronDown,
-  Check, X, Loader2, Copy, Eye, Palette, Blend, Frame,
-  SunMedium, ZoomIn, FlipHorizontal, FlipVertical,
+  ImagePlus, Wand2, Sparkles, Download, RotateCcw,
+  Layers, Crop, Contrast, PaintBucket,
+  Maximize2, Grid3X3, Shield, Camera,
+  Check, X, Loader2, Copy, Palette,
+  SunMedium, Sun,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -206,7 +206,7 @@ export default function PhotoStudioPage() {
         </div>
       ) : (
         /* ── Editor layout ── */
-        <div className="grid grid-cols-1 xl:grid-cols-[280px_1fr_280px] gap-4">
+        <div className="grid grid-cols-1 xl:grid-cols-[280px_1fr_280px] gap-4" onDragOver={(e) => e.preventDefault()} onDrop={handleDrop}>
           {/* LEFT: Photo strip + tools */}
           <div className="space-y-4">
             {/* Photo strip */}
@@ -481,6 +481,13 @@ export default function PhotoStudioPage() {
               <div className="text-center py-6">
                 <Wand2 className="h-8 w-8 text-muted-foreground/20 mx-auto mb-2" />
                 <p className="text-[12px] text-muted-foreground">Select a tool from the left panel to start editing.</p>
+              </div>
+            )}
+
+            {/* No photo selected warning */}
+            {!activePhoto && activeTool !== "select" && (
+              <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-3 mt-2">
+                <p className="text-[11px] text-amber-500 font-medium">Select a photo from the left panel first.</p>
               </div>
             )}
           </div>
