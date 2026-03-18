@@ -236,7 +236,7 @@ export function RightRail() {
         </div>
 
         <div className="px-3.5 pb-1.5 pt-1 shrink-0">
-          <Link href="/diagnostics" className="flex items-center justify-center gap-1 rounded bg-white/[0.04] px-2 py-1.5 text-[9px] font-medium text-white/30 transition-colors hover:bg-white/[0.08] hover:text-white/50">
+          <Link href="/diagnostics?tab=audit" className="flex items-center justify-center gap-1 rounded bg-white/[0.04] px-2 py-1.5 text-[9px] font-medium text-white/30 transition-colors hover:bg-white/[0.08] hover:text-white/50">
             Full audit log <ExternalLink className="h-2.5 w-2.5" />
           </Link>
         </div>

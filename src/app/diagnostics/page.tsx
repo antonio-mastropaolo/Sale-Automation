@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { useAdmin } from "@/lib/use-admin";
 import {
   Shield, Database, Brain, Globe, Package, FileCode, Gauge,
@@ -144,7 +145,11 @@ function SummaryFooter({ results }: { results: Map<string, CategoryResult> }) {
   );
 }
 
-export default function DiagnosticsPage() {
+export default function DiagnosticsPageWrapper() {
+  return <Suspense fallback={null}><DiagnosticsPage /></Suspense>;
+}
+
+function DiagnosticsPage() {
   const { isAdmin, loading: adminLoading } = useAdmin();
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [runningCategories, setRunningCategories] = useState<Set<string>>(new Set());
@@ -190,7 +195,9 @@ export default function DiagnosticsPage() {
     setExpandedCategories((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
   }, []);
 
-  const [activeTab, setActiveTab] = useState<"health" | "pipeline" | "audit">("health");
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get("tab") === "audit" ? "audit" : searchParams.get("tab") === "pipeline" ? "pipeline" : "health";
+  const [activeTab, setActiveTab] = useState<"health" | "pipeline" | "audit">(initialTab);
 
   if (adminLoading) return <div className="flex items-center justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
   if (!isAdmin) return <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">Admin access required</div>;

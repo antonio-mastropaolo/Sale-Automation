@@ -32,9 +32,6 @@ export default function LoginPage() {
   useEffect(() => { window.dispatchEvent(new Event("app:ready")); }, []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [transitioning, setTransitioning] = useState(false);
-  const [factIndex, setFactIndex] = useState(0);
-  const [username, setUsername] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,93 +53,18 @@ export default function LoginPage() {
         return;
       }
 
-      // Show transition screen
-      setUsername(data.user.username);
+      // Redirect immediately — the boot screen handles the loading experience
       setLoading(false);
-      setTransitioning(true);
-      setFactIndex(Math.floor(Math.random() * FUN_FACTS.length));
-
-      // Cycle facts then redirect
-      const factTimer = setInterval(() => {
-        setFactIndex((prev) => (prev + 1) % FUN_FACTS.length);
-      }, 2500);
-
-      setTimeout(() => {
-        clearInterval(factTimer);
-        if (!data.user.onboarded) {
-          window.location.href = "/onboard";
-        } else {
-          window.location.href = "/";
-        }
-      }, 4000);
+      if (!data.user.onboarded) {
+        window.location.href = "/onboard";
+      } else {
+        window.location.href = "/";
+      }
     } catch {
       setError("Something went wrong. Please try again.");
       setLoading(false);
     }
   };
-
-  // ── Transition screen ──
-  if (transitioning) {
-    return (
-      <div className="fixed inset-0 z-[200] flex items-center justify-center" style={{ background: "linear-gradient(160deg, #0a0e1a 0%, #111827 50%, #0a0e1a 100%)" }}>
-        {/* Animated orbs */}
-        <div className="absolute w-[600px] h-[600px] rounded-full opacity-15 blur-[150px] animate-orb-1" style={{ background: "radial-gradient(circle, #3a7bd5, transparent 70%)", top: "20%", left: "20%" }} />
-        <div className="absolute w-[400px] h-[400px] rounded-full opacity-10 blur-[120px] animate-orb-2" style={{ background: "radial-gradient(circle, #f97316, transparent 70%)", bottom: "20%", right: "20%" }} />
-
-        <div className="relative z-10 text-center max-w-md px-6">
-          {/* Logo */}
-          <div className="mb-6 animate-float">
-            <img src="/logo-icon.svg" alt="ListBlitz" className="h-12 w-12 mx-auto drop-shadow-[0_0_20px_rgba(59,130,246,0.4)]" />
-          </div>
-
-          {/* Welcome */}
-          <h1 className="text-2xl font-bold text-white mb-1 animate-fade-up">
-            Welcome back, {username}!
-          </h1>
-          <p className="text-[#5b9bd5] text-sm mb-8 animate-fade-up-delay">Preparing your dashboard...</p>
-
-          {/* Progress bar */}
-          <div className="w-64 mx-auto h-1 bg-[#1a2332] rounded-full overflow-hidden mb-8">
-            <div className="h-full rounded-full" style={{
-              background: "linear-gradient(90deg, #3a7bd5, #5b9bd5, #f97316)",
-              animation: "loadProgress 4s ease-in-out forwards",
-            }} />
-          </div>
-
-          {/* Fun fact */}
-          <div className="min-h-[60px] flex items-center justify-center">
-            <div key={factIndex} className="animate-fact-in">
-              <p className="text-[13px] text-[#6b7a8d] leading-relaxed italic">
-                &ldquo;{FUN_FACTS[factIndex]}&rdquo;
-              </p>
-            </div>
-          </div>
-
-          {/* Dots */}
-          <div className="mt-6 flex justify-center gap-1.5">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="w-1.5 h-1.5 rounded-full bg-[#5b9bd5] animate-pulse" style={{ animationDelay: `${i * 0.3}s` }} />
-            ))}
-          </div>
-        </div>
-
-        <style>{`
-          @keyframes loadProgress { 0% { width: 0%; } 100% { width: 100%; } }
-          @keyframes factIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-          @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-          @keyframes fadeUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-          @keyframes orb1 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(30px, -20px); } }
-          @keyframes orb2 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-20px, 30px); } }
-          .animate-float { animation: float 3s ease-in-out infinite; }
-          .animate-fade-up { animation: fadeUp 0.6s ease-out both; }
-          .animate-fade-up-delay { animation: fadeUp 0.6s ease-out both; animation-delay: 0.2s; }
-          .animate-fact-in { animation: factIn 0.5s ease-out both; }
-          .animate-orb-1 { animation: orb1 8s ease-in-out infinite; }
-          .animate-orb-2 { animation: orb2 10s ease-in-out infinite; }
-        `}</style>
-      </div>
-    );
-  }
 
   return (
     <div className="fixed inset-0 z-[100] flex min-h-screen">
