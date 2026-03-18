@@ -11,11 +11,12 @@ interface PipelineToolbarProps {
   onRun: () => void;
   onStop: () => void;
   onReset: () => void;
+  onResume?: () => void;
   onSpeedChange: (speed: 1 | 2 | 3) => void;
   onModeChange: (mode: PipelineMode) => void;
 }
 
-export function PipelineToolbar({ state, totalStages, onRun, onStop, onReset, onSpeedChange, onModeChange }: PipelineToolbarProps) {
+export function PipelineToolbar({ state, totalStages, onRun, onStop, onReset, onResume, onSpeedChange, onModeChange }: PipelineToolbarProps) {
   const isRunning = state.runId !== null;
   const completedCount = Object.values(state.stages).filter((s) => s === "completed").length;
   const pausedStage = Object.entries(state.stages).find(([, s]) => s === "paused");
@@ -44,8 +45,13 @@ export function PipelineToolbar({ state, totalStages, onRun, onStop, onReset, on
 
   return (
     <div className="sticky top-0 z-20 rounded-xl bg-[var(--card)]/80 backdrop-blur-sm border border-[var(--border)] px-4 py-2.5 flex flex-wrap items-center gap-3">
-      {/* Run / Stop */}
-      {isRunning ? (
+      {/* Run / Stop / Resume */}
+      {pausedStage && onResume ? (
+        <Button size="sm" className="h-8 text-xs gap-1.5 bg-amber-500 hover:bg-amber-600" onClick={onResume}>
+          <Play className="h-3 w-3" />
+          Resume
+        </Button>
+      ) : isRunning ? (
         <Button variant="destructive" size="sm" className="h-8 text-xs gap-1.5" onClick={onStop}>
           <Square className="h-3 w-3" />
           Stop

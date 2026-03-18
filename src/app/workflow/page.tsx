@@ -263,6 +263,7 @@ export default function WorkflowPage() {
         onRun={runPipeline}
         onStop={stopPipeline}
         onReset={() => { dispatch({ type: "RESET", stageIds: STAGES.map((s) => s.id) }); resetPositions(); }}
+        onResume={() => { if (pausedStageId) handleResume(pausedStageId); }}
         onSpeedChange={(s) => dispatch({ type: "SET_SPEED", speed: s })}
         onModeChange={(m) => dispatch({ type: "SET_MODE", mode: m })}
       />

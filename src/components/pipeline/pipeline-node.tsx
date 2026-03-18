@@ -140,21 +140,21 @@ export function PipelineNode({
 
             {/* Label + badges */}
             <div className="flex-1 min-w-0">
-              <p className="text-[14px] font-semibold truncate leading-tight">{label}</p>
-              <div className="flex items-center gap-1 mt-0.5">
-                <span className={cn("text-[9px] font-bold px-1.5 py-0.5 rounded", isAI ? "bg-violet-500/10 text-violet-500" : "bg-blue-500/10 text-blue-500")}>
+              <div className="flex items-center gap-1.5">
+                <p className="text-[14px] font-semibold truncate leading-tight">{label}</p>
+                <span className={cn("text-[8px] font-bold px-1 py-px rounded shrink-0", isAI ? "bg-violet-500/10 text-violet-500" : "bg-blue-500/10 text-blue-500")}>
                   {isAI ? "AI" : "AUTO"}
                 </span>
-                {status !== "idle" && (
-                  <span className={cn("text-[9px] font-bold px-1.5 py-0.5 rounded uppercase",
-                    isRunning && "bg-blue-500/10 text-blue-500",
-                    isCompleted && "bg-emerald-500/10 text-emerald-500",
-                    isPaused && "bg-amber-500/10 text-amber-500",
-                    isError && "bg-red-500/10 text-red-500",
-                    status === "pending" && "bg-muted text-muted-foreground",
-                  )}>{status}</span>
-                )}
               </div>
+              {status !== "idle" && (
+                <span className={cn("inline-block text-[8px] font-bold px-1.5 py-0.5 rounded uppercase mt-1",
+                  isRunning && "bg-blue-500/10 text-blue-500",
+                  isCompleted && "bg-emerald-500/10 text-emerald-500",
+                  isPaused && "bg-amber-500/10 text-amber-500",
+                  isError && "bg-red-500/10 text-red-500",
+                  status === "pending" && "bg-muted text-muted-foreground",
+                )}>{status}</span>
+              )}
             </div>
           </div>
 
