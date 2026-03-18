@@ -198,19 +198,18 @@ export default function LoginPage() {
           {/* Platform icons grid */}
           <div className="grid grid-cols-4 gap-3 max-w-xs mx-auto mb-10 animate-fade-up-delay-2">
             {[
-              { name: "Depop", color: "#FF2300", letter: "d" },
-              { name: "Grailed", color: "#333333", letter: "G" },
-              { name: "Poshmark", color: "#7B2D8E", letter: "P" },
-              { name: "Mercari", color: "#4DC4FF", letter: "M" },
-              { name: "eBay", color: "#E53238", letter: "e" },
-              { name: "Vinted", color: "#09B1BA", letter: "V" },
-              { name: "Facebook", color: "#1877F2", letter: "f" },
-              { name: "Vestiaire", color: "#C9A96E", letter: "VC" },
+              { name: "Depop", color: "#FF2300", icon: "/platforms/depop.svg" },
+              { name: "Grailed", color: "#333333", icon: "/platforms/grailed.svg" },
+              { name: "Poshmark", color: "#7B2D8E", icon: "/platforms/poshmark.svg" },
+              { name: "Mercari", color: "#4DC4FF", icon: "/platforms/mercari.svg" },
+              { name: "eBay", color: "#E53238", icon: "/platforms/ebay.svg" },
+              { name: "Vinted", color: "#09B1BA", icon: "/platforms/vinted.svg" },
+              { name: "Facebook", color: "#1877F2", icon: "/platforms/facebook.svg" },
+              { name: "Vestiaire", color: "#C9A96E", icon: "/platforms/vestiaire.svg" },
             ].map((p, i) => (
               <div key={p.name} className="group animate-badge-pop" style={{ animationDelay: `${1 + i * 0.08}s` }}>
-                <div className="relative mx-auto w-14 h-14 rounded-2xl flex items-center justify-center border border-white/[0.08] bg-white/[0.03] backdrop-blur-sm transition-all duration-300 group-hover:scale-110 group-hover:border-white/20 group-hover:bg-white/[0.06]"
-                  style={{ boxShadow: `0 0 0 0 ${p.color}00` }}>
-                  <span className="text-[16px] font-bold" style={{ color: p.color }}>{p.letter}</span>
+                <div className="relative mx-auto w-14 h-14 rounded-2xl flex items-center justify-center border border-white/[0.08] bg-white/[0.03] backdrop-blur-sm transition-all duration-300 group-hover:scale-110 group-hover:border-white/20 group-hover:bg-white/[0.06]">
+                  <img src={p.icon} alt={p.name} className="h-7 w-7 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; (e.target as HTMLImageElement).parentElement!.innerHTML = `<span style="color:${p.color};font-weight:700;font-size:16px">${p.name[0]}</span>`; }} />
                 </div>
                 <p className="text-[9px] text-white/30 mt-1.5 font-medium">{p.name}</p>
               </div>

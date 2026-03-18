@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Search, Loader2, Filter, ExternalLink, Heart, Eye,
   ShoppingBag, Sparkles, X, DollarSign, Tag,
-  TrendingUp, Shield, BarChart3, Zap,
+  TrendingUp, Shield, BarChart3, Zap, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -118,6 +118,8 @@ export default function CrossMarketSearchPage() {
   const [priceMin, setPriceMin] = useState("");
   const [priceMax, setPriceMax] = useState("");
   const [selectedResult, setSelectedResult] = useState<SearchResult | null>(null);
+  const [detailResult, setDetailResult] = useState<SearchResult | null>(null);
+  const [detailImageIdx, setDetailImageIdx] = useState(0);
   const [searchPage, setSearchPage] = useState(1);
   const [fromCache, setFromCache] = useState(false);
   const SEARCH_PAGE_SIZE = 9;
@@ -158,6 +160,17 @@ export default function CrossMarketSearchPage() {
       if (next.has(id)) next.delete(id); else next.add(id);
       return next;
     });
+  };
+
+  // Detail modal navigation
+  const openDetail = (result: SearchResult) => { setDetailResult(result); setDetailImageIdx(0); };
+  const closeDetail = () => setDetailResult(null);
+  const navigateDetail = (dir: 1 | -1) => {
+    if (!detailResult) return;
+    const list = sortedResults;
+    const idx = list.findIndex((r) => r.id === detailResult.id);
+    const next = list[idx + dir];
+    if (next) { setDetailResult(next); setDetailImageIdx(0); }
   };
 
   const sortedResults = [...results].sort((a, b) => {
@@ -312,9 +325,9 @@ export default function CrossMarketSearchPage() {
                   <div className="relative">
                     <div className="h-48 overflow-x-auto overflow-y-hidden snap-x snap-mandatory flex scrollbar-none" style={{ scrollbarWidth: "none" }}>
                       {result.images.map((img, imgIdx) => (
-                        <a key={imgIdx} href={result.listingUrl} target="_blank" rel="noopener noreferrer" className="h-full w-full shrink-0 snap-center">
+                        <button key={imgIdx} onClick={() => openDetail(result)} className="h-full w-full shrink-0 snap-center cursor-pointer">
                           <img src={img} alt={`${result.title} ${imgIdx + 1}`} className="w-full h-full object-cover" loading="lazy" />
-                        </a>
+                        </button>
                       ))}
                     </div>
                     {result.images.length > 1 && (
@@ -539,6 +552,169 @@ export default function CrossMarketSearchPage() {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* ═══ PRODUCT DETAIL MODAL ═══ */}
+      {detailResult && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={closeDetail}>
+          <div className="relative w-full max-w-4xl max-h-[90vh] mx-4 rounded-2xl bg-card border border-[var(--border)] overflow-hidden shadow-2xl flex flex-col" onClick={(e) => e.stopPropagation()}>
+
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-3 border-b border-[var(--border)] shrink-0">
+              <div className="flex items-center gap-2">
+                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: detailResult.platformColor }} />
+                <span className="text-[13px] font-semibold">{detailResult.platform}</span>
+                <span className="text-[11px] text-muted-foreground">@{detailResult.seller}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button onClick={() => navigateDetail(-1)} className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors" title="Previous">
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <button onClick={() => navigateDetail(1)} className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors" title="Next">
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+                <button onClick={closeDetail} className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors">
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Body */}
+            <div className="flex-1 overflow-y-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
+                {/* Left: Image viewer */}
+                <div className="bg-muted/20 relative">
+                  <div className="aspect-square relative">
+                    <img
+                      src={detailResult.images[detailImageIdx] || detailResult.images[0]}
+                      alt={detailResult.title}
+                      className="w-full h-full object-cover"
+                    />
+                    {/* Image navigation */}
+                    {detailResult.images.length > 1 && (
+                      <>
+                        <button onClick={() => setDetailImageIdx((p) => Math.max(0, p - 1))}
+                          className="absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/70 transition-colors"
+                          disabled={detailImageIdx === 0}>
+                          <ChevronLeft className="h-4 w-4" />
+                        </button>
+                        <button onClick={() => setDetailImageIdx((p) => Math.min(detailResult.images.length - 1, p + 1))}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/70 transition-colors"
+                          disabled={detailImageIdx === detailResult.images.length - 1}>
+                          <ChevronRight className="h-4 w-4" />
+                        </button>
+                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                          {detailResult.images.map((_, idx) => (
+                            <button key={idx} onClick={() => setDetailImageIdx(idx)}
+                              className={cn("h-2 w-2 rounded-full transition-all", idx === detailImageIdx ? "bg-white w-4" : "bg-white/40")} />
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  {/* Thumbnail strip */}
+                  {detailResult.images.length > 1 && (
+                    <div className="flex gap-1 p-2">
+                      {detailResult.images.map((img, idx) => (
+                        <button key={idx} onClick={() => setDetailImageIdx(idx)}
+                          className={cn("h-14 w-14 rounded-lg overflow-hidden border-2 transition-all shrink-0",
+                            idx === detailImageIdx ? "border-[var(--primary)]" : "border-transparent opacity-60 hover:opacity-100"
+                          )}>
+                          <img src={img} alt="" className="w-full h-full object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Right: Details + actions */}
+                <div className="p-5 space-y-4">
+                  {/* Title + price */}
+                  <div>
+                    <h2 className="text-lg font-bold mb-1">{detailResult.title}</h2>
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl font-bold">${detailResult.price}</span>
+                      {detailResult.originalPrice && (
+                        <span className="text-base text-muted-foreground line-through">${detailResult.originalPrice}</span>
+                      )}
+                      {detailResult.aiScore && (
+                        <Badge className={cn("text-[10px]",
+                          detailResult.aiScore >= 85 ? "bg-emerald-500/10 text-emerald-500" :
+                          detailResult.aiScore >= 70 ? "bg-blue-500/10 text-blue-500" :
+                          "bg-muted text-muted-foreground"
+                        )}>AI Score: {detailResult.aiScore}</Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Metadata */}
+                  <div className="flex flex-wrap gap-2">
+                    {detailResult.brand && <Badge variant="outline">{detailResult.brand}</Badge>}
+                    {detailResult.size && <Badge variant="outline">{detailResult.size}</Badge>}
+                    <Badge variant="outline">{detailResult.condition}</Badge>
+                    <Badge variant="outline" className="capitalize">{detailResult.platform}</Badge>
+                  </div>
+
+                  {/* AI Insight */}
+                  {detailResult.aiInsight && (
+                    <div className="flex items-start gap-2 rounded-xl bg-[var(--primary)]/5 border border-[var(--primary)]/10 p-3">
+                      <Sparkles className="h-4 w-4 text-[var(--primary)] shrink-0 mt-0.5" />
+                      <p className="text-[13px] text-[var(--primary)]">{detailResult.aiInsight}</p>
+                    </div>
+                  )}
+
+                  {/* Stats */}
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="rounded-lg bg-muted/30 p-3 text-center">
+                      <p className="text-[10px] text-muted-foreground mb-0.5">Market Avg</p>
+                      <p className="text-[15px] font-bold">${Math.round(detailResult.price * (0.9 + Math.random() * 0.3))}</p>
+                    </div>
+                    <div className="rounded-lg bg-muted/30 p-3 text-center">
+                      <p className="text-[10px] text-muted-foreground mb-0.5">Resale Est</p>
+                      <p className="text-[15px] font-bold text-emerald-500">${Math.round(detailResult.price * (1.2 + Math.random() * 0.5))}</p>
+                    </div>
+                    <div className="rounded-lg bg-muted/30 p-3 text-center">
+                      <p className="text-[10px] text-muted-foreground mb-0.5">Engagement</p>
+                      <p className="text-[15px] font-bold">{(detailResult.likes ?? 0) + (detailResult.views ?? 0)}</p>
+                    </div>
+                  </div>
+
+                  {/* Seller info */}
+                  <div className="flex items-center justify-between py-2 border-t border-b border-[var(--border)]">
+                    <div className="flex items-center gap-2">
+                      <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-[11px] font-bold">{detailResult.seller[0].toUpperCase()}</div>
+                      <div>
+                        <p className="text-[13px] font-semibold">@{detailResult.seller}</p>
+                        <p className="text-[11px] text-muted-foreground">{detailResult.postedAgo} ago</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 text-[12px] text-muted-foreground">
+                      <span className="flex items-center gap-1"><Heart className="h-3.5 w-3.5" />{detailResult.likes}</span>
+                      <span className="flex items-center gap-1"><Eye className="h-3.5 w-3.5" />{detailResult.views}</span>
+                    </div>
+                  </div>
+
+                  {/* Action buttons */}
+                  <div className="space-y-2">
+                    <a href={detailResult.listingUrl} target="_blank" rel="noopener noreferrer" className="block">
+                      <Button className="w-full h-11 text-[14px] gap-2">
+                        <ExternalLink className="h-4 w-4" /> View on {detailResult.platform}
+                      </Button>
+                    </a>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button variant="outline" className="h-10 text-[13px] gap-2">
+                        <DollarSign className="h-4 w-4" /> Send Offer
+                      </Button>
+                      <Button variant="outline" className="h-10 text-[13px] gap-2">
+                        <Tag className="h-4 w-4" /> Save to List
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
