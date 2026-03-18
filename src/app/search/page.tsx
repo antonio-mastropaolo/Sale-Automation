@@ -45,6 +45,42 @@ interface SearchResult {
 
 type SortKey = "relevance" | "price-low" | "price-high" | "newest";
 
+// Real product image URLs mapped by item type
+const PRODUCT_IMAGES: Record<string, string[]> = {
+  hoodie: [
+    "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1578768079470-1e3d02c2da68?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1614975059251-992f11792571?w=400&h=400&fit=crop",
+  ],
+  crewneck: [
+    "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1622470953794-aa9c70b0fb9d?w=400&h=400&fit=crop",
+  ],
+  tee: [
+    "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1562157873-818bc0726f68?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=400&h=400&fit=crop",
+  ],
+  jacket: [
+    "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1544923246-77307dd270cb?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1548883354-7622d03aca27?w=400&h=400&fit=crop",
+  ],
+  pants: [
+    "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=400&h=400&fit=crop",
+  ],
+};
+const ITEM_TYPES = ["hoodie", "crewneck", "tee", "jacket", "pants"] as const;
+const ITEM_LABELS = ["Hoodie", "Crewneck", "Tee", "Jacket", "Pants"];
+
 // Simulated search results for demo
 function generateMockResults(query: string): SearchResult[] {
   const q = query.toLowerCase();
@@ -69,11 +105,15 @@ function generateMockResults(query: string): SearchResult[] {
       condition: conditions[i % conditions.length],
       size: sizes[i % sizes.length],
       brand,
-      images: [
-        `https://source.unsplash.com/400x400/?${encodeURIComponent(brand + " " + ["hoodie","crewneck","t-shirt","jacket","pants"][i%5] + " fashion")}&sig=${i}`,
-        `https://source.unsplash.com/400x400/?${encodeURIComponent(brand + " clothing streetwear")}&sig=${i + 100}`,
-        `https://source.unsplash.com/400x400/?${encodeURIComponent(["sneakers","fashion","streetwear","luxury","vintage"][i%5] + " detail")}&sig=${i + 200}`,
-      ],
+      images: (() => {
+        const type = ITEM_TYPES[i % 5];
+        const pool = PRODUCT_IMAGES[type];
+        return [
+          pool[i % pool.length],
+          pool[(i + 1) % pool.length],
+          pool[(i + 2) % pool.length],
+        ];
+      })(),
       listingUrl: "#",
       likes: Math.floor(Math.random() * 50),
       views: Math.floor(Math.random() * 200),
@@ -322,14 +362,13 @@ export default function CrossMarketSearchPage() {
                   )}
                 >
                   {/* Product image area */}
-                  <button onClick={() => openDetail(result)} className="relative h-44 cursor-pointer overflow-hidden">
-                    {/* Styled product placeholder with brand gradient */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-muted/80 to-muted flex items-center justify-center">
-                      <div className="text-center px-4">
-                        <p className="text-[22px] font-bold text-foreground/15 leading-tight line-clamp-2">{result.brand}</p>
-                        <p className="text-[13px] text-foreground/8 mt-1">{["Hoodie","Crewneck","Tee","Jacket","Pants"][parseInt(result.id.split("-")[1]) % 5]}</p>
-                      </div>
-                    </div>
+                  <button onClick={() => openDetail(result)} className="relative h-52 cursor-pointer overflow-hidden w-full">
+                    <img
+                      src={result.images[0]}
+                      alt={result.title}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      loading="lazy"
+                    />
                     {/* Platform badge — with real icon */}
                     <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-sm">
                       <img src={`/platforms/${result.platform.toLowerCase().replace(" ", "")}.svg`} alt="" className="h-4 w-4 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
