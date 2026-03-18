@@ -53,7 +53,8 @@ export default function LoginPage() {
         return;
       }
 
-      // Redirect immediately — the boot screen handles the loading experience
+      // Signal that boot screen should show on next page load
+      sessionStorage.setItem("listblitz-show-boot", "true");
       setLoading(false);
       if (!data.user.onboarded) {
         window.location.href = "/onboard";

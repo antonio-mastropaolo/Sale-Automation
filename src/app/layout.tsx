@@ -213,6 +213,11 @@ const bootDismissScript = `
     }).catch(function(){dismiss()});
   }
 
+  // Only show boot screen after login — skip on refresh/navigation
+  var showBoot=false;
+  try{showBoot=sessionStorage.getItem('listblitz-show-boot')==='true';sessionStorage.removeItem('listblitz-show-boot')}catch(e){}
+  if(!showBoot){doHide();return}
+
   setTimeout(runStep,500);
 
   window.addEventListener('app:ready',function(){
