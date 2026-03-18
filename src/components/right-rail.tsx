@@ -189,12 +189,12 @@ export function RightRail() {
           </div>
         </div>
 
-        {/* Event list — takes available space */}
-        <div className="flex-1 overflow-y-auto min-h-0 px-1">
+        {/* Event list — limited height, not flex-1 */}
+        <div className="max-h-[200px] overflow-y-auto min-h-0 px-1">
           {filteredEvents.length === 0 ? (
-            <p className="px-3 py-6 text-center text-[11px] text-white/20">No events</p>
+            <p className="px-3 py-4 text-center text-[11px] text-white/20">No events</p>
           ) : (
-            filteredEvents.slice(0, 20).map((event) => {
+            filteredEvents.slice(0, 12).map((event) => {
               const meta = EVENT_META[event.type] ?? { label: event.type.replace(/_/g, " "), dot: "bg-white/20", filter: "all" as const };
               const isExpanded = expandedEventId === event.id;
               return (
@@ -243,36 +243,95 @@ export function RightRail() {
 
         <div className="mx-3.5 border-t border-white/[0.04] shrink-0" />
 
-        {/* ═══ SYSTEM — compact single row ═══ */}
-        <div className="px-3.5 py-2 shrink-0">
-          <div className="flex items-center justify-between mb-1.5">
+        {/* ═══ SYSTEM — expanded dashboard ═══ */}
+        <div className="px-3.5 py-3 shrink-0 space-y-3">
+          <div className="flex items-center justify-between">
             <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">System</p>
-            <div className="flex items-center gap-1.5">
-              {data?.ai?.configured && <span className="text-[9px] font-semibold text-emerald-400 capitalize">{data.ai.provider}</span>}
-              <span className={cn("text-[9px] font-bold", data?.system?.db?.status === "ok" ? "text-emerald-400" : "text-amber-400")}>
-                {data?.system?.db?.status === "ok" ? "Healthy" : "Slow"}
-              </span>
-            </div>
+            <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full",
+              data?.system?.db?.status === "ok" ? "bg-emerald-500/10 text-emerald-400" : "bg-amber-500/10 text-amber-400"
+            )}>
+              {data?.system?.db?.status === "ok" ? "● Healthy" : "● Degraded"}
+            </span>
           </div>
+
           {data?.system && (
-            <div className="grid grid-cols-4 gap-x-2 text-[9px]">
-              <div className="text-center">
-                <p className="font-bold text-white/70 tabular-nums">{data.system.memory.usedMB}MB</p>
-                <p className="text-white/20">RAM</p>
+            <>
+              {/* Memory bar */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-[10px]">
+                  <span className="flex items-center gap-1.5 text-white/50">
+                    <HardDrive className="h-3 w-3" /> Memory
+                  </span>
+                  <span className="font-semibold tabular-nums text-white/80">
+                    {data.system.memory.usedMB} <span className="text-white/25 font-normal">/ {data.system.memory.totalMB} MB</span>
+                  </span>
+                </div>
+                <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+                  <div className={cn("h-full rounded-full transition-all duration-500",
+                    data.system.memory.percent > 85 ? "bg-red-400" : data.system.memory.percent > 65 ? "bg-amber-400" : "bg-emerald-400"
+                  )} style={{ width: `${Math.min(data.system.memory.percent, 100)}%` }} />
+                </div>
               </div>
-              <div className="text-center">
-                <p className={cn("font-bold tabular-nums", data.system.db.latencyMs > 100 ? "text-amber-400" : "text-white/70")}>{data.system.db.latencyMs}ms</p>
-                <p className="text-white/20">DB</p>
+
+              {/* Metrics grid */}
+              <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-lg bg-white/[0.03] border border-white/[0.04] px-2.5 py-2">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <Database className="h-3 w-3 text-white/30" />
+                    <span className="text-[9px] text-white/30">Database</span>
+                  </div>
+                  <p className={cn("text-[15px] font-bold tabular-nums", data.system.db.latencyMs > 100 ? "text-amber-400" : "text-emerald-400")}>{data.system.db.latencyMs}ms</p>
+                </div>
+                <div className="rounded-lg bg-white/[0.03] border border-white/[0.04] px-2.5 py-2">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <Timer className="h-3 w-3 text-white/30" />
+                    <span className="text-[9px] text-white/30">API Response</span>
+                  </div>
+                  <p className="text-[15px] font-bold tabular-nums text-white/80">{data.system.responseMs}ms</p>
+                </div>
+                <div className="rounded-lg bg-white/[0.03] border border-white/[0.04] px-2.5 py-2">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <Clock className="h-3 w-3 text-white/30" />
+                    <span className="text-[9px] text-white/30">Uptime</span>
+                  </div>
+                  <p className="text-[15px] font-bold tabular-nums text-white/80">{fmtUptime(data.system.uptime)}</p>
+                </div>
+                <div className="rounded-lg bg-white/[0.03] border border-white/[0.04] px-2.5 py-2">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <Sparkles className="h-3 w-3 text-white/30" />
+                    <span className="text-[9px] text-white/30">AI Provider</span>
+                  </div>
+                  <p className={cn("text-[15px] font-bold capitalize", data?.ai?.configured ? "text-emerald-400" : "text-white/25")}>
+                    {data?.ai?.configured ? data.ai.provider : "None"}
+                  </p>
+                </div>
               </div>
-              <div className="text-center">
-                <p className="font-bold text-white/70 tabular-nums">{data.system.responseMs}ms</p>
-                <p className="text-white/20">API</p>
+
+              {/* Platform connections */}
+              <div className="rounded-lg bg-white/[0.03] border border-white/[0.04] px-2.5 py-2">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[9px] font-semibold text-white/30">Platforms</span>
+                  <span className="text-[9px] tabular-nums text-white/40">{connectedCount}/8 connected</span>
+                </div>
+                <div className="h-1 rounded-full bg-white/[0.06] overflow-hidden">
+                  <div className="h-full rounded-full bg-emerald-400 transition-all duration-500" style={{ width: `${(connectedCount / 8) * 100}%` }} />
+                </div>
               </div>
-              <div className="text-center">
-                <p className="font-bold text-white/70 tabular-nums">{fmtUptime(data.system.uptime)}</p>
-                <p className="text-white/20">Up</p>
-              </div>
-            </div>
+
+              {/* Listings summary */}
+              {data?.listings && (
+                <div className="flex items-center justify-between text-[10px] text-white/40">
+                  <span>{data.listings.total} listings</span>
+                  <span>{data.listings.active} active</span>
+                  <span>{data.published} published</span>
+                </div>
+              )}
+
+              <button onClick={() => refresh()}
+                className="flex w-full items-center justify-center gap-1.5 rounded bg-white/[0.04] px-2 py-1.5 text-[9px] font-medium text-white/30 transition-colors hover:bg-white/[0.08] hover:text-white/50">
+                <RefreshCw className="h-2.5 w-2.5" /> Refresh
+              </button>
+            </>
           )}
         </div>
 
