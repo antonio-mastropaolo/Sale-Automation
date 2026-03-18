@@ -151,7 +151,7 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="ai">
-        <TabsList className="h-auto p-1 bg-muted/50 rounded-xl flex flex-wrap gap-1">
+        <TabsList className="h-auto p-1 bg-muted/50 rounded-xl grid grid-cols-6 gap-1 w-full">
           <TabsTrigger value="ai" className="gap-1.5 rounded-lg text-xs data-[state=active]:bg-card data-[state=active]:shadow-sm px-3 py-2">
             <Cpu className="h-3.5 w-3.5" />
             AI Provider
@@ -1556,42 +1556,47 @@ function SystemTab() {
 
   return (
     <div className="space-y-4 pt-2">
-      <Card className="border-0 shadow-sm">
-        <CardContent className="pt-5">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 rounded-xl bg-primary/10"><Monitor className="h-6 w-6 text-primary" /></div>
-            <div><h3 className="font-semibold">System Configuration</h3><p className="text-sm text-muted-foreground">Backend, sync, notifications, and data management</p></div>
+      <div className="rounded-xl bg-card border border-[var(--border)] overflow-hidden">
+        <div className="p-5">
+          <div className="flex items-center gap-4 mb-5">
+            <div className="p-2.5 rounded-xl bg-primary/10"><Monitor className="h-5 w-5 text-primary" /></div>
+            <div><h3 className="text-[15px] font-semibold">System Configuration</h3><p className="text-[12px] text-muted-foreground">Backend, sync, notifications, and data management</p></div>
           </div>
-          <div className="space-y-0.5">
+          <div className="space-y-0">
             {systemItems.map((item) => (
-              <div key={item.key} className="flex items-center gap-4 py-3 border-b border-border last:border-b-0">
-                <item.icon className="h-4 w-4 text-muted-foreground shrink-0" />
-                <div className="flex-1 min-w-0"><p className="text-sm font-medium">{item.label}</p><p className="text-xs text-muted-foreground">{item.description}</p></div>
+              <div key={item.key} className="flex items-center gap-4 py-3.5 border-b border-[var(--border)] last:border-b-0">
+                <div className="h-8 w-8 rounded-lg bg-muted/50 flex items-center justify-center shrink-0">
+                  <item.icon className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-semibold">{item.label}</p>
+                  <p className="text-[11px] text-muted-foreground">{item.description}</p>
+                </div>
                 {item.type === "toggle" && (
                   <button onClick={() => update(item.key, settings[item.key as keyof typeof settings] === "true" ? "false" : "true")}
-                    className={`relative h-6 w-11 rounded-full transition-colors shrink-0 ${settings[item.key as keyof typeof settings] === "true" ? "bg-[var(--primary)]" : "bg-muted"}`}>
-                    <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${settings[item.key as keyof typeof settings] === "true" ? "translate-x-[22px]" : "translate-x-0.5"}`} />
+                    className={`relative h-7 w-12 rounded-full transition-all duration-200 shrink-0 ${settings[item.key as keyof typeof settings] === "true" ? "bg-[var(--primary)]" : "bg-muted"}`}>
+                    <span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-md transition-transform duration-200 ${settings[item.key as keyof typeof settings] === "true" ? "translate-x-[22px]" : "translate-x-1"}`} />
                   </button>
                 )}
                 {item.type === "select" && (
                   <select value={settings[item.key as keyof typeof settings]} onChange={(e) => update(item.key, e.target.value)}
-                    className="h-8 rounded-lg border border-border bg-background px-2 text-xs shrink-0">
+                    className="h-8 rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 text-[12px] font-medium shrink-0">
                     {item.options?.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                   </select>
                 )}
                 {item.type === "input" && (
                   <Input value={settings[item.key as keyof typeof settings]} onChange={(e) => update(item.key, e.target.value)}
-                    placeholder={item.placeholder} className="h-8 text-xs w-[200px] font-mono shrink-0" />
+                    placeholder={item.placeholder} className="h-8 text-[12px] w-[200px] font-mono shrink-0" />
                 )}
               </div>
             ))}
           </div>
-          <Button onClick={save} disabled={saving} size="sm" className="w-full mt-4 h-9 text-xs">
-            {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Save className="h-3.5 w-3.5 mr-1.5" />}
+          <Button onClick={save} disabled={saving} className="w-full mt-5 h-10 text-[13px] font-semibold">
+            {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
             Save System Settings
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
