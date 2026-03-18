@@ -29,36 +29,32 @@ export async function GET() {
       let action: "hold" | "drop" | "raise" | "relist" = "hold";
 
       if (daysListed > 21 && publishedCount > 0) {
-        // Stale — aggressive drop
         suggestedPrice = Math.round(listing.price * 0.82);
         reason = `Listed ${daysListed} days with low engagement. Drop 18% to match recent comps.`;
         urgency = "high";
         action = "drop";
       } else if (daysListed > 14 && publishedCount > 0) {
-        // Getting stale — moderate drop
         suggestedPrice = Math.round(listing.price * 0.90);
         reason = `${daysListed} days on market. 10% reduction aligns with sell-through data.`;
         urgency = "medium";
         action = "drop";
       } else if (daysListed > 7 && publishedCount > 0) {
-        // Slightly stale — small drop
         suggestedPrice = Math.round(listing.price * 0.95);
         reason = `${daysListed} days listed. Small 5% adjustment to stay competitive.`;
         urgency = "low";
         action = "drop";
-      } else if (daysListed <= 3 && listing.price < 50) {
-        // New low-price item — could raise
-        suggestedPrice = Math.round(listing.price * 1.10);
-        reason = "New listing priced below avg comps. Consider raising 10%.";
-        urgency = "low";
-        action = "raise";
-      } else if (publishedCount === 0 && daysListed > 5) {
-        // Not published anywhere
-        reason = "Not published to any platform yet. Publish to start getting views.";
+      } else if (publishedCount === 0 && daysListed > 3) {
+        reason = "Not published to any platform yet. Optimize and publish to start selling.";
         urgency = "medium";
         action = "relist";
+      } else if (daysListed <= 2 && listing.costPrice && listing.price < listing.costPrice * 1.3) {
+        // New item with thin margin — suggest raising
+        suggestedPrice = Math.round(listing.costPrice * 1.5);
+        reason = `Margin below 30%. Raise to ${Math.round(((suggestedPrice / listing.costPrice) - 1) * 100)}% markup for healthy profit.`;
+        urgency = "low";
+        action = "raise";
       } else {
-        reason = "Price is competitive. Hold current price.";
+        reason = "Price is competitive for current market conditions. Hold.";
         action = "hold";
       }
 
