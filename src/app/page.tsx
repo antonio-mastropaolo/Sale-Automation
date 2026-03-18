@@ -380,7 +380,7 @@ export default function Dashboard() {
         ) : (
           <>
             {/* Desktop table view */}
-            <div className="hidden sm:block divide-y divide-border">
+            <div key={`page-${page}`} className="hidden sm:block divide-y divide-border animate-fade-in">
               {paged.map((listing) => (
                 <Link
                   key={listing.id}
@@ -425,7 +425,7 @@ export default function Dashboard() {
             </div>
 
             {/* Mobile card view */}
-            <div className="sm:hidden divide-y divide-border">
+            <div key={`mobile-page-${page}`} className="sm:hidden divide-y divide-border animate-fade-in">
               {paged.map((listing) => (
                 <Link
                   key={listing.id}

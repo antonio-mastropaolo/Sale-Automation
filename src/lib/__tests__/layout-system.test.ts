@@ -875,8 +875,8 @@ describe("E. Boot Screen & Page Transition", () => {
     expect(layoutTsx).toContain("progress-track");
   });
 
-  it("E04: boot screen has 'Loading…' label", () => {
-    expect(layoutTsx).toContain("Loading");
+  it("E04: boot screen has 'Preparing' label", () => {
+    expect(layoutTsx).toContain("Preparing your dashboard");
   });
 
   it("E05: boot screen has dismiss script", () => {
@@ -887,8 +887,8 @@ describe("E. Boot Screen & Page Transition", () => {
     expect(layoutTsx).toContain("app:ready");
   });
 
-  it("E07: boot screen has 8-second fallback", () => {
-    expect(layoutTsx).toContain("8000");
+  it("E07: boot screen has 6-second fallback", () => {
+    expect(layoutTsx).toContain("6000");
   });
 
   it("E08: boot screen hidden class fades out", () => {
@@ -900,13 +900,13 @@ describe("E. Boot Screen & Page Transition", () => {
     expect(layoutTsx).toContain("z-index:99999");
   });
 
-  it("E10: boot screen uses CSS variables for theming", () => {
-    expect(layoutTsx).toContain("var(--background");
-    expect(layoutTsx).toContain("var(--primary");
+  it("E10: boot screen has gradient progress bar", () => {
+    expect(layoutTsx).toContain("#3b82f6");
+    expect(layoutTsx).toContain("#8b5cf6");
   });
 
-  it("E11: boot screen has dark mode support", () => {
-    expect(layoutTsx).toContain(".dark #boot-screen");
+  it("E11: boot screen has entrance animation", () => {
+    expect(layoutTsx).toContain("bootFadeUp");
   });
 
   it("E12: boot screen removes itself after hiding", () => {

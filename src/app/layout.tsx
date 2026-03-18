@@ -59,126 +59,143 @@ const bootScreenStyle = `
 #boot-screen {
   position:fixed;inset:0;z-index:99999;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  background:var(--background, #000);
-  transition:opacity .5s ease,visibility .5s ease;
+  background:#0a0a0f;
+  transition:opacity .6s cubic-bezier(0.16,1,0.3,1),visibility .6s;
   font-family:system-ui,-apple-system,sans-serif;
 }
-.dark #boot-screen { background: var(--background, #000); }
 #boot-screen.hidden{opacity:0;visibility:hidden;pointer-events:none}
-#boot-screen .boot-logo{margin-bottom:24px;opacity:0.9}
+#boot-screen .boot-logo{
+  margin-bottom:20px;opacity:0;
+  animation:bootFadeUp .6s cubic-bezier(0.16,1,0.3,1) .1s forwards;
+}
 #boot-screen .boot-title{
-  font-size:20px;font-weight:700;letter-spacing:-0.3px;
-  color:var(--foreground,#fff);margin-bottom:4px;
+  font-size:22px;font-weight:800;letter-spacing:-0.5px;
+  color:#fff;margin-bottom:6px;opacity:0;
+  animation:bootFadeUp .6s cubic-bezier(0.16,1,0.3,1) .2s forwards;
 }
 #boot-screen .boot-sub{
-  font-size:12px;font-weight:500;
-  color:var(--muted-foreground,#888);margin-bottom:32px;
+  font-size:13px;font-weight:500;
+  color:rgba(255,255,255,0.35);margin-bottom:36px;opacity:0;
+  animation:bootFadeUp .6s cubic-bezier(0.16,1,0.3,1) .3s forwards;
 }
 #boot-screen .progress-container{
-  width:50%;max-width:480px;min-width:280px;
+  width:50%;max-width:480px;min-width:300px;opacity:0;
+  animation:bootFadeUp .6s cubic-bezier(0.16,1,0.3,1) .4s forwards;
 }
 #boot-screen .progress-track{
-  width:100%;height:6px;border-radius:9999px;
-  background:var(--muted,#1a1a1a);overflow:hidden;margin-bottom:16px;
+  width:100%;height:4px;border-radius:9999px;
+  background:rgba(255,255,255,0.06);overflow:hidden;margin-bottom:24px;
 }
 #boot-screen .progress-bar{
   height:100%;width:0%;border-radius:inherit;
-  background:linear-gradient(90deg,var(--primary,#007aff),color-mix(in srgb,var(--primary,#007aff) 60%,#8b5cf6));
-  transition:width 0.4s ease;
+  background:linear-gradient(90deg,#3b82f6,#8b5cf6);
+  transition:width .6s cubic-bezier(0.16,1,0.3,1);
 }
-#boot-screen .boot-steps{
-  width:100%;display:flex;flex-direction:column;gap:6px;
-}
+#boot-screen .boot-steps{width:100%;display:flex;flex-direction:column;gap:0}
 #boot-screen .boot-step{
-  display:flex;align-items:center;gap:10px;
-  font-size:12px;font-weight:500;color:var(--muted-foreground,#555);
-  transition:color 0.3s,opacity 0.3s;opacity:0.4;
+  display:flex;align-items:center;gap:12px;
+  padding:7px 0;font-size:13px;font-weight:500;
+  color:rgba(255,255,255,0.15);
+  transition:all .4s cubic-bezier(0.16,1,0.3,1);
+  transform:translateX(0);
 }
-#boot-screen .boot-step.active{color:var(--foreground,#fff);opacity:1}
-#boot-screen .boot-step.done{color:var(--primary,#007aff);opacity:0.7}
+#boot-screen .boot-step.active{
+  color:rgba(255,255,255,0.9);
+  transform:translateX(4px);
+}
+#boot-screen .boot-step.done{
+  color:rgba(255,255,255,0.3);
+}
 #boot-screen .boot-step .step-icon{
-  width:18px;height:18px;border-radius:50%;
+  width:20px;height:20px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
-  font-size:10px;flex-shrink:0;
-  border:1.5px solid var(--border,#333);color:var(--muted-foreground,#555);
-  transition:all 0.3s;
+  font-size:10px;font-weight:700;flex-shrink:0;
+  border:1.5px solid rgba(255,255,255,0.08);
+  color:rgba(255,255,255,0.15);
+  transition:all .4s cubic-bezier(0.16,1,0.3,1);
 }
 #boot-screen .boot-step.active .step-icon{
-  border-color:var(--primary,#007aff);color:var(--primary,#007aff);
-  box-shadow:0 0 8px var(--primary,#007aff)40;
+  border-color:#3b82f6;color:#3b82f6;
+  box-shadow:0 0 12px rgba(59,130,246,0.3);
+  background:rgba(59,130,246,0.1);
 }
 #boot-screen .boot-step.done .step-icon{
-  border-color:var(--primary,#007aff);background:var(--primary,#007aff);color:#fff;
+  border-color:transparent;background:#3b82f6;color:#fff;
 }
 #boot-screen .boot-step .step-label{flex:1}
 #boot-screen .boot-step .step-status{
-  font-size:10px;font-weight:600;font-family:monospace;
-  color:var(--muted-foreground,#555);
+  font-size:11px;font-weight:600;font-variant-numeric:tabular-nums;
+  color:rgba(255,255,255,0.1);
+  transition:all .3s;
 }
-#boot-screen .boot-step.done .step-status{color:var(--primary,#007aff)}
+#boot-screen .boot-step.active .step-status{color:rgba(255,255,255,0.5)}
+#boot-screen .boot-step.done .step-status{color:#3b82f6}
+@keyframes bootFadeUp{
+  from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:translateY(0)}
+}
 `;
 
 const bootDismissScript = `
 (function(){
-  var steps=[
-    {label:'Dashboard',time:300},
-    {label:'Listings Engine',time:250},
-    {label:'AI Pipeline',time:350},
-    {label:'Platform Connectors',time:200},
-    {label:'Analytics',time:200},
-    {label:'Ops Monitor',time:150},
-    {label:'Photo Studio',time:200},
-    {label:'Cross-Market Search',time:150}
-  ];
   var bar=document.getElementById('boot-bar');
   var stepEls=document.querySelectorAll('.boot-step');
-  var total=steps.length;
+  var total=stepEls.length;
   var current=0;
+  var dismissed=false;
+
+  function dismiss(){
+    if(dismissed)return;
+    dismissed=true;
+    if(bar)bar.style.width='100%';
+    stepEls.forEach(function(el){el.classList.add('done');el.classList.remove('active')});
+    setTimeout(function(){
+      var el=document.getElementById('boot-screen');
+      if(el){el.classList.add('hidden');setTimeout(function(){el.remove()},600)}
+    },500);
+  }
 
   function runStep(){
-    if(current>=total){
-      if(bar)bar.style.width='100%';
-      stepEls.forEach(function(el){el.classList.add('done');el.classList.remove('active')});
-      setTimeout(function(){
-        var el=document.getElementById('boot-screen');
-        if(el){el.classList.add('hidden');setTimeout(function(){el.remove()},500)}
-      },400);
-      return;
-    }
-    var pct=Math.round(((current+1)/total)*100);
-    if(bar)bar.style.width=pct+'%';
+    if(current>=total){dismiss();return;}
+    // Smooth progress
+    if(bar)bar.style.width=Math.round(((current+0.5)/total)*100)+'%';
+    // Update step states
     stepEls.forEach(function(el,i){
       el.classList.remove('active','done');
       if(i<current)el.classList.add('done');
       if(i===current)el.classList.add('active');
     });
     var statusEl=stepEls[current]&&stepEls[current].querySelector('.step-status');
-    if(statusEl)statusEl.textContent='Loading...';
+    if(statusEl)statusEl.textContent='...';
+    // Each step takes 350-500ms for smooth feel
+    var delay=350+Math.random()*150;
     setTimeout(function(){
-      if(statusEl)statusEl.textContent='Ready';
-      if(stepEls[current])stepEls[current].classList.remove('active');
-      if(stepEls[current])stepEls[current].classList.add('done');
+      if(statusEl)statusEl.textContent='OK';
+      if(bar)bar.style.width=Math.round(((current+1)/total)*100)+'%';
+      stepEls[current].classList.remove('active');
+      stepEls[current].classList.add('done');
       current++;
-      runStep();
-    },steps[current].time);
+      // Small gap between steps
+      setTimeout(runStep,80);
+    },delay);
   }
 
-  // Start after a brief delay so the screen renders first
-  setTimeout(runStep,200);
+  // Start after entrance animations finish
+  setTimeout(runStep,600);
 
-  // Safety fallback
+  // React app signals ready — fast-forward
   window.addEventListener('app:ready',function(){
-    if(bar)bar.style.width='100%';
-    stepEls.forEach(function(el){el.classList.add('done')});
-    setTimeout(function(){
-      var el=document.getElementById('boot-screen');
-      if(el){el.classList.add('hidden');setTimeout(function(){el.remove()},500)}
-    },300);
+    // Complete remaining steps quickly
+    for(var i=current;i<total;i++){
+      stepEls[i].classList.add('done');
+      stepEls[i].classList.remove('active');
+      var s=stepEls[i].querySelector('.step-status');
+      if(s)s.textContent='OK';
+    }
+    dismiss();
   });
-  setTimeout(function(){
-    var el=document.getElementById('boot-screen');
-    if(el){el.classList.add('hidden');setTimeout(function(){el.remove()},500)}
-  },8000);
+  // Safety: never block longer than 6s
+  setTimeout(dismiss,6000);
 })();
 `;
 
