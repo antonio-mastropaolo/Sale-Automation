@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
+const AUTOMATION_API = process.env.AUTOMATION_API_URL || "http://localhost:8000";
+
 /**
  * GET /api/search?q=supreme+hoodie
  *
- * Cross-market product search. Uses multiple strategies to get
- * real product images:
- * 1. DuckDuckGo image search (no API key needed)
- * 2. Fallback to curated product image database
+ * Cross-market search using the automation backend which has
+ * Playwright-based platform scrapers for real listing data.
  */
 export async function GET(request: NextRequest) {
   const q = request.nextUrl.searchParams.get("q");
@@ -16,99 +16,150 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ results: [], error: "Query too short" });
   }
 
-  // Get product images from DuckDuckGo
-  const images = await searchImages(q);
+  try {
+    // Use the automation backend's search endpoint
+    const res = await fetch(`${AUTOMATION_API}/v1/search?q=${encodeURIComponent(q)}&limit=24`, {
+      signal: AbortSignal.timeout(12000),
+    });
 
-  // Generate listings with real images
-  const platforms = [
-    { name: "Depop", color: "#FF2300" },
-    { name: "Grailed", color: "#333333" },
-    { name: "Poshmark", color: "#7B2D8E" },
-    { name: "Mercari", color: "#4DC4FF" },
-    { name: "eBay", color: "#E53238" },
-    { name: "Vinted", color: "#09B1BA" },
-    { name: "Facebook", color: "#1877F2" },
-    { name: "Vestiaire", color: "#C9A96E" },
+    if (!res.ok) {
+      return NextResponse.json({ results: [], total: 0, query: q, imageSource: "backend_error" });
+    }
+
+    const data = await res.json();
+    const items = data.items || [];
+
+    if (items.length === 0) {
+      return NextResponse.json({ results: [], total: 0, query: q, imageSource: "no_results" });
+    }
+
+    // Try to fetch images for items that have source_url but no image
+    const results = await Promise.all(
+      items.map(async (item: BackendItem, i: number) => {
+        let images: string[] = [];
+
+        // If backend provided an image, use it
+        if (item.image_url) {
+          images = [item.image_url];
+        }
+        // Otherwise try to extract from the listing page
+        else if (item.source_url) {
+          const img = await fetchListingImage(item.source_url, item.platform);
+          if (img) images = [img];
+        }
+
+        return {
+          id: item.id || `result-${i}`,
+          title: item.title || "Untitled",
+          price: item.price || 0,
+          originalPrice: item.original_price || undefined,
+          platform: formatPlatform(item.platform),
+          platformColor: PLATFORM_COLORS[item.platform] || "#333",
+          seller: item.seller || "seller",
+          condition: item.condition || "See listing",
+          size: item.size || undefined,
+          brand: item.brand || "",
+          images,
+          listingUrl: item.source_url || "#",
+          postedAgo: "recent",
+          likes: Math.floor(Math.random() * 50),
+          views: Math.floor(Math.random() * 200),
+          aiScore: 60 + Math.floor(Math.random() * 40),
+          aiInsight: generateInsight(item, i),
+        };
+      })
+    );
+
+    const withImages = results.filter((r) => r.images.length > 0).length;
+
+    return NextResponse.json({
+      results,
+      total: results.length,
+      query: q,
+      imageSource: withImages > 0 ? "live" : "text_only",
+      imagesFound: withImages,
+    });
+  } catch (err) {
+    console.error("Search API error:", err);
+    return NextResponse.json({ results: [], total: 0, query: q, imageSource: "error" });
+  }
+}
+
+interface BackendItem {
+  id: string;
+  platform: string;
+  source_url: string;
+  title: string;
+  brand: string;
+  price: number;
+  original_price: number | null;
+  size: string;
+  condition: string;
+  seller: string;
+  image_url: string | null;
+}
+
+const PLATFORM_COLORS: Record<string, string> = {
+  depop: "#FF2300", grailed: "#333333", poshmark: "#7B2D8E",
+  mercari: "#4DC4FF", ebay: "#E53238", vinted: "#09B1BA",
+  facebook: "#1877F2", vestiaire: "#C9A96E",
+};
+
+function formatPlatform(p: string): string {
+  const map: Record<string, string> = {
+    depop: "Depop", grailed: "Grailed", poshmark: "Poshmark",
+    mercari: "Mercari", ebay: "eBay", vinted: "Vinted",
+    facebook: "Facebook", vestiaire: "Vestiaire",
+  };
+  return map[p] || p.charAt(0).toUpperCase() + p.slice(1);
+}
+
+function generateInsight(item: BackendItem, i: number): string {
+  const insights = [
+    "Great deal — below market average",
+    "Fair price — matches recent comps",
+    `Fast seller on ${formatPlatform(item.platform)}`,
+    "Rare find — high resale potential",
+    "Consider negotiating for better price",
   ];
-
-  const words = q.split(" ").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
-  const brands = ["Supreme", "Nike", "Jordan", "Stussy", "Palace", "Arc'teryx", "Balenciaga", "New Balance"];
-  const conditions = ["New with tags", "Like new", "Good", "Fair"];
-  const sizes = ["XS", "S", "M", "L", "XL"];
-  const sellers = ["vintage_dealer", "hype_finds", "grail_shop", "closet_nyc", "resell_la", "streetwear_ny"];
-  const items = ["Hoodie", "Crewneck", "Tee", "Jacket", "Pants"];
-
-  const results = Array.from({ length: Math.min(24, Math.max(images.length, 12)) }, (_, i) => {
-    const platform = platforms[i % platforms.length];
-    const brand = brands[i % brands.length];
-    const price = 30 + Math.floor(Math.random() * 400);
-    const hasDiscount = Math.random() > 0.6;
-    // Use real image if available, otherwise use a placeholder
-    const img = images[i] || images[i % Math.max(images.length, 1)] || null;
-
-    return {
-      id: `search-${i}-${Date.now()}`,
-      title: `${brand} ${words} ${items[i % 5]} ${["SS24", "FW23", "SS23", "Archive"][i % 4]}`,
-      price,
-      originalPrice: hasDiscount ? price + Math.floor(Math.random() * 100) : undefined,
-      platform: platform.name,
-      platformColor: platform.color,
-      seller: sellers[i % sellers.length],
-      condition: conditions[i % conditions.length],
-      size: sizes[i % sizes.length],
-      brand,
-      images: img ? [img] : [],
-      listingUrl: "#",
-      likes: Math.floor(Math.random() * 50),
-      views: Math.floor(Math.random() * 200),
-      postedAgo: `${[1, 2, 5, 12, 24][i % 5]}${["h", "h", "h", "h", "d"][i % 5]}`,
-      aiScore: 60 + Math.floor(Math.random() * 40),
-      aiInsight: [
-        "Great deal — 20% below market average",
-        "Fair price — matches recent comps",
-        "Seller has fast shipping, 4.9★ rating",
-        "Rare colorway — high resale potential",
-        "Price is slightly above market — negotiate",
-      ][i % 5],
-    };
-  });
-
-  return NextResponse.json({
-    results,
-    total: results.length,
-    query: q,
-    imageSource: images.length > 0 ? "stockx" : "unavailable",
-  });
+  return insights[i % insights.length];
 }
 
 /**
- * Try to fetch real product images from StockX.
- * Falls back to empty array if StockX blocks the request.
+ * Fetch the OG image or first product image from a listing URL.
+ * Uses a lightweight HEAD/GET to extract meta tags.
  */
-async function searchImages(query: string): Promise<string[]> {
+async function fetchListingImage(url: string, platform: string): Promise<string | null> {
   try {
-    // StockX product search API
-    const res = await fetch(`https://stockx.com/api/browse?_search=${encodeURIComponent(query)}&page=1&resultsPerPage=24&dataType=product`, {
+    const res = await fetch(url, {
       headers: {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "application/json",
-        "App-Platform": "web",
-        "App-Version": "2024.01.01",
+        "User-Agent": "Mozilla/5.0 (compatible; ListBlitz/1.0; +https://listblitz.io)",
+        "Accept": "text/html",
       },
-      signal: AbortSignal.timeout(6000),
+      signal: AbortSignal.timeout(5000),
+      redirect: "follow",
     });
 
-    if (!res.ok) return [];
-    const data = await res.json();
-    const products = data?.Products || [];
+    if (!res.ok) return null;
+    const html = await res.text();
 
-    return products
-      .map((p: { media?: { imageUrl?: string; thumbUrl?: string; smallImageUrl?: string } }) =>
-        p.media?.imageUrl || p.media?.thumbUrl || p.media?.smallImageUrl || null
-      )
-      .filter((url: string | null): url is string => !!url)
-      .slice(0, 24);
+    // Try og:image first (most platforms set this)
+    const ogMatch = html.match(/<meta\s+(?:property|name)="og:image"\s+content="([^"]+)"/i)
+      || html.match(/content="([^"]+)"\s+(?:property|name)="og:image"/i);
+    if (ogMatch?.[1]) return ogMatch[1];
+
+    // Try twitter:image
+    const twMatch = html.match(/<meta\s+(?:property|name)="twitter:image"\s+content="([^"]+)"/i);
+    if (twMatch?.[1]) return twMatch[1];
+
+    // Platform-specific image extraction
+    if (platform === "grailed") {
+      const grailedImg = html.match(/"image_url":"([^"]+)"/);
+      if (grailedImg?.[1]) return grailedImg[1];
+    }
+
+    return null;
   } catch {
-    return [];
+    return null;
   }
 }
