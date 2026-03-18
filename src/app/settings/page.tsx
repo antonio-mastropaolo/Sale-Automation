@@ -1113,7 +1113,7 @@ function PlatformsTab() {
       </Card>
 
       {/* Platform list */}
-      <div className="space-y-2">
+      <div className="grid grid-cols-1 2xl:grid-cols-2 gap-3">
         {platforms.map((p) => {
           const info = platformInfo[p.platform];
           if (!info) return null;
@@ -1354,7 +1354,7 @@ function GeneralTab() {
           <p className="text-sm text-muted-foreground mb-4">
             Choose a UI design language that changes how the entire app looks and feels
           </p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 2xl:grid-cols-4 gap-3">
             {DESIGN_STYLES.map((style) => (
               <button
                 key={style.id}
@@ -1670,7 +1670,7 @@ function PluginsTab() {
             ))}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-3">
             {filtered.map((plugin) => {
               const Icon = plugin.icon;
               return (
