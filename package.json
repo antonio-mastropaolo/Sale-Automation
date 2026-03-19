@@ -9,7 +9,13 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "qa": "npx playwright test tests/gui-audit/qa.spec.ts --project=gui-audit",
+    "qa:full": "QA_MODE=full npx playwright test tests/gui-audit/qa.spec.ts --project=gui-audit",
+    "qa:visual": "QA_AGENT=visual npx playwright test tests/gui-audit/qa.spec.ts --project=gui-audit",
+    "qa:api": "QA_AGENT=api npx playwright test tests/gui-audit/qa.spec.ts --project=gui-audit",
+    "qa:flow": "QA_AGENT=flow npx playwright test tests/gui-audit/qa.spec.ts --project=gui-audit",
+    "qa:logic": "QA_AGENT=logic npx playwright test tests/gui-audit/qa.spec.ts --project=gui-audit"
   },
   "dependencies": {
     "@base-ui/react": "^1.2.0",
