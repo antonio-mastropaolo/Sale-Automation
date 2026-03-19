@@ -13,7 +13,7 @@ on:
         required: false
         default: 'quick'
       agent:
-        description: 'Agent filter (all, visual, api, flow, logic, performance, security, seo, data-integrity, regression, state)'
+        description: 'Agent filter (all, visual, api, flow, logic, performance, security, seo, data-integrity, regression, state, a11y, network)'
         required: false
         default: 'all'
 
@@ -59,7 +59,8 @@ jobs:
             docs/gui-audit/qa-dashboard.md
             docs/gui-audit/bugs.csv
             docs/gui-audit/issues/
-            docs/gui-audit/*.png
+            docs/gui-audit/trend-history.json
+            docs/gui-audit/baselines/
           retention-days: 30
 
       - name: Comment PR with QA Summary
