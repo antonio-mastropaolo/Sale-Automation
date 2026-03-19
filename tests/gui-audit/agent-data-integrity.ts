@@ -452,6 +452,205 @@ async function checkReferentialIntegrity(
   return { checks, bugs };
 }
 
+/**
+ * Check 6: API error response consistency — all errors should follow the same shape.
+ */
+async function checkErrorResponseConsistency(
+  request: APIRequestContext
+): Promise<{ checks: DataIntegrityCheck[]; bugs: BugReport[] }> {
+  const checks: DataIntegrityCheck[] = [];
+  const bugs: BugReport[] = [];
+
+  const errorEndpoints = [
+    { endpoint: "/api/listings/nonexistent-id-99999", expectedField: "error" },
+    { endpoint: "/api/nonexistent", expectedField: "error" },
+    { endpoint: "/api/inbox/nonexistent-msg", expectedField: "error" },
+  ];
+
+  const inconsistentShapes: string[] = [];
+
+  for (const { endpoint, expectedField } of errorEndpoints) {
+    try {
+      const response = await request.get(endpoint);
+      const status = response.status();
+      if (status >= 400) {
+        let body: Record<string, unknown> = {};
+        try {
+          body = (await response.json()) as Record<string, unknown>;
+        } catch {
+          inconsistentShapes.push(`${endpoint} returns non-JSON error (${status})`);
+          continue;
+        }
+
+        if (!(expectedField in body) && !("message" in body)) {
+          inconsistentShapes.push(
+            `${endpoint} (${status}) missing '${expectedField}' or 'message' field`
+          );
+        }
+      }
+    } catch {
+      // Can't reach = skip
+    }
+  }
+
+  const passed = inconsistentShapes.length === 0;
+  checks.push({
+    name: "Error response consistency",
+    description: "All API error responses should follow a consistent shape",
+    passed,
+    details: passed
+      ? "All error responses have consistent shape"
+      : inconsistentShapes.join("; "),
+    affectedEndpoints: errorEndpoints.map((e) => e.endpoint),
+  });
+
+  if (!passed) {
+    bugs.push(
+      makeBug(
+        `Inconsistent error response shapes across ${inconsistentShapes.length} endpoint(s)`,
+        "minor",
+        "/api",
+        [
+          "Hit non-existent IDs/routes and check error response shapes",
+          ...inconsistentShapes,
+        ],
+        "All API errors should return { error: string } or { message: string }",
+        `${inconsistentShapes.length} endpoints return inconsistent error shapes`,
+        "Standardize error responses with a shared error handler that always returns { error: string, status: number }.",
+        ["error-consistency"],
+        65,
+      )
+    );
+  }
+
+  return { checks, bugs };
+}
+
+/**
+ * Check 7: Offers reference valid listings.
+ */
+async function checkOffersIntegrity(
+  request: APIRequestContext
+): Promise<{ checks: DataIntegrityCheck[]; bugs: BugReport[] }> {
+  const checks: DataIntegrityCheck[] = [];
+  const bugs: BugReport[] = [];
+
+  const listingsRes = await fetchJson(request, "/api/listings");
+  const offersRes = await fetchJson(request, "/api/offers");
+
+  if (!listingsRes.ok || !offersRes.ok) return { checks, bugs };
+
+  const listings = (Array.isArray(listingsRes.data) ? listingsRes.data : []) as Array<Record<string, unknown>>;
+  const listingIds = new Set(listings.map((l) => l.id));
+
+  const offers = (Array.isArray(offersRes.data) ? offersRes.data :
+    (offersRes.data as Record<string, unknown>)?.offers || []) as Array<Record<string, unknown>>;
+
+  const orphans: string[] = [];
+  for (const offer of offers) {
+    const listingId = offer.listingId as string;
+    if (listingId && !listingIds.has(listingId)) {
+      orphans.push(listingId);
+    }
+  }
+
+  const passed = orphans.length === 0;
+  checks.push({
+    name: "Referential: offers → listings",
+    description: "All offers should reference existing listings",
+    passed,
+    details: passed
+      ? "All offer references valid"
+      : `${orphans.length} orphan references`,
+    affectedEndpoints: ["/api/offers", "/api/listings"],
+  });
+
+  if (!passed) {
+    bugs.push(
+      makeBug(
+        `${orphans.length} orphan listing references in offers`,
+        "major",
+        "/api/offers",
+        [
+          `GET /api/offers`,
+          `${orphans.length} offers reference listing IDs that don't exist`,
+        ],
+        "All offers should reference valid listing IDs",
+        `Orphan IDs: ${orphans.slice(0, 5).join(", ")}`,
+        "Add cascade delete or clean up orphan offers when listings are deleted.",
+        ["referential-integrity"],
+        80,
+      )
+    );
+  }
+
+  return { checks, bugs };
+}
+
+/**
+ * Check 8: Sales data references valid listings and has valid amounts.
+ */
+async function checkSalesIntegrity(
+  request: APIRequestContext
+): Promise<{ checks: DataIntegrityCheck[]; bugs: BugReport[] }> {
+  const checks: DataIntegrityCheck[] = [];
+  const bugs: BugReport[] = [];
+
+  const salesRes = await fetchJson(request, "/api/sales");
+  if (!salesRes.ok) return { checks, bugs };
+
+  const sales = (Array.isArray(salesRes.data) ? salesRes.data :
+    (salesRes.data as Record<string, unknown>)?.sales || []) as Array<Record<string, unknown>>;
+
+  const issues: string[] = [];
+
+  for (const sale of sales.slice(0, 20)) {
+    // Check sale amount
+    const amount = sale.amount ?? sale.price ?? sale.total;
+    if (typeof amount === "number" && (amount <= 0 || isNaN(amount))) {
+      issues.push(`Sale ${sale.id}: invalid amount ${amount}`);
+    }
+
+    // Check sale date
+    const dateVal = sale.date ?? sale.soldAt ?? sale.createdAt;
+    if (dateVal && typeof dateVal === "string") {
+      const parsed = new Date(dateVal);
+      if (isNaN(parsed.getTime())) {
+        issues.push(`Sale ${sale.id}: invalid date "${dateVal}"`);
+      } else if (parsed > new Date()) {
+        issues.push(`Sale ${sale.id}: future date "${dateVal}"`);
+      }
+    }
+  }
+
+  const passed = issues.length === 0;
+  checks.push({
+    name: "Sales data validation",
+    description: "Validate sale amounts, dates, and references",
+    passed,
+    details: passed ? "All sales data valid" : issues.join("; "),
+    affectedEndpoints: ["/api/sales"],
+  });
+
+  if (!passed) {
+    bugs.push(
+      makeBug(
+        `${issues.length} data issue(s) in sales`,
+        "major",
+        "/api/sales",
+        [`GET /api/sales`, ...issues.slice(0, 5)],
+        "All sales should have valid amounts and dates",
+        `Found ${issues.length} data issues`,
+        "Add validation in the sales API route handler.",
+        ["data-format", "sales"],
+        75,
+      )
+    );
+  }
+
+  return { checks, bugs };
+}
+
 // ── Main Data Integrity Agent ─────────────────────────────────────
 
 export async function runDataIntegrityAgent(
@@ -469,6 +668,9 @@ export async function runDataIntegrityAgent(
     { name: "Data formats", fn: () => checkDataFormats(request) },
     { name: "Idempotency", fn: () => checkIdempotency(request) },
     { name: "Referential integrity", fn: () => checkReferentialIntegrity(request) },
+    { name: "Error consistency", fn: () => checkErrorResponseConsistency(request) },
+    { name: "Offers integrity", fn: () => checkOffersIntegrity(request) },
+    { name: "Sales integrity", fn: () => checkSalesIntegrity(request) },
   ];
 
   for (const runner of runners) {

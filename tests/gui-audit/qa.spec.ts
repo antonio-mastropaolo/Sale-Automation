@@ -313,7 +313,7 @@ test.describe("TrendSmart QA — Multi-Agent Runner v2", () => {
 
     // ── 11. Accessibility Agent ──
     if (shouldRun("accessibility")) {
-      agents.push("visual"); // Reports under visual
+      agents.push("a11y");
       console.log(`\n--- [11/12] ACCESSIBILITY AGENT ---`);
       try {
         const bugs = await runAccessibilityAgent(page, routes);
@@ -326,7 +326,7 @@ test.describe("TrendSmart QA — Multi-Agent Runner v2", () => {
 
     // ── 12. Network Resilience Agent ──
     if (shouldRun("network")) {
-      agents.push("flow"); // Reports under flow
+      agents.push("network");
       console.log(`\n--- [12/12] NETWORK RESILIENCE AGENT ---`);
       try {
         const bugs = await runNetworkAgent(page, routes);

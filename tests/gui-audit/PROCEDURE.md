@@ -8,28 +8,34 @@ you run one command and get GitHub-issue-ready bug reports.
 
 ## Architecture
 
-Four specialized agents run in sequence, each looking for different classes of bugs:
+**12 specialized agents** run in sequence, each targeting a different quality dimension:
 
 ```
-┌─────────────────────────────────────────────────┐
-│                  QA Runner (qa.spec.ts)          │
-│                                                  │
-│   ┌──────────┐  ┌──────────┐  ┌──────────┐     │
-│   │  Visual   │  │  Logic   │  │   API    │     │
-│   │  Agent    │  │  Agent   │  │  Agent   │     │
-│   └────┬─────┘  └────┬─────┘  └────┬─────┘     │
-│        │              │              │           │
-│   ┌────┴─────┐        │              │           │
-│   │  Second  │        │              │           │
-│   │  Opinion │        │       ┌──────┴─────┐    │
-│   └────┬─────┘        │       │   Flow     │    │
-│        │              │       │   Agent    │    │
-│        ▼              ▼       └──────┬─────┘    │
-│   ┌──────────────────────────────────┴────┐     │
-│   │         Bug Reporter                   │     │
-│   │  (dedup → score → markdown/csv/json)   │     │
-│   └────────────────────────────────────────┘     │
-└─────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────┐
+│                    QA Runner (qa.spec.ts)                         │
+│                                                                   │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────────┐        │
+│  │  Visual   │ │  Logic   │ │   API    │ │    Flow      │        │
+│  │  Agent    │ │  Agent   │ │  Agent   │ │    Agent     │        │
+│  │ 9 checks │ │ 11 checks│ │ 90+ tests│ │  20 journeys │        │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────────┘        │
+│                                                                   │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────────┐        │
+│  │   Perf   │ │ Security │ │   Data   │ │     SEO      │        │
+│  │  Agent   │ │  Agent   │ │ Integrity│ │    Agent     │        │
+│  │ 10 checks│ │ 12 checks│ │ 8 checks │ │  9 checks   │        │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────────┘        │
+│                                                                   │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────────┐        │
+│  │Regression│ │  State   │ │  A11y    │ │   Network    │        │
+│  │  Agent   │ │  Agent   │ │  Agent   │ │    Agent     │        │
+│  │ baselines│ │ 9 checks │ │ 8 checks │ │  6 checks   │        │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────────┘        │
+│                                                                   │
+│  ┌────────────────────────────────────────────────────────┐      │
+│  │  Bug Reporter (dedup → score → trend → md/csv/json)    │      │
+│  └────────────────────────────────────────────────────────┘      │
+└───────────────────────────────────────────────────────────────────┘
 ```
 
 ### Agent 1: Visual Agent
@@ -55,10 +61,9 @@ and accessibility attributes. Then runs 9 automated checks.
 - Color palette consistency (near-duplicate colors = accident)
 - Alignment drift (elements 1-4px off = sloppy layout)
 
-### Agent 2: Logic Agent
+### Agent 2: Logic Agent (11 checks)
 **What it does:** Navigates each page like a user and checks the rendered data.
 
-**Checks:**
 | # | Check | What it catches |
 |---|-------|----------------|
 | 1 | Page loads | HTTP errors, blank pages, crashes |
@@ -69,33 +74,67 @@ and accessibility attributes. Then runs 9 automated checks.
 | 6 | Form validation | Missing `<form>` wrappers, no validation |
 | 7 | Broken images | Images that fail to load |
 | 8 | Placeholder data | Lorem ipsum, TODO, test@example.com |
+| 9 | Z-index overlaps | Interactive elements obscured by other content |
+| 10 | Stuck toasts | Notifications visible on fresh page load |
+| 11 | Text truncation | Text clipped without ellipsis indicator |
 
-### Agent 3: API Agent
+### Agent 3: API Agent (90+ tests)
 **What it does:** Hits every API endpoint with both valid and invalid data.
-Tests the contract like a QA tester using Postman.
 
-**Test areas:**
-- Listings CRUD (GET, POST with valid/invalid data)
-- Auth (login with wrong creds, register validation)
-- Settings (valid update, empty body rejection)
-- Repricing (negative price rejection)
-- Offers (invalid action rejection)
-- Inbox, Scheduler, Export, Templates, Search
-- XSS sanitization check
-- Health check
+**90+ test cases** covering all 52 endpoints:
+- Listings CRUD, auth, settings, repricing, offers, inbox
+- Scheduler, export, templates, search, image-search
+- All AI endpoints, diagnostics, health-check
+- XSS sanitization, pagination, concurrent requests
+- Response time auditing (flags > 3s endpoints)
 
-**35 test cases** covering happy paths and edge cases.
-
-### Agent 4: Flow Agent
+### Agent 4: Flow Agent (20 user journeys)
 **What it does:** Walks through real user journeys end-to-end.
 
-**Flows tested:**
-1. Full page navigation (visit all 14 key pages)
-2. Sidebar navigation (click links, verify URL changes)
-3. Theme toggle (light → dark without errors)
+1. Full page navigation (all 22 pages)
+2. Sidebar navigation (click links, verify routing)
+3. Theme toggle (light/dark without errors)
 4. Listing creation form (all fields present)
 5. Mobile responsive (no horizontal scroll at 375px)
-6. Data display integrity (no NaN/undefined/Invalid Date)
+6. Data display integrity (no NaN/undefined)
+7. Login flow (form fields, submit, error handling)
+8. Registration flow (validation, field checks)
+9. Settings interaction (controls, data integrity)
+10. Search page flow
+11. Dashboard data cards
+12. Forgot password flow
+13. Analytics charts rendering
+14. Inventory page data
+15. Login form submission (invalid creds → error)
+16. Registration form validation (empty submit)
+17. Keyboard shortcut support
+18. Cross-page data consistency
+19. Onboarding page
+20. Diagnostics page
+
+### Agent 5: Performance Agent (10 checks)
+Core Web Vitals, memory leaks, image optimization, bundle analysis.
+
+### Agent 6: Security Agent (12 checks)
+Auth bypass, XSS, SQL injection, CSRF, CORS, session fixation, rate limiting, headers.
+
+### Agent 7: Data Integrity Agent (8 checks)
+Cross-endpoint consistency, response shapes, idempotency, referential integrity, error consistency.
+
+### Agent 8: SEO Agent (9 checks)
+Title, meta description, OG tags, heading hierarchy, alt text, semantic HTML.
+
+### Agent 9: Regression Agent
+Screenshot baseline diffing with configurable pixel threshold.
+
+### Agent 10: State Agent (9 checks)
+Theme persistence, sidebar state, localStorage, back button, SWR cache, form state, auth redirect.
+
+### Agent 11: Accessibility Agent (8 checks)
+Keyboard navigation, focus traps, landmarks, form labels, ARIA, skip links, escape dismiss.
+
+### Agent 12: Network Agent (6 checks)
+API failure degradation, slow network, offline recovery, timeout handling, cache headers, retry behavior.
 
 ---
 
@@ -111,21 +150,28 @@ npx playwright install chromium
 ```bash
 npm run qa
 ```
-Tests 4 key pages (dashboard, create listing, settings, analytics) with all 4 agents.
-Takes ~2-3 minutes.
+Tests 4 key pages with all 12 agents. Takes ~3-5 minutes.
 
-### Full Run (weekly/before release)
+### Full Run (before release)
 ```bash
 npm run qa:full
 ```
-Tests all 28 pages. Takes ~10-15 minutes.
+Tests all 28 pages with all 12 agents. Takes ~10-15 minutes.
 
 ### Single Agent Runs
 ```bash
-npm run qa:visual    # Only visual checks
-npm run qa:api       # Only API tests
-npm run qa:flow      # Only user flow tests
-npm run qa:logic     # Only logic checks
+npm run qa:visual      # Visual consistency
+npm run qa:logic       # Business logic
+npm run qa:api         # API contracts (90+ tests)
+npm run qa:flow        # User journeys (20 flows)
+npm run qa:perf        # Core Web Vitals + image optimization
+npm run qa:security    # OWASP security (12 checks)
+npm run qa:seo         # SEO audit
+npm run qa:data        # Data integrity (8 checks)
+npm run qa:regression  # Screenshot baselines
+npm run qa:state       # Client state persistence (9 checks)
+npm run qa:a11y        # WCAG 2.1 AA accessibility
+npm run qa:network     # Network resilience (6 checks)
 ```
 
 ### Single Page Deep-Dive
@@ -145,7 +191,8 @@ After a run, check `docs/gui-audit/`:
 | `qa-report.json` | Full machine-readable report | CI/automation |
 | `bugs.csv` | Spreadsheet for triage | You (import to Sheets) |
 | `issues/*.md` | One file per bug, GitHub-issue-ready | You (copy-paste to GitHub) |
-| `*.png` | Full-page screenshots | You (visual reference) |
+| `trend-history.json` | Run-over-run trend tracking | CI/automation |
+| `baselines/*.png` | Screenshot baselines for regression | Regression agent |
 
 ### Example Bug Report (from issues/)
 ```markdown

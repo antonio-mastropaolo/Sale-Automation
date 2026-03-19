@@ -191,9 +191,39 @@ function generateDashboard(report: QAReport): string {
     }
   }
 
+  // State checks
+  if (report.stateResults && report.stateResults.length > 0) {
+    const stateFailed = report.stateResults.filter((s) => !s.passed);
+    if (stateFailed.length > 0) {
+      lines.push(`## State Issues`);
+      lines.push(`| Check | Status | Details |`);
+      lines.push(`|-------|--------|---------|`);
+      for (const s of stateFailed) {
+        lines.push(`| ${s.name} | FAIL | ${s.details.substring(0, 80)} |`);
+      }
+      lines.push(``);
+    } else {
+      const total = report.stateResults.length;
+      lines.push(`## State Checks: ${total}/${total} passed`);
+      lines.push(``);
+    }
+  }
+
+  // Data integrity
+  if (report.dataIntegrityResults && report.dataIntegrityResults.length > 0) {
+    const dataFailed = report.dataIntegrityResults.filter((c) => !c.passed);
+    if (dataFailed.length > 0) {
+      lines.push(`## Data Integrity Issues`);
+      for (const c of dataFailed) {
+        lines.push(`- **${c.name}**: ${c.details}`);
+      }
+      lines.push(``);
+    }
+  }
+
   // By agent
   lines.push(`## Bugs by Agent`);
-  for (const [agent, count] of Object.entries(summary.byAgent)) {
+  for (const [agent, count] of Object.entries(summary.byAgent).sort((a, b) => b[1] - a[1])) {
     lines.push(`- **${agent}**: ${count} bugs`);
   }
   lines.push(``);

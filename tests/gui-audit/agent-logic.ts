@@ -538,6 +538,172 @@ async function checkPlaceholderData(
   return bugs;
 }
 
+/**
+ * Check for z-index stacking issues (overlapping elements).
+ */
+async function checkZIndexOverlaps(
+  page: Page,
+  route: string
+): Promise<BugReport[]> {
+  const bugs: BugReport[] = [];
+
+  const overlaps = await page.evaluate(() => {
+    const issues: string[] = [];
+    const interactiveElements = document.querySelectorAll(
+      "button, a, input, select, textarea, [role='button'], [role='link'], [tabindex]"
+    );
+
+    for (const el of interactiveElements) {
+      const rect = el.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) continue;
+
+      // Check if this element is covered by another element
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const topElement = document.elementFromPoint(centerX, centerY);
+
+      if (topElement && topElement !== el && !el.contains(topElement) && !topElement.contains(el)) {
+        const tag = el.tagName.toLowerCase();
+        const text = (el.textContent || "").trim().substring(0, 30);
+        const coveringTag = topElement.tagName.toLowerCase();
+        issues.push(`${tag} "${text}" covered by ${coveringTag}`);
+      }
+    }
+
+    return issues.slice(0, 5); // Limit to first 5
+  });
+
+  if (overlaps.length > 0) {
+    bugs.push(
+      makeBug(
+        `${overlaps.length} interactive element(s) obscured on ${route}`,
+        "major",
+        route,
+        [
+          `Navigate to ${route}`,
+          `Check interactive elements for z-index overlap`,
+          ...overlaps,
+        ],
+        "All interactive elements should be clickable without obstruction",
+        `${overlaps.length} elements are covered by other elements`,
+        "Fix z-index stacking order. Ensure modals/overlays don't cover interactive content.",
+        ["z-index", "usability"],
+        70
+      )
+    );
+  }
+
+  return bugs;
+}
+
+/**
+ * Check for toast/notification visibility after page actions.
+ */
+async function checkToastPresence(
+  page: Page,
+  route: string
+): Promise<BugReport[]> {
+  const bugs: BugReport[] = [];
+
+  // Check if there are orphaned/stuck toasts visible on page load
+  const stuckToasts = await page.evaluate(() => {
+    const toastSelectors = [
+      "[data-sonner-toast]",
+      "[role='status'][aria-live]",
+      ".toast",
+      "[class*='toast']",
+      "[class*='notification']",
+      "[data-state='open'][role='status']",
+    ];
+
+    const found: string[] = [];
+    for (const sel of toastSelectors) {
+      const toasts = document.querySelectorAll(sel);
+      for (const toast of toasts) {
+        const rect = toast.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          const text = (toast.textContent || "").trim().substring(0, 60);
+          found.push(`${sel}: "${text}"`);
+        }
+      }
+    }
+
+    return found;
+  });
+
+  if (stuckToasts.length > 0) {
+    bugs.push(
+      makeBug(
+        `Stuck toast/notification visible on ${route} load`,
+        "minor",
+        route,
+        [
+          `Navigate to ${route}`,
+          `Toast notifications visible on initial page load:`,
+          ...stuckToasts,
+        ],
+        "Toast notifications should not appear on fresh page load (only after user actions)",
+        `${stuckToasts.length} toast(s) visible on load`,
+        "Ensure toasts auto-dismiss and aren't triggered on mount. Check for stale toast state in context.",
+        ["toast", "ux"],
+        55
+      )
+    );
+  }
+
+  return bugs;
+}
+
+/**
+ * Check for text truncation (overflow: hidden cutting off content).
+ */
+async function checkTextTruncation(
+  page: Page,
+  route: string
+): Promise<BugReport[]> {
+  const bugs: BugReport[] = [];
+
+  const truncated = await page.evaluate(() => {
+    const elements = document.querySelectorAll("h1, h2, h3, h4, button, a, td, th, label");
+    let count = 0;
+
+    for (const el of elements) {
+      const style = getComputedStyle(el);
+      // Check if text is overflowing and hidden
+      if (
+        style.overflow === "hidden" &&
+        style.textOverflow !== "ellipsis" &&
+        el.scrollWidth > el.clientWidth + 5
+      ) {
+        count++;
+      }
+    }
+
+    return count;
+  });
+
+  if (truncated > 3) {
+    bugs.push(
+      makeBug(
+        `${truncated} element(s) with hidden text overflow on ${route}`,
+        "minor",
+        route,
+        [
+          `Navigate to ${route}`,
+          `Found ${truncated} elements where text is clipped by overflow:hidden without text-overflow:ellipsis`,
+        ],
+        "Clipped text should show ellipsis (...) to indicate truncation",
+        `${truncated} elements have hidden overflow without ellipsis indicator`,
+        "Add text-overflow: ellipsis to elements with overflow: hidden, or increase the container width.",
+        ["truncation", "ux"],
+        50
+      )
+    );
+  }
+
+  return bugs;
+}
+
 // ── Main Logic Agent ──────────────────────────────────────────────
 
 /**
@@ -559,6 +725,9 @@ export async function runLogicAgent(
     checkFormValidation,
     checkBrokenImages,
     checkPlaceholderData,
+    checkZIndexOverlaps,
+    checkToastPresence,
+    checkTextTruncation,
   ];
 
   for (const check of checks) {
