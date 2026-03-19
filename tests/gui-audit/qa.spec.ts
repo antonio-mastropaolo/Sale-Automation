@@ -1,25 +1,28 @@
 /**
- * TrendSmart QA — Multi-Agent Test Runner
+ * TrendSmart QA — Multi-Agent Test Runner v2
  *
- * This is the entry point. Run it with:
+ * Orchestrates 10 specialized agents:
  *
- *   npx playwright test tests/gui-audit/qa.spec.ts --project=gui-audit
- *
- * Or with npm scripts:
- *
- *   npm run qa              # Quick run (4 key pages)
- *   npm run qa:full         # Full run (all pages)
+ *   npm run qa              # Quick (4 pages, all agents)
+ *   npm run qa:full         # Full (28 pages, all agents)
  *   npm run qa:visual       # Visual agent only
  *   npm run qa:api          # API agent only
  *   npm run qa:flow         # Flow agent only
- *   npm run qa:page /route  # Single page deep-dive
+ *   npm run qa:logic        # Logic agent only
+ *   npm run qa:perf         # Performance agent only
+ *   npm run qa:security     # Security agent only
+ *   npm run qa:seo          # SEO agent only
+ *   npm run qa:data         # Data integrity agent only
+ *   npm run qa:regression   # Regression agent only
+ *   npm run qa:state        # State agent only
  *
- * Outputs are saved to docs/gui-audit/:
- *   - qa-report.json        Full machine-readable report
- *   - qa-dashboard.md       Human-readable summary
- *   - bugs.csv              Spreadsheet import
- *   - issues/               One markdown file per bug (GitHub-issue-ready)
- *   - *.png                 Screenshots
+ * Outputs:  docs/gui-audit/
+ *   qa-report.json          Full machine-readable report
+ *   qa-dashboard.md         Human-readable summary
+ *   bugs.csv                Spreadsheet triage
+ *   issues/*.md             GitHub-issue-ready bug reports
+ *   baselines/              Screenshot baselines (regression agent)
+ *   trend-history.json      Run-over-run comparison
  */
 
 import { test, expect } from "@playwright/test";
@@ -29,7 +32,14 @@ import { getSecondOpinion, resetSopCounter } from "./second-opinion";
 import { runLogicAgent, resetLogicCounter } from "./agent-logic";
 import { runApiAgent, resetApiCounter } from "./agent-api";
 import { runFlowAgent, resetFlowCounter } from "./agent-flow";
+import { runPerformanceAgent, resetPerfCounter } from "./agent-performance";
+import { runSecurityAgent, resetSecurityCounter } from "./agent-security";
+import { runDataIntegrityAgent, resetDataCounter } from "./agent-data-integrity";
+import { runSeoAgent, resetSeoCounter } from "./agent-seo";
+import { runRegressionAgent, resetRegressionCounter } from "./agent-regression";
+import { runStateAgent, resetStateCounter } from "./agent-state";
 import { deduplicateBugs, saveQAReport } from "./bug-reporter";
+import { trackRun, formatTrendReport } from "./trend-tracker";
 import type {
   BugReport,
   QAReport,
@@ -37,12 +47,18 @@ import type {
   AgentName,
   APITestResult,
   FlowTestResult,
+  PerformanceMetrics,
+  SecurityTestResult,
+  DataIntegrityCheck,
+  SEOAudit,
+  RegressionResult,
+  StateCheck,
 } from "./agent-types";
 
-// ── Config from env ───────────────────────────────────────────────
+// ── Config ────────────────────────────────────────────────────────
 
 const MODE = process.env.QA_MODE || "quick";
-const AGENT_FILTER = process.env.QA_AGENT || "all"; // visual, logic, api, flow, all
+const AGENT_FILTER = process.env.QA_AGENT || "all";
 const SINGLE_ROUTE = process.env.QA_ROUTE;
 
 const QUICK_ROUTES = ["/", "/listings/new", "/settings", "/analytics"];
@@ -66,18 +82,12 @@ function shouldRun(agent: AgentName): boolean {
   return AGENT_FILTER === agent;
 }
 
-// ── Helpers ───────────────────────────────────────────────────────
+// ── Visual → BugReport converter ──────────────────────────────────
 
 function convertVisualToBugs(
   issues: Array<{
-    id: string;
-    category: string;
-    severity: string;
-    message: string;
-    route: string;
-    colorScheme: string;
-    suggestion: string;
-    wcagRef?: string;
+    id: string; category: string; severity: string; message: string;
+    route: string; colorScheme: string; suggestion: string; wcagRef?: string;
     elements: Array<{ selector: string; tag: string; text: string; rect: { x: number; y: number; width: number; height: number } }>;
   }>
 ): BugReport[] {
@@ -87,28 +97,11 @@ function convertVisualToBugs(
     foundBy: "visual" as AgentName,
     severity: issue.severity as BugSeverity,
     labels: ["bug", "visual", issue.category, `severity:${issue.severity}`],
-    body: [
-      `## Visual Issue`,
-      `**Category:** ${issue.category}`,
-      `**Severity:** ${issue.severity}`,
-      `**Route:** \`${issue.route}\` (${issue.colorScheme} mode)`,
-      issue.wcagRef ? `**WCAG:** ${issue.wcagRef}` : "",
-      ``,
-      `### Issue`,
-      issue.message,
-      ``,
-      `### Suggested Fix`,
-      issue.suggestion,
-      issue.elements.length > 0
-        ? `\n### Element\n\`${issue.elements[0].selector}\` (<${issue.elements[0].tag}> "${issue.elements[0].text}")`
-        : "",
-    ]
-      .filter(Boolean)
-      .join("\n"),
+    body: `## Visual Issue\n**Category:** ${issue.category}\n**Route:** \`${issue.route}\` (${issue.colorScheme})\n\n${issue.message}\n\n**Fix:** ${issue.suggestion}`,
     stepsToReproduce: [
       `Navigate to ${issue.route}`,
       `Set color scheme to ${issue.colorScheme}`,
-      `Locate the element: ${issue.elements[0]?.selector || "see description"}`,
+      `Locate: ${issue.elements[0]?.selector || "see description"}`,
     ],
     expected: `No ${issue.category} issues`,
     actual: issue.message,
@@ -118,32 +111,43 @@ function convertVisualToBugs(
   }));
 }
 
-// ── Main Test Suite ───────────────────────────────────────────────
+// ── Main Test ─────────────────────────────────────────────────────
 
-test.describe("TrendSmart QA — Multi-Agent Runner", () => {
-  test.setTimeout(600_000); // 10 min for full run
+test.describe("TrendSmart QA — Multi-Agent Runner v2", () => {
+  test.setTimeout(900_000); // 15 min for full run with all agents
 
   test("run all QA agents and generate bug reports", async ({ page, request }) => {
     const startTime = Date.now();
     const routes = getRoutes();
     const allBugs: BugReport[] = [];
+
+    // Results from each agent
     let apiResults: APITestResult[] = [];
     let flowResults: FlowTestResult[] = [];
+    let perfMetrics: PerformanceMetrics[] = [];
+    let securityResults: SecurityTestResult[] = [];
+    let dataChecks: DataIntegrityCheck[] = [];
+    let seoAudits: SEOAudit[] = [];
+    let regressionResults: RegressionResult[] = [];
+    let stateChecks: StateCheck[] = [];
 
-    resetIssueCounter();
-    resetSopCounter();
-    resetLogicCounter();
-    resetApiCounter();
-    resetFlowCounter();
+    // Reset all counters
+    resetIssueCounter(); resetSopCounter(); resetLogicCounter();
+    resetApiCounter(); resetFlowCounter(); resetPerfCounter();
+    resetSecurityCounter(); resetDataCounter(); resetSeoCounter();
+    resetRegressionCounter(); resetStateCounter();
 
-    console.log(`\n${"=".repeat(60)}`);
-    console.log(`  TrendSmart QA — Multi-Agent Test Run`);
-    console.log(`  Mode: ${MODE} | Agents: ${AGENT_FILTER} | Pages: ${routes.length}`);
-    console.log(`${"=".repeat(60)}\n`);
+    const agents: AgentName[] = [];
 
-    // ── Agent 1: Visual ──
+    console.log(`\n${"=".repeat(65)}`);
+    console.log(`  TrendSmart QA v2 — Multi-Agent Test Run`);
+    console.log(`  Mode: ${MODE} | Filter: ${AGENT_FILTER} | Pages: ${routes.length}`);
+    console.log(`${"=".repeat(65)}\n`);
+
+    // ── 1. Visual Agent ──
     if (shouldRun("visual")) {
-      console.log(`\n--- VISUAL AGENT ---`);
+      agents.push("visual");
+      console.log(`\n--- [1/10] VISUAL AGENT ---`);
       for (const route of routes) {
         for (const scheme of ["light", "dark"] as const) {
           try {
@@ -151,16 +155,13 @@ test.describe("TrendSmart QA — Multi-Agent Runner", () => {
             const snapshot = await extractPageSnapshot(page, route, scheme);
             const issues = runConsistencyChecks(snapshot);
 
-            // Second opinion on issues
             if (issues.length > 0) {
               const sop = getSecondOpinion({ issues, snapshot });
-              // Remove disputed issues
               const disputed = new Set(sop.disputed);
               const confirmed = issues.filter((i) => !disputed.has(i.id));
-              const bugs = convertVisualToBugs(confirmed);
-              allBugs.push(...bugs);
+              allBugs.push(...convertVisualToBugs(confirmed));
               allBugs.push(...convertVisualToBugs(sop.additional));
-              console.log(`    ${confirmed.length} confirmed, ${sop.disputed.length} disputed, ${sop.additional.length} new`);
+              console.log(`    ${confirmed.length} confirmed, ${sop.disputed.length} disputed`);
             }
           } catch (err) {
             console.error(`    FAILED: ${(err as Error).message}`);
@@ -169,65 +170,152 @@ test.describe("TrendSmart QA — Multi-Agent Runner", () => {
       }
     }
 
-    // ── Agent 2: Logic ──
+    // ── 2. Logic Agent ──
     if (shouldRun("logic")) {
-      console.log(`\n--- LOGIC AGENT ---`);
+      agents.push("logic");
+      console.log(`\n--- [2/10] LOGIC AGENT ---`);
       for (const route of routes) {
         try {
           console.log(`  [Logic] ${route}`);
           const bugs = await runLogicAgent(page, route);
           allBugs.push(...bugs);
-          if (bugs.length > 0) {
-            console.log(`    Found ${bugs.length} issue(s)`);
-          }
+          if (bugs.length > 0) console.log(`    Found ${bugs.length} issue(s)`);
         } catch (err) {
           console.error(`    FAILED: ${(err as Error).message}`);
         }
       }
     }
 
-    // ── Agent 3: API ──
+    // ── 3. API Agent ──
     if (shouldRun("api")) {
-      console.log(`\n--- API AGENT ---`);
+      agents.push("api");
+      console.log(`\n--- [3/10] API AGENT ---`);
       try {
         const { results, bugs } = await runApiAgent(request);
         apiResults = results;
         allBugs.push(...bugs);
-        const passed = results.filter((r) => r.passed).length;
-        const failed = results.filter((r) => !r.passed).length;
-        console.log(`  ${passed} passed, ${failed} failed out of ${results.length} tests`);
+        const p = results.filter((r) => r.passed).length;
+        const f = results.filter((r) => !r.passed).length;
+        console.log(`  ${p} passed, ${f} failed out of ${results.length} tests`);
       } catch (err) {
-        console.error(`  API Agent FAILED: ${(err as Error).message}`);
+        console.error(`  FAILED: ${(err as Error).message}`);
       }
     }
 
-    // ── Agent 4: Flow ──
+    // ── 4. Flow Agent ──
     if (shouldRun("flow")) {
-      console.log(`\n--- FLOW AGENT ---`);
+      agents.push("flow");
+      console.log(`\n--- [4/10] FLOW AGENT ---`);
       try {
         const { results, bugs } = await runFlowAgent(page);
         flowResults = results;
         allBugs.push(...bugs);
-        const passed = results.filter((r) => r.passed).length;
-        const failed = results.filter((r) => !r.passed).length;
-        console.log(`  ${passed} passed, ${failed} failed out of ${results.length} flows`);
+        const p = results.filter((r) => r.passed).length;
+        const f = results.filter((r) => !r.passed).length;
+        console.log(`  ${p} passed, ${f} failed out of ${results.length} flows`);
       } catch (err) {
-        console.error(`  Flow Agent FAILED: ${(err as Error).message}`);
+        console.error(`  FAILED: ${(err as Error).message}`);
       }
     }
 
-    // ── Deduplicate & Score ──
+    // ── 5. Performance Agent ──
+    if (shouldRun("performance")) {
+      agents.push("performance");
+      console.log(`\n--- [5/10] PERFORMANCE AGENT ---`);
+      try {
+        const { metrics, bugs } = await runPerformanceAgent(page, routes);
+        perfMetrics = metrics;
+        allBugs.push(...bugs);
+      } catch (err) {
+        console.error(`  FAILED: ${(err as Error).message}`);
+      }
+    }
+
+    // ── 6. Security Agent ──
+    if (shouldRun("security")) {
+      agents.push("security");
+      console.log(`\n--- [6/10] SECURITY AGENT ---`);
+      try {
+        const { results, bugs } = await runSecurityAgent(page, request);
+        securityResults = results;
+        allBugs.push(...bugs);
+        const p = results.filter((r) => r.passed).length;
+        const f = results.filter((r) => !r.passed).length;
+        console.log(`  ${p} passed, ${f} failed out of ${results.length} checks`);
+      } catch (err) {
+        console.error(`  FAILED: ${(err as Error).message}`);
+      }
+    }
+
+    // ── 7. Data Integrity Agent ──
+    if (shouldRun("data-integrity")) {
+      agents.push("data-integrity");
+      console.log(`\n--- [7/10] DATA INTEGRITY AGENT ---`);
+      try {
+        const { checks, bugs } = await runDataIntegrityAgent(request);
+        dataChecks = checks;
+        allBugs.push(...bugs);
+        const p = checks.filter((c) => c.passed).length;
+        const f = checks.filter((c) => !c.passed).length;
+        console.log(`  ${p} passed, ${f} failed out of ${checks.length} checks`);
+      } catch (err) {
+        console.error(`  FAILED: ${(err as Error).message}`);
+      }
+    }
+
+    // ── 8. SEO Agent ──
+    if (shouldRun("seo")) {
+      agents.push("seo");
+      console.log(`\n--- [8/10] SEO AGENT ---`);
+      try {
+        const { audits, bugs } = await runSeoAgent(page, routes);
+        seoAudits = audits;
+        allBugs.push(...bugs);
+      } catch (err) {
+        console.error(`  FAILED: ${(err as Error).message}`);
+      }
+    }
+
+    // ── 9. Regression Agent ──
+    if (shouldRun("regression")) {
+      agents.push("regression");
+      console.log(`\n--- [9/10] REGRESSION AGENT ---`);
+      try {
+        const { results, bugs } = await runRegressionAgent(page, routes);
+        regressionResults = results;
+        allBugs.push(...bugs);
+      } catch (err) {
+        console.error(`  FAILED: ${(err as Error).message}`);
+      }
+    }
+
+    // ── 10. State Agent ──
+    if (shouldRun("state")) {
+      agents.push("state");
+      console.log(`\n--- [10/10] STATE AGENT ---`);
+      try {
+        const { checks, bugs } = await runStateAgent(page);
+        stateChecks = checks;
+        allBugs.push(...bugs);
+        const p = checks.filter((c) => c.passed).length;
+        const f = checks.filter((c) => !c.passed).length;
+        console.log(`  ${p} passed, ${f} failed out of ${checks.length} checks`);
+      } catch (err) {
+        console.error(`  FAILED: ${(err as Error).message}`);
+      }
+    }
+
+    // ── Deduplicate ──
     console.log(`\n--- DEDUPLICATION ---`);
-    const beforeCount = allBugs.length;
+    const rawCount = allBugs.length;
     const dedupedBugs = deduplicateBugs(allBugs);
-    console.log(`  ${beforeCount} raw bugs → ${dedupedBugs.length} after dedup`);
+    console.log(`  ${rawCount} raw → ${dedupedBugs.length} after dedup`);
 
     // Sort by severity then confidence
-    const severityOrder: Record<string, number> = { critical: 0, major: 1, minor: 2, cosmetic: 3 };
+    const sevOrder: Record<string, number> = { critical: 0, major: 1, minor: 2, cosmetic: 3 };
     dedupedBugs.sort((a, b) => {
-      const sev = (severityOrder[a.severity] ?? 3) - (severityOrder[b.severity] ?? 3);
-      if (sev !== 0) return sev;
-      return b.confidence - a.confidence;
+      const s = (sevOrder[a.severity] ?? 3) - (sevOrder[b.severity] ?? 3);
+      return s !== 0 ? s : b.confidence - a.confidence;
     });
 
     // ── Build Report ──
@@ -242,63 +330,103 @@ test.describe("TrendSmart QA — Multi-Agent Runner", () => {
       byRoute[bug.route] = (byRoute[bug.route] || 0) + 1;
     }
 
-    const agents: AgentName[] = [];
-    if (shouldRun("visual")) agents.push("visual");
-    if (shouldRun("logic")) agents.push("logic");
-    if (shouldRun("api")) agents.push("api");
-    if (shouldRun("flow")) agents.push("flow");
+    // Scores
+    const securityScore = securityResults.length > 0
+      ? Math.round((securityResults.filter((r) => r.passed).length / securityResults.length) * 100)
+      : undefined;
+
+    const seoScore = seoAudits.length > 0
+      ? Math.round(seoAudits.reduce((s, a) => s + a.semanticScore, 0) / seoAudits.length)
+      : undefined;
+
+    const perfScore = perfMetrics.length > 0
+      ? Math.round(
+          perfMetrics.reduce((s, m) => {
+            let score = 100;
+            if (m.lcp > 2500) score -= 30;
+            else if (m.lcp > 1800) score -= 15;
+            if (m.cls > 0.1) score -= 25;
+            if (m.tbt > 200) score -= 20;
+            if (m.fcp > 1800) score -= 10;
+            return s + Math.max(0, score);
+          }, 0) / perfMetrics.length
+        )
+      : undefined;
 
     const report: QAReport = {
-      meta: {
-        timestamp: new Date().toISOString(),
-        duration,
-        agents,
-        appVersion: "trendsmart-1.0",
-      },
+      meta: { timestamp: new Date().toISOString(), duration, agents, appVersion: "listblitz-1.0" },
       bugs: dedupedBugs,
       apiResults,
       flowResults,
+      performanceMetrics: perfMetrics.length > 0 ? perfMetrics : undefined,
+      securityResults: securityResults.length > 0 ? securityResults : undefined,
+      dataIntegrityResults: dataChecks.length > 0 ? dataChecks : undefined,
+      seoAudits: seoAudits.length > 0 ? seoAudits : undefined,
+      regressionResults: regressionResults.length > 0 ? regressionResults : undefined,
+      stateResults: stateChecks.length > 0 ? stateChecks : undefined,
       summary: {
         totalBugs: dedupedBugs.length,
-        bySeverity,
-        byAgent,
-        byRoute,
+        bySeverity, byAgent, byRoute,
         apiTestsPassed: apiResults.filter((r) => r.passed).length,
         apiTestsFailed: apiResults.filter((r) => !r.passed).length,
         flowTestsPassed: flowResults.filter((r) => r.passed).length,
         flowTestsFailed: flowResults.filter((r) => !r.passed).length,
-        avgConfidence:
-          dedupedBugs.length > 0
-            ? dedupedBugs.reduce((s, b) => s + b.confidence, 0) / dedupedBugs.length
-            : 0,
+        avgConfidence: dedupedBugs.length > 0
+          ? dedupedBugs.reduce((s, b) => s + b.confidence, 0) / dedupedBugs.length : 0,
+        performanceScore: perfScore,
+        securityScore,
+        seoScore,
       },
     };
 
-    // ── Save Everything ──
+    // ── Save ──
     const output = saveQAReport(report);
 
+    // ── Trend Tracking ──
+    console.log(`\n--- TREND ANALYSIS ---`);
+    const trend = trackRun(report);
+    report.trendReport = trend;
+    const trendText = formatTrendReport(trend);
+    console.log(trendText);
+
     // ── Print Summary ──
-    console.log(`\n${"=".repeat(60)}`);
-    console.log(`  QA RUN COMPLETE`);
-    console.log(`${"=".repeat(60)}`);
-    console.log(`  Duration:     ${(duration / 1000).toFixed(1)}s`);
-    console.log(`  Total Bugs:   ${dedupedBugs.length}`);
-    console.log(`  - Critical:   ${bySeverity.critical}`);
-    console.log(`  - Major:      ${bySeverity.major}`);
-    console.log(`  - Minor:      ${bySeverity.minor}`);
-    console.log(`  - Cosmetic:   ${bySeverity.cosmetic}`);
-    console.log(`  API Tests:    ${report.summary.apiTestsPassed}/${apiResults.length} passed`);
-    console.log(`  Flow Tests:   ${report.summary.flowTestsPassed}/${flowResults.length} passed`);
-    console.log(`  Avg Confidence: ${report.summary.avgConfidence.toFixed(0)}%`);
+    console.log(`\n${"=".repeat(65)}`);
+    console.log(`  QA v2 RUN COMPLETE`);
+    console.log(`${"=".repeat(65)}`);
+    console.log(`  Duration:       ${(duration / 1000).toFixed(1)}s`);
+    console.log(`  Agents:         ${agents.length}/10 (${agents.join(", ")})`);
+    console.log(`  Total Bugs:     ${dedupedBugs.length}`);
+    console.log(`  - Critical:     ${bySeverity.critical}`);
+    console.log(`  - Major:        ${bySeverity.major}`);
+    console.log(`  - Minor:        ${bySeverity.minor}`);
+    console.log(`  - Cosmetic:     ${bySeverity.cosmetic}`);
+    if (apiResults.length > 0)
+      console.log(`  API Tests:      ${report.summary.apiTestsPassed}/${apiResults.length} passed`);
+    if (flowResults.length > 0)
+      console.log(`  Flow Tests:     ${report.summary.flowTestsPassed}/${flowResults.length} passed`);
+    if (perfScore !== undefined)
+      console.log(`  Perf Score:     ${perfScore}/100`);
+    if (securityScore !== undefined)
+      console.log(`  Security Score: ${securityScore}/100`);
+    if (seoScore !== undefined)
+      console.log(`  SEO Score:      ${seoScore}/100`);
+    if (regressionResults.length > 0) {
+      const regPassed = regressionResults.filter((r) => r.passed).length;
+      console.log(`  Regressions:    ${regressionResults.length - regPassed} detected`);
+    }
+    if (stateChecks.length > 0) {
+      const statePassed = stateChecks.filter((c) => c.passed).length;
+      console.log(`  State Checks:   ${statePassed}/${stateChecks.length} passed`);
+    }
+    console.log(`  Confidence:     ${report.summary.avgConfidence.toFixed(0)}%`);
     console.log(``);
     console.log(`  Outputs:`);
-    console.log(`    Report:     ${output.reportPath}`);
-    console.log(`    Dashboard:  ${output.dashboardPath}`);
-    console.log(`    CSV:        ${output.csvPath}`);
-    console.log(`    Issues:     ${output.issuesDir}/ (${output.issueCount} files)`);
-    console.log(`${"=".repeat(60)}\n`);
+    console.log(`    Report:       ${output.reportPath}`);
+    console.log(`    Dashboard:    ${output.dashboardPath}`);
+    console.log(`    CSV:          ${output.csvPath}`);
+    console.log(`    Issues:       ${output.issuesDir}/ (${output.issueCount} files)`);
+    console.log(`${"=".repeat(65)}\n`);
 
-    // Assertions
     expect(report).toBeDefined();
     expect(report.bugs).toBeDefined();
   });

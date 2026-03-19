@@ -128,7 +128,68 @@ function generateDashboard(report: QAReport): string {
   lines.push(`| API Tests Passed | ${summary.apiTestsPassed}/${summary.apiTestsPassed + summary.apiTestsFailed} |`);
   lines.push(`| Flow Tests Passed | ${summary.flowTestsPassed}/${summary.flowTestsPassed + summary.flowTestsFailed} |`);
   lines.push(`| Avg Confidence | ${summary.avgConfidence.toFixed(0)}% |`);
+  if (summary.performanceScore !== undefined)
+    lines.push(`| Performance Score | ${summary.performanceScore}/100 |`);
+  if (summary.securityScore !== undefined)
+    lines.push(`| Security Score | ${summary.securityScore}/100 |`);
+  if (summary.seoScore !== undefined)
+    lines.push(`| SEO Score | ${summary.seoScore}/100 |`);
   lines.push(``);
+
+  // Trend
+  if (report.trendReport) {
+    const t = report.trendReport;
+    const arrow = t.direction === "improving" ? "IMPROVING" : t.direction === "degrading" ? "DEGRADING" : "STABLE";
+    lines.push(`## Trend: ${arrow}`);
+    if (t.regressions.length > 0) {
+      lines.push(`### Regressions`);
+      for (const r of t.regressions) lines.push(`- ${r}`);
+    }
+    if (t.improvements.length > 0) {
+      lines.push(`### Improvements`);
+      for (const imp of t.improvements) lines.push(`- ${imp}`);
+    }
+    lines.push(``);
+  }
+
+  // Performance metrics
+  if (report.performanceMetrics && report.performanceMetrics.length > 0) {
+    lines.push(`## Performance Metrics`);
+    lines.push(`| Route | LCP | FCP | CLS | TBT | DOM Nodes | Load |`);
+    lines.push(`|-------|-----|-----|-----|-----|-----------|------|`);
+    for (const m of report.performanceMetrics) {
+      lines.push(`| \`${m.route}\` | ${m.lcp}ms | ${m.fcp}ms | ${m.cls} | ${m.tbt}ms | ${m.domNodes} | ${m.fullLoad}ms |`);
+    }
+    lines.push(``);
+  }
+
+  // Security results
+  if (report.securityResults && report.securityResults.length > 0) {
+    const secFailed = report.securityResults.filter((r) => !r.passed);
+    if (secFailed.length > 0) {
+      lines.push(`## Security Issues`);
+      lines.push(`| Check | Target | Severity | Details |`);
+      lines.push(`|-------|--------|----------|---------|`);
+      for (const r of secFailed) {
+        lines.push(`| ${r.check} | \`${r.target.substring(0, 40)}\` | ${r.severity} | ${r.details.substring(0, 60)} |`);
+      }
+      lines.push(``);
+    }
+  }
+
+  // SEO summary
+  if (report.seoAudits && report.seoAudits.length > 0) {
+    const seoIssueCount = report.seoAudits.reduce((s, a) => s + a.issues.length, 0);
+    if (seoIssueCount > 0) {
+      lines.push(`## SEO Issues (${seoIssueCount} total)`);
+      for (const audit of report.seoAudits) {
+        if (audit.issues.length > 0) {
+          lines.push(`- \`${audit.route}\`: ${audit.issues.join(", ")}`);
+        }
+      }
+      lines.push(``);
+    }
+  }
 
   // By agent
   lines.push(`## Bugs by Agent`);

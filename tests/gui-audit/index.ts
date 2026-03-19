@@ -1,19 +1,20 @@
 /**
- * TrendSmart QA System — Public API
+ * TrendSmart QA System v2 — Public API
  *
- * Run the full QA suite:
- *   npm run qa          # Quick (4 pages, all agents)
- *   npm run qa:full     # Full (28 pages, all agents)
- *   npm run qa:visual   # Visual agent only
- *   npm run qa:api      # API agent only
- *   npm run qa:flow     # Flow agent only
- *   npm run qa:logic    # Logic agent only
+ * 10 specialized agents:
  *
- * Outputs go to docs/gui-audit/:
- *   qa-dashboard.md     # Human-readable summary
- *   qa-report.json      # Machine-readable report
- *   bugs.csv            # Spreadsheet triage
- *   issues/*.md         # One GitHub-issue-ready file per bug
+ *   npm run qa              # Quick (4 pages, all agents)
+ *   npm run qa:full         # Full (28 pages, all agents)
+ *   npm run qa:visual       # Visual agent
+ *   npm run qa:api          # API agent
+ *   npm run qa:flow         # Flow agent
+ *   npm run qa:logic        # Logic agent
+ *   npm run qa:perf         # Performance agent
+ *   npm run qa:security     # Security agent
+ *   npm run qa:seo          # SEO agent
+ *   npm run qa:data         # Data integrity agent
+ *   npm run qa:regression   # Regression agent
+ *   npm run qa:state        # State agent
  */
 
 // Visual agent
@@ -32,8 +33,29 @@ export { runApiAgent, resetApiCounter, getTestSuite } from "./agent-api";
 // Flow agent
 export { runFlowAgent, resetFlowCounter, getUserFlows } from "./agent-flow";
 
+// Performance agent
+export { runPerformanceAgent, resetPerfCounter } from "./agent-performance";
+
+// Security agent
+export { runSecurityAgent, resetSecurityCounter } from "./agent-security";
+
+// Data integrity agent
+export { runDataIntegrityAgent, resetDataCounter } from "./agent-data-integrity";
+
+// SEO agent
+export { runSeoAgent, resetSeoCounter } from "./agent-seo";
+
+// Regression agent
+export { runRegressionAgent, resetRegressionCounter } from "./agent-regression";
+
+// State agent
+export { runStateAgent, resetStateCounter } from "./agent-state";
+
 // Bug reporting
 export { deduplicateBugs, saveQAReport } from "./bug-reporter";
+
+// Trend tracking
+export { trackRun, formatTrendReport } from "./trend-tracker";
 
 // Test case generation
 export { generateTestCases, generateTestPlan, formatTestPlanSummary } from "./test-case-generator";
