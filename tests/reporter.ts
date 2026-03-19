@@ -88,6 +88,10 @@ const CATEGORY_LABELS: Record<string, string> = {
   P9: "Platforms — Image Search",
   P10: "Platforms — Competitor Discovery",
   T5: "Trends — Page UI",
+  GA: "GUI Audit — Full Pipeline",
+  GAP: "GUI Audit — Per-Page Checks",
+  GAS: "GUI Audit — Second Opinion",
+  GAT: "GUI Audit — Test Case Generation",
 };
 
 class JSONReporter implements Reporter {

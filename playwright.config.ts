@@ -21,6 +21,13 @@ export default defineConfig({
       testMatch: "*.spec.ts",
       use: { ...devices["Desktop Chrome"] },
     },
+    {
+      name: "gui-audit",
+      testDir: "./tests/gui-audit",
+      testMatch: "*.spec.ts",
+      use: { ...devices["Desktop Chrome"] },
+      timeout: 300_000,
+    },
   ],
   webServer: {
     command: "npm run dev -- -p 3000",
