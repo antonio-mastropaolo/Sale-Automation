@@ -1,7 +1,7 @@
 /**
  * TrendSmart QA — Multi-Agent Test Runner v2
  *
- * Orchestrates 10 specialized agents:
+ * Orchestrates 12 specialized agents:
  *
  *   npm run qa              # Quick (4 pages, all agents)
  *   npm run qa:full         # Full (28 pages, all agents)
@@ -15,6 +15,8 @@
  *   npm run qa:data         # Data integrity agent only
  *   npm run qa:regression   # Regression agent only
  *   npm run qa:state        # State agent only
+ *   npm run qa:a11y         # Accessibility agent only
+ *   npm run qa:network      # Network resilience agent only
  *
  * Outputs:  docs/gui-audit/
  *   qa-report.json          Full machine-readable report
@@ -38,6 +40,8 @@ import { runDataIntegrityAgent, resetDataCounter } from "./agent-data-integrity"
 import { runSeoAgent, resetSeoCounter } from "./agent-seo";
 import { runRegressionAgent, resetRegressionCounter } from "./agent-regression";
 import { runStateAgent, resetStateCounter } from "./agent-state";
+import { runAccessibilityAgent, resetA11yCounter } from "./agent-accessibility";
+import { runNetworkAgent, resetNetworkCounter } from "./agent-network";
 import { deduplicateBugs, saveQAReport } from "./bug-reporter";
 import { trackRun, formatTrendReport } from "./trend-tracker";
 import type {
@@ -77,8 +81,9 @@ function getRoutes(): string[] {
   return QUICK_ROUTES;
 }
 
-function shouldRun(agent: AgentName): boolean {
+function shouldRun(agent: AgentName | "accessibility" | "network"): boolean {
   if (AGENT_FILTER === "all") return true;
+  if (AGENT_FILTER === "a11y") return agent === "accessibility";
   return AGENT_FILTER === agent;
 }
 
@@ -136,6 +141,7 @@ test.describe("TrendSmart QA — Multi-Agent Runner v2", () => {
     resetApiCounter(); resetFlowCounter(); resetPerfCounter();
     resetSecurityCounter(); resetDataCounter(); resetSeoCounter();
     resetRegressionCounter(); resetStateCounter();
+    resetA11yCounter(); resetNetworkCounter();
 
     const agents: AgentName[] = [];
 
@@ -147,7 +153,7 @@ test.describe("TrendSmart QA — Multi-Agent Runner v2", () => {
     // ── 1. Visual Agent ──
     if (shouldRun("visual")) {
       agents.push("visual");
-      console.log(`\n--- [1/10] VISUAL AGENT ---`);
+      console.log(`\n--- [1/12] VISUAL AGENT ---`);
       for (const route of routes) {
         for (const scheme of ["light", "dark"] as const) {
           try {
@@ -173,7 +179,7 @@ test.describe("TrendSmart QA — Multi-Agent Runner v2", () => {
     // ── 2. Logic Agent ──
     if (shouldRun("logic")) {
       agents.push("logic");
-      console.log(`\n--- [2/10] LOGIC AGENT ---`);
+      console.log(`\n--- [2/12] LOGIC AGENT ---`);
       for (const route of routes) {
         try {
           console.log(`  [Logic] ${route}`);
@@ -189,7 +195,7 @@ test.describe("TrendSmart QA — Multi-Agent Runner v2", () => {
     // ── 3. API Agent ──
     if (shouldRun("api")) {
       agents.push("api");
-      console.log(`\n--- [3/10] API AGENT ---`);
+      console.log(`\n--- [3/12] API AGENT ---`);
       try {
         const { results, bugs } = await runApiAgent(request);
         apiResults = results;
@@ -205,7 +211,7 @@ test.describe("TrendSmart QA — Multi-Agent Runner v2", () => {
     // ── 4. Flow Agent ──
     if (shouldRun("flow")) {
       agents.push("flow");
-      console.log(`\n--- [4/10] FLOW AGENT ---`);
+      console.log(`\n--- [4/12] FLOW AGENT ---`);
       try {
         const { results, bugs } = await runFlowAgent(page);
         flowResults = results;
@@ -221,7 +227,7 @@ test.describe("TrendSmart QA — Multi-Agent Runner v2", () => {
     // ── 5. Performance Agent ──
     if (shouldRun("performance")) {
       agents.push("performance");
-      console.log(`\n--- [5/10] PERFORMANCE AGENT ---`);
+      console.log(`\n--- [5/12] PERFORMANCE AGENT ---`);
       try {
         const { metrics, bugs } = await runPerformanceAgent(page, routes);
         perfMetrics = metrics;
@@ -234,7 +240,7 @@ test.describe("TrendSmart QA — Multi-Agent Runner v2", () => {
     // ── 6. Security Agent ──
     if (shouldRun("security")) {
       agents.push("security");
-      console.log(`\n--- [6/10] SECURITY AGENT ---`);
+      console.log(`\n--- [6/12] SECURITY AGENT ---`);
       try {
         const { results, bugs } = await runSecurityAgent(page, request);
         securityResults = results;
@@ -250,7 +256,7 @@ test.describe("TrendSmart QA — Multi-Agent Runner v2", () => {
     // ── 7. Data Integrity Agent ──
     if (shouldRun("data-integrity")) {
       agents.push("data-integrity");
-      console.log(`\n--- [7/10] DATA INTEGRITY AGENT ---`);
+      console.log(`\n--- [7/12] DATA INTEGRITY AGENT ---`);
       try {
         const { checks, bugs } = await runDataIntegrityAgent(request);
         dataChecks = checks;
@@ -266,7 +272,7 @@ test.describe("TrendSmart QA — Multi-Agent Runner v2", () => {
     // ── 8. SEO Agent ──
     if (shouldRun("seo")) {
       agents.push("seo");
-      console.log(`\n--- [8/10] SEO AGENT ---`);
+      console.log(`\n--- [8/12] SEO AGENT ---`);
       try {
         const { audits, bugs } = await runSeoAgent(page, routes);
         seoAudits = audits;
@@ -279,7 +285,7 @@ test.describe("TrendSmart QA — Multi-Agent Runner v2", () => {
     // ── 9. Regression Agent ──
     if (shouldRun("regression")) {
       agents.push("regression");
-      console.log(`\n--- [9/10] REGRESSION AGENT ---`);
+      console.log(`\n--- [9/12] REGRESSION AGENT ---`);
       try {
         const { results, bugs } = await runRegressionAgent(page, routes);
         regressionResults = results;
@@ -292,7 +298,7 @@ test.describe("TrendSmart QA — Multi-Agent Runner v2", () => {
     // ── 10. State Agent ──
     if (shouldRun("state")) {
       agents.push("state");
-      console.log(`\n--- [10/10] STATE AGENT ---`);
+      console.log(`\n--- [10/12] STATE AGENT ---`);
       try {
         const { checks, bugs } = await runStateAgent(page);
         stateChecks = checks;
@@ -300,6 +306,32 @@ test.describe("TrendSmart QA — Multi-Agent Runner v2", () => {
         const p = checks.filter((c) => c.passed).length;
         const f = checks.filter((c) => !c.passed).length;
         console.log(`  ${p} passed, ${f} failed out of ${checks.length} checks`);
+      } catch (err) {
+        console.error(`  FAILED: ${(err as Error).message}`);
+      }
+    }
+
+    // ── 11. Accessibility Agent ──
+    if (shouldRun("accessibility")) {
+      agents.push("visual"); // Reports under visual
+      console.log(`\n--- [11/12] ACCESSIBILITY AGENT ---`);
+      try {
+        const bugs = await runAccessibilityAgent(page, routes);
+        allBugs.push(...bugs);
+        console.log(`  Found ${bugs.length} accessibility issue(s)`);
+      } catch (err) {
+        console.error(`  FAILED: ${(err as Error).message}`);
+      }
+    }
+
+    // ── 12. Network Resilience Agent ──
+    if (shouldRun("network")) {
+      agents.push("flow"); // Reports under flow
+      console.log(`\n--- [12/12] NETWORK RESILIENCE AGENT ---`);
+      try {
+        const bugs = await runNetworkAgent(page, routes);
+        allBugs.push(...bugs);
+        console.log(`  Found ${bugs.length} resilience issue(s)`);
       } catch (err) {
         console.error(`  FAILED: ${(err as Error).message}`);
       }
@@ -394,7 +426,7 @@ test.describe("TrendSmart QA — Multi-Agent Runner v2", () => {
     console.log(`  QA v2 RUN COMPLETE`);
     console.log(`${"=".repeat(65)}`);
     console.log(`  Duration:       ${(duration / 1000).toFixed(1)}s`);
-    console.log(`  Agents:         ${agents.length}/10 (${agents.join(", ")})`);
+    console.log(`  Agents:         ${agents.length}/12 (${agents.join(", ")})`);
     console.log(`  Total Bugs:     ${dedupedBugs.length}`);
     console.log(`  - Critical:     ${bySeverity.critical}`);
     console.log(`  - Major:        ${bySeverity.major}`);

@@ -1,0 +1,88 @@
+name: QA Suite
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'QA mode (quick or full)'
+        required: false
+        default: 'quick'
+      agent:
+        description: 'Agent filter (all, visual, api, flow, logic, performance, security, seo, data-integrity, regression, state)'
+        required: false
+        default: 'all'
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Run QA Suite
+        env:
+          QA_MODE: ${{ github.event.inputs.mode || 'quick' }}
+          QA_AGENT: ${{ github.event.inputs.agent || 'all' }}
+          DATABASE_URL: 'file:./test.db'
+        run: |
+          npm run build 2>/dev/null || true
+          npx playwright test tests/gui-audit/qa.spec.ts --project=gui-audit --reporter=list
+
+      - name: Upload QA Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-report-${{ github.sha }}
+          path: |
+            docs/gui-audit/qa-report.json
+            docs/gui-audit/qa-dashboard.md
+            docs/gui-audit/bugs.csv
+            docs/gui-audit/issues/
+            docs/gui-audit/*.png
+          retention-days: 30
+
+      - name: Comment PR with QA Summary
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const dashboardPath = 'docs/gui-audit/qa-dashboard.md';
+
+            let summary = 'QA report not generated.';
+            if (fs.existsSync(dashboardPath)) {
+              summary = fs.readFileSync(dashboardPath, 'utf-8');
+              // Truncate to fit GitHub comment limit
+              if (summary.length > 60000) {
+                summary = summary.substring(0, 60000) + '\n\n... (truncated)';
+              }
+            }
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `## QA Report\n\n${summary}`
+            });

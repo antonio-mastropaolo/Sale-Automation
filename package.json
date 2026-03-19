@@ -22,7 +22,9 @@
     "qa:data": "QA_AGENT=data-integrity npx playwright test tests/gui-audit/qa.spec.ts --project=gui-audit",
     "qa:regression": "QA_AGENT=regression npx playwright test tests/gui-audit/qa.spec.ts --project=gui-audit",
     "qa:state": "QA_AGENT=state npx playwright test tests/gui-audit/qa.spec.ts --project=gui-audit",
-    "qa:baselines": "QA_UPDATE_BASELINES=true QA_AGENT=regression npx playwright test tests/gui-audit/qa.spec.ts --project=gui-audit"
+    "qa:baselines": "QA_UPDATE_BASELINES=true QA_AGENT=regression npx playwright test tests/gui-audit/qa.spec.ts --project=gui-audit",
+    "qa:a11y": "QA_AGENT=a11y npx playwright test tests/gui-audit/qa.spec.ts --project=gui-audit",
+    "qa:network": "QA_AGENT=network npx playwright test tests/gui-audit/qa.spec.ts --project=gui-audit"
   },
   "dependencies": {
     "@base-ui/react": "^1.2.0",

@@ -15,6 +15,8 @@
  *   npm run qa:data         # Data integrity agent
  *   npm run qa:regression   # Regression agent
  *   npm run qa:state        # State agent
+ *   npm run qa:a11y         # Accessibility agent
+ *   npm run qa:network      # Network resilience agent
  */
 
 // Visual agent
@@ -50,6 +52,12 @@ export { runRegressionAgent, resetRegressionCounter } from "./agent-regression";
 
 // State agent
 export { runStateAgent, resetStateCounter } from "./agent-state";
+
+// Accessibility agent
+export { runAccessibilityAgent, resetA11yCounter } from "./agent-accessibility";
+
+// Network resilience agent
+export { runNetworkAgent, resetNetworkCounter } from "./agent-network";
 
 // Bug reporting
 export { deduplicateBugs, saveQAReport } from "./bug-reporter";
