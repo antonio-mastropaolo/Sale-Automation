@@ -22,6 +22,8 @@ export type AgentName =
   | "seo"              // Meta tags, OG, heading hierarchy, semantic HTML
   | "regression"       // Screenshot baseline diffing, pixel comparison
   | "state"            // localStorage, SWR cache, theme, navigation state
+  | "network"          // Network resilience, offline recovery, slow connections
+  | "a11y"             // WCAG 2.1 AA accessibility compliance
   | "second-opinion";  // Cross-validates findings from other agents
 
 // ── Bug Report (GitHub-issue-ready) ───────────────────────────────

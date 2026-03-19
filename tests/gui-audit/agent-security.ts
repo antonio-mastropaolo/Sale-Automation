@@ -650,6 +650,304 @@ async function checkDataExposure(
   return { results, bugs };
 }
 
+/**
+ * Check 9: CORS misconfiguration.
+ */
+async function checkCORS(
+  request: APIRequestContext
+): Promise<{ results: SecurityTestResult[]; bugs: BugReport[] }> {
+  const results: SecurityTestResult[] = [];
+  const bugs: BugReport[] = [];
+
+  const endpoints = ["/api/listings", "/api/settings", "/api/auth/me"];
+
+  for (const endpoint of endpoints) {
+    try {
+      // Send a preflight-like request with an evil origin
+      const response = await request.fetch(endpoint, {
+        method: "GET",
+        headers: {
+          Origin: "https://evil-attacker.com",
+          "Access-Control-Request-Method": "GET",
+        },
+      });
+
+      const headers = response.headers();
+      const acao = headers["access-control-allow-origin"] || "";
+      const acac = headers["access-control-allow-credentials"] || "";
+
+      // Wildcard with credentials is dangerous
+      const wildcardWithCreds = acao === "*" && acac === "true";
+      // Reflecting arbitrary origins is dangerous
+      const reflectsEvil = acao === "https://evil-attacker.com";
+      const passed = !wildcardWithCreds && !reflectsEvil;
+
+      results.push({
+        check: "csrf", // CORS falls under CSRF protection category
+        target: `CORS ${endpoint}`,
+        passed,
+        severity: passed ? "cosmetic" : "critical",
+        details: passed
+          ? `CORS OK: ${acao || "(no ACAO header)"}`
+          : reflectsEvil
+            ? `Origin reflected: ${acao}`
+            : `Wildcard with credentials: ${acao}, ${acac}`,
+      });
+
+      if (!passed) {
+        bugs.push(
+          makeBug(
+            `CORS misconfiguration on ${endpoint}`,
+            "critical",
+            endpoint,
+            [
+              `Send request to ${endpoint} with Origin: https://evil-attacker.com`,
+              reflectsEvil
+                ? `Server reflects the evil origin in Access-Control-Allow-Origin`
+                : `Server allows * with credentials`,
+            ],
+            "CORS should only allow trusted origins",
+            reflectsEvil
+              ? `Access-Control-Allow-Origin reflects arbitrary origin: ${acao}`
+              : `Wildcard origin with credentials enabled`,
+            "Configure CORS to only allow your app's origin(s). Never reflect arbitrary Origin headers. Never use * with credentials.",
+            ["cors", "owasp-a05"],
+            95,
+          )
+        );
+      }
+    } catch {
+      // Can't reach endpoint = fine
+    }
+  }
+
+  return { results, bugs };
+}
+
+/**
+ * Check 10: CSRF protection on state-changing endpoints.
+ */
+async function checkCSRF(
+  request: APIRequestContext
+): Promise<{ results: SecurityTestResult[]; bugs: BugReport[] }> {
+  const results: SecurityTestResult[] = [];
+  const bugs: BugReport[] = [];
+
+  // State-changing endpoints that should have CSRF protection
+  const stateChangingEndpoints = [
+    { endpoint: "/api/listings", method: "POST" as const },
+    { endpoint: "/api/settings", method: "PUT" as const },
+    { endpoint: "/api/auth/logout", method: "POST" as const },
+    { endpoint: "/api/repricing", method: "POST" as const },
+    { endpoint: "/api/export", method: "POST" as const },
+  ];
+
+  for (const { endpoint, method } of stateChangingEndpoints) {
+    try {
+      // Send request with no CSRF token, wrong content type (simulating form submission from another site)
+      const response = await request.fetch(endpoint, {
+        method,
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Origin: "https://evil-attacker.com",
+          Cookie: "", // No session
+        },
+        data: "test=1",
+      });
+
+      const status = response.status();
+      // Should get 401 (no auth), 403 (CSRF rejected), or 400 (wrong content type)
+      const passed = status === 401 || status === 403 || status === 400 || status === 405;
+
+      results.push({
+        check: "csrf",
+        target: `CSRF ${method} ${endpoint}`,
+        passed,
+        severity: passed ? "cosmetic" : "major",
+        details: passed
+          ? `Correctly rejected with ${status}`
+          : `Accepted cross-origin form submission with status ${status}`,
+      });
+
+      if (!passed && status === 200) {
+        bugs.push(
+          makeBug(
+            `CSRF: ${endpoint} accepts cross-origin form POST`,
+            "major",
+            endpoint,
+            [
+              `Send ${method} ${endpoint} with form-urlencoded from evil origin`,
+              `Server returns ${status} instead of rejecting`,
+            ],
+            "State-changing endpoints should reject cross-origin form submissions",
+            `Endpoint returned ${status} for cross-origin form submission`,
+            "Validate the Origin header on state-changing requests. Use SameSite=Strict cookies. Consider CSRF tokens for non-API routes.",
+            ["csrf", "owasp-a01"],
+            80,
+          )
+        );
+      }
+    } catch {
+      // Error = likely blocked
+    }
+  }
+
+  return { results, bugs };
+}
+
+/**
+ * Check 11: Session fixation — verify that session token changes after login.
+ */
+async function checkSessionFixation(
+  page: Page
+): Promise<{ results: SecurityTestResult[]; bugs: BugReport[] }> {
+  const results: SecurityTestResult[] = [];
+  const bugs: BugReport[] = [];
+
+  try {
+    // Get cookies before login
+    await page.goto("/login", { waitUntil: "networkidle" });
+    const cookiesBefore = await page.context().cookies();
+    const sessionBefore = cookiesBefore.find((c) => c.name.includes("session"));
+
+    // Try to set a known session token
+    if (sessionBefore) {
+      const fixedToken = "attacker-controlled-session-12345";
+      await page.context().addCookies([
+        {
+          name: sessionBefore.name,
+          value: fixedToken,
+          domain: sessionBefore.domain || "localhost",
+          path: "/",
+        },
+      ]);
+
+      // Navigate to a protected route
+      await page.goto("/", { waitUntil: "networkidle" });
+      const cookiesAfter = await page.context().cookies();
+      const sessionAfter = cookiesAfter.find((c) => c.name.includes("session"));
+
+      // If the attacker-controlled token is still accepted, that's session fixation
+      const tokenAccepted = sessionAfter?.value === fixedToken;
+      const isOnProtectedPage = !page.url().includes("/login");
+      const passed = !tokenAccepted || !isOnProtectedPage;
+
+      results.push({
+        check: "session-fixation",
+        target: "session cookie",
+        passed,
+        severity: passed ? "cosmetic" : "critical",
+        details: passed
+          ? "Server does not accept arbitrary session tokens"
+          : "Server accepted an attacker-supplied session token",
+      });
+
+      if (!passed) {
+        bugs.push(
+          makeBug(
+            "Session fixation: arbitrary session tokens accepted",
+            "critical",
+            "/login",
+            [
+              "Set session cookie to an attacker-controlled value",
+              "Navigate to a protected route",
+              "Server accepts the forged session",
+            ],
+            "Server should reject unknown session tokens and redirect to login",
+            `Attacker-supplied session "${fixedToken}" was accepted by the server`,
+            "Validate session tokens server-side. Only accept tokens that exist in the session store. Regenerate session ID after login.",
+            ["session-fixation", "owasp-a07"],
+            90,
+          )
+        );
+      }
+    } else {
+      results.push({
+        check: "session-fixation",
+        target: "session cookie",
+        passed: true,
+        severity: "cosmetic",
+        details: "No session cookie found on login page (OK — issued on auth)",
+      });
+    }
+  } catch (err) {
+    console.error(`  Session fixation check failed: ${(err as Error).message}`);
+  }
+
+  return { results, bugs };
+}
+
+/**
+ * Check 12: Rate limiting on auth endpoints.
+ */
+async function checkRateLimiting(
+  request: APIRequestContext
+): Promise<{ results: SecurityTestResult[]; bugs: BugReport[] }> {
+  const results: SecurityTestResult[] = [];
+  const bugs: BugReport[] = [];
+
+  // Send rapid requests to auth endpoints
+  const authEndpoints = [
+    { endpoint: "/api/auth/login", body: { email: "test@test.com", password: "wrong" } },
+    { endpoint: "/api/auth/forgot-password", body: { email: "test@test.com" } },
+  ];
+
+  for (const { endpoint, body } of authEndpoints) {
+    try {
+      const statuses: number[] = [];
+
+      // Send 15 rapid requests
+      for (let i = 0; i < 15; i++) {
+        const response = await request.post(endpoint, {
+          data: body,
+          headers: { "Content-Type": "application/json" },
+        });
+        statuses.push(response.status());
+      }
+
+      // Check if any returned 429 (Too Many Requests)
+      const hasRateLimit = statuses.includes(429);
+      // Even 403 after many attempts could indicate rate limiting
+      const laterStatuses = statuses.slice(10);
+      const hasDelayedBlock = laterStatuses.some((s) => s === 429 || s === 403);
+      const passed = hasRateLimit || hasDelayedBlock;
+
+      results.push({
+        check: "rate-limiting",
+        target: endpoint,
+        passed,
+        severity: passed ? "cosmetic" : "major",
+        details: passed
+          ? `Rate limiting active (429 or 403 after rapid requests)`
+          : `No rate limiting detected after 15 rapid requests: statuses = [${[...new Set(statuses)].join(", ")}]`,
+      });
+
+      if (!passed) {
+        bugs.push(
+          makeBug(
+            `No rate limiting on ${endpoint}`,
+            "major",
+            endpoint,
+            [
+              `Send 15 rapid POST requests to ${endpoint}`,
+              `All returned normal status codes: ${[...new Set(statuses)].join(", ")}`,
+            ],
+            "Auth endpoints should rate-limit after 5-10 failed attempts",
+            `No 429 responses after 15 rapid requests`,
+            "Implement rate limiting (e.g., 5 requests per minute) on auth endpoints using middleware or a library like rate-limiter-flexible.",
+            ["rate-limiting", "owasp-a04"],
+            75,
+          )
+        );
+      }
+    } catch {
+      // Error = likely blocked
+    }
+  }
+
+  return { results, bugs };
+}
+
 // ── Main Security Agent ───────────────────────────────────────────
 
 export async function runSecurityAgent(
@@ -671,6 +969,10 @@ export async function runSecurityAgent(
     { name: "Info disclosure", fn: () => checkInfoDisclosure(request) },
     { name: "Open redirect", fn: () => checkOpenRedirect(page) },
     { name: "Data exposure", fn: () => checkDataExposure(request) },
+    { name: "CORS config", fn: () => checkCORS(request) },
+    { name: "CSRF protection", fn: () => checkCSRF(request) },
+    { name: "Session fixation", fn: () => checkSessionFixation(page) },
+    { name: "Rate limiting", fn: () => checkRateLimiting(request) },
   ];
 
   for (const check of checks) {

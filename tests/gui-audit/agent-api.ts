@@ -1098,5 +1098,120 @@ export async function runApiAgent(
     }
   }
 
+  // ── Extra checks: pagination, response time, concurrent safety ──
+
+  // Pagination test on listings endpoint
+  try {
+    console.log(`    [API] Pagination tests...`);
+    const paginationEndpoints = [
+      "/api/listings?page=1&limit=5",
+      "/api/listings?page=2&limit=5",
+      "/api/listings?page=99999&limit=5", // Out of range
+    ];
+
+    for (const url of paginationEndpoints) {
+      const start = Date.now();
+      const response = await request.get(url);
+      const status = response.status();
+      const duration = Date.now() - start;
+
+      let body: unknown;
+      try { body = await response.json(); } catch { body = null; }
+
+      // Out-of-range page should return empty array or 200, not 500
+      if (url.includes("99999") && status >= 500) {
+        bugs.push(
+          makeBug(
+            `Pagination: out-of-range page causes 500 error`,
+            "major",
+            "/api/listings",
+            [`Send GET ${url}`, `Response: HTTP ${status}`],
+            "Out-of-range page should return empty results, not server error",
+            `HTTP ${status} for page 99999`,
+            "Handle out-of-range page numbers gracefully — return empty array with 200.",
+            ["pagination"],
+            85,
+            "src/app/api/listings/route.ts"
+          )
+        );
+      }
+
+      results.push({
+        testCase: {
+          endpoint: url, method: "GET", expectedStatus: 200,
+          validation: "isArray", description: `Pagination: ${url}`,
+        },
+        passed: status < 500,
+        actualStatus: status,
+        responseBody: body,
+        duration,
+      });
+    }
+  } catch (err) {
+    console.error(`    [API] Pagination test error: ${(err as Error).message}`);
+  }
+
+  // Response time check — flag slow endpoints
+  try {
+    console.log(`    [API] Response time audit...`);
+    const slowThreshold = 3000; // 3 seconds
+    const slowEndpoints = results.filter(
+      (r) => r.duration > slowThreshold && r.passed
+    );
+
+    for (const slow of slowEndpoints) {
+      bugs.push(
+        makeBug(
+          `Slow API: ${slow.testCase.endpoint} took ${slow.duration}ms`,
+          slow.duration > 5000 ? "major" : "minor",
+          slow.testCase.endpoint,
+          [
+            `Send ${slow.testCase.method} ${slow.testCase.endpoint}`,
+            `Response took ${slow.duration}ms`,
+          ],
+          `API responses should complete in < ${slowThreshold}ms`,
+          `Response took ${slow.duration}ms`,
+          "Profile the endpoint. Check for N+1 queries, missing indexes, or expensive computations.",
+          ["api-performance", "slow"],
+          60,
+          `src/app${slow.testCase.endpoint}/route.ts`
+        )
+      );
+    }
+  } catch (err) {
+    console.error(`    [API] Response time audit error: ${(err as Error).message}`);
+  }
+
+  // Concurrent request safety — same endpoint hit twice simultaneously
+  try {
+    console.log(`    [API] Concurrent request test...`);
+    const [r1, r2] = await Promise.all([
+      request.get("/api/listings"),
+      request.get("/api/listings"),
+    ]);
+
+    if (r1.status() >= 500 || r2.status() >= 500) {
+      bugs.push(
+        makeBug(
+          `Concurrent requests to /api/listings cause server error`,
+          "major",
+          "/api/listings",
+          [
+            "Send two simultaneous GET /api/listings requests",
+            `Response 1: ${r1.status()}, Response 2: ${r2.status()}`,
+          ],
+          "API should handle concurrent requests safely",
+          `One or both requests returned ${Math.max(r1.status(), r2.status())}`,
+          "Check for database connection pool exhaustion or race conditions in the route handler.",
+          ["concurrency"],
+          75,
+          "src/app/api/listings/route.ts"
+        )
+      );
+    }
+  } catch (err) {
+    console.error(`    [API] Concurrent test error: ${(err as Error).message}`);
+  }
+
   return { results, bugs };
 }

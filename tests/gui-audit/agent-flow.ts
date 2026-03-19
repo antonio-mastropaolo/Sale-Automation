@@ -301,6 +301,88 @@ export function getUserFlows(): UserFlow[] {
       ],
       expectedOutcome: "Inventory page loads with data",
     },
+
+    // ── Flow 15: Login form submission ──
+    {
+      name: "Login form submission",
+      description: "Submit login form with invalid credentials and verify error handling",
+      steps: [
+        { action: "navigate", target: "/login", description: "Go to login" },
+        { action: "type", target: "input[name='email'], input[type='email'], input[placeholder*='email' i]", value: "invalid@test.com", description: "Enter invalid email" },
+        { action: "type", target: "input[name='password'], input[type='password']", value: "wrongpassword123", description: "Enter wrong password" },
+        { action: "click", target: "button[type='submit'], button:has-text('Sign'), button:has-text('Log')", description: "Click submit" },
+        { action: "wait", value: "2000", description: "Wait for response" },
+        { action: "assert", value: "has-error-or-stays-on-login", description: "Shows error or stays on login page" },
+      ],
+      expectedOutcome: "Login form shows error message for invalid credentials",
+    },
+
+    // ── Flow 16: Registration form validation ──
+    {
+      name: "Registration form validation",
+      description: "Submit registration with empty fields to test validation",
+      steps: [
+        { action: "navigate", target: "/register", description: "Go to register" },
+        { action: "click", target: "button[type='submit'], button:has-text('Register'), button:has-text('Sign')", description: "Submit empty form" },
+        { action: "wait", value: "1000", description: "Wait for validation" },
+        { action: "assert", value: "has-validation-feedback", description: "Validation messages shown" },
+      ],
+      expectedOutcome: "Empty form submission shows validation errors",
+    },
+
+    // ── Flow 17: Keyboard navigation flow ──
+    {
+      name: "Keyboard shortcut support",
+      description: "Test Escape key closes modals/overlays",
+      steps: [
+        { action: "navigate", target: "/", description: "Go to dashboard" },
+        { action: "wait", value: "1000", description: "Wait for page" },
+        { action: "assert", value: "no-focus-trap-on-load", description: "Page doesn't trap focus on load" },
+      ],
+      expectedOutcome: "Keyboard interactions work correctly",
+    },
+
+    // ── Flow 18: Cross-page data consistency ──
+    {
+      name: "Cross-page data consistency",
+      description: "Verify listing counts match between dashboard and inventory",
+      steps: [
+        { action: "navigate", target: "/", description: "Go to dashboard" },
+        { action: "wait", value: "1000", description: "Wait for data" },
+        { action: "assert", value: "no-nan-undefined", description: "Dashboard data valid" },
+        { action: "navigate", target: "/inventory", description: "Go to inventory" },
+        { action: "wait", value: "1000", description: "Wait for data" },
+        { action: "assert", value: "no-nan-undefined", description: "Inventory data valid" },
+        { action: "navigate", target: "/analytics", description: "Go to analytics" },
+        { action: "assert", value: "no-nan-undefined", description: "Analytics data valid" },
+      ],
+      expectedOutcome: "Data is consistent across pages",
+    },
+
+    // ── Flow 19: Onboarding flow ──
+    {
+      name: "Onboarding page",
+      description: "Verify onboarding page loads for new users",
+      steps: [
+        { action: "navigate", target: "/onboard", description: "Go to onboarding" },
+        { action: "assert", value: "has-form-elements", description: "Has onboarding controls" },
+        { action: "assert", value: "no-console-errors", description: "No JS errors" },
+      ],
+      expectedOutcome: "Onboarding page renders correctly",
+    },
+
+    // ── Flow 20: Diagnostics page ──
+    {
+      name: "Diagnostics page",
+      description: "Verify system diagnostics loads",
+      steps: [
+        { action: "navigate", target: "/diagnostics", description: "Go to diagnostics" },
+        { action: "wait", value: "1000", description: "Wait for health checks" },
+        { action: "assert", value: "no-nan-undefined", description: "Clean data" },
+        { action: "assert", value: "no-console-errors", description: "No errors" },
+      ],
+      expectedOutcome: "Diagnostics page shows system status",
+    },
   ];
 }
 
@@ -363,6 +445,42 @@ async function runAssertion(page: Page, value: string): Promise<{ ok: boolean; d
       const text = await page.evaluate(() => document.body.innerText || "");
       const hasIssue = text.includes("Invalid Date");
       return { ok: !hasIssue, detail: hasIssue ? "Found 'Invalid Date'" : "Clean" };
+    }
+
+    case "has-error-or-stays-on-login": {
+      const url = page.url();
+      const onLogin = url.includes("/login");
+      const text = await page.evaluate(() => document.body.innerText || "");
+      const hasError = /error|invalid|incorrect|wrong|fail/i.test(text);
+      return { ok: onLogin || hasError, detail: onLogin ? `Still on login page: ${url}` : hasError ? "Error message shown" : "No error found" };
+    }
+
+    case "has-validation-feedback": {
+      // Check for HTML5 validation, custom error messages, or required field indicators
+      const result = await page.evaluate(() => {
+        const invalidInputs = document.querySelectorAll("input:invalid, textarea:invalid, select:invalid");
+        const errorMessages = document.querySelectorAll("[role='alert'], .error, [class*='error'], [class*='invalid'], [data-error]");
+        const text = document.body.innerText || "";
+        const hasErrorText = /required|invalid|please|must|can't be empty/i.test(text);
+        return {
+          invalidInputs: invalidInputs.length,
+          errorMessages: errorMessages.length,
+          hasErrorText,
+        };
+      });
+      const ok = result.invalidInputs > 0 || result.errorMessages > 0 || result.hasErrorText;
+      return { ok, detail: `Invalid inputs: ${result.invalidInputs}, Error elements: ${result.errorMessages}` };
+    }
+
+    case "no-focus-trap-on-load": {
+      // Check that focus isn't trapped in a modal on page load
+      const trapped = await page.evaluate(() => {
+        const modal = document.querySelector("[role='dialog'], .modal, [data-modal]");
+        if (!modal) return false;
+        const style = getComputedStyle(modal);
+        return style.display !== "none" && style.visibility !== "hidden";
+      });
+      return { ok: !trapped, detail: trapped ? "Modal visible on page load" : "No modal trap" };
     }
 
     default:

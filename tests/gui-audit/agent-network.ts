@@ -15,7 +15,7 @@
 import type { Page } from "@playwright/test";
 import type { BugReport, AgentName } from "./agent-types";
 
-const AGENT: AgentName = "flow"; // Reports under "flow" since it's behavioral
+const AGENT: AgentName = "network";
 let bugCounter = 0;
 
 function bugId(): string {
@@ -383,6 +383,148 @@ async function checkRequestTimeout(page: Page, route: string): Promise<BugReport
   return bugs;
 }
 
+/**
+ * Check 5: Cache headers — API responses should have appropriate cache-control.
+ */
+async function checkCacheHeaders(page: Page): Promise<BugReport[]> {
+  const bugs: BugReport[] = [];
+  const apiResponses: Array<{ url: string; cacheControl: string; status: number }> = [];
+
+  page.on("response", async (response) => {
+    const url = response.url();
+    if (url.includes("/api/")) {
+      const headers = response.headers();
+      apiResponses.push({
+        url: url.replace(/https?:\/\/[^/]+/, ""),
+        cacheControl: headers["cache-control"] || "",
+        status: response.status(),
+      });
+    }
+  });
+
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.waitForTimeout(1000);
+
+  // GET endpoints that could benefit from caching
+  const getResponses = apiResponses.filter(
+    (r) => r.status === 200 && !r.url.includes("auth")
+  );
+
+  const noCacheCount = getResponses.filter((r) => !r.cacheControl).length;
+
+  if (noCacheCount > 3) {
+    bugs.push(
+      makeBug(
+        `${noCacheCount} API responses missing Cache-Control header`,
+        "minor",
+        "/",
+        [
+          `Navigate to / and observe API responses`,
+          `${noCacheCount} of ${getResponses.length} successful GET responses have no Cache-Control header`,
+        ],
+        "API responses should include Cache-Control headers for efficient caching",
+        `${noCacheCount} API responses missing cache-control`,
+        "Add Cache-Control headers to API responses: 'private, max-age=60' for user data, 'public, max-age=300' for static data.",
+        ["caching", "headers"],
+        55
+      )
+    );
+  }
+
+  // Check for stale-while-revalidate support
+  const hasSWR = apiResponses.some((r) =>
+    r.cacheControl.includes("stale-while-revalidate")
+  );
+
+  if (!hasSWR && getResponses.length > 0) {
+    bugs.push(
+      makeBug(
+        "No API responses use stale-while-revalidate",
+        "cosmetic",
+        "/",
+        [
+          `Inspected ${getResponses.length} API responses`,
+          `None include stale-while-revalidate in Cache-Control`,
+        ],
+        "APIs should use stale-while-revalidate for better perceived performance",
+        "No stale-while-revalidate cache directives found",
+        "Add 'stale-while-revalidate=60' to Cache-Control for API responses that can tolerate slightly stale data.",
+        ["caching", "swr"],
+        40
+      )
+    );
+  }
+
+  return bugs;
+}
+
+/**
+ * Check 6: Retry behavior — do failed requests get retried?
+ */
+async function checkRetryBehavior(page: Page, route: string): Promise<BugReport[]> {
+  const bugs: BugReport[] = [];
+  let requestCount = 0;
+
+  // Track how many times API endpoints are called
+  const requestCounts = new Map<string, number>();
+
+  // Fail first request, succeed second
+  await page.route("**/api/listings**", async (interceptedRoute) => {
+    const url = interceptedRoute.request().url().replace(/https?:\/\/[^/]+/, "");
+    const count = (requestCounts.get(url) || 0) + 1;
+    requestCounts.set(url, count);
+    requestCount++;
+
+    if (count === 1) {
+      // First request fails
+      await interceptedRoute.fulfill({
+        status: 503,
+        contentType: "application/json",
+        body: JSON.stringify({ error: "Service temporarily unavailable" }),
+      });
+    } else {
+      // Subsequent requests succeed
+      await interceptedRoute.continue();
+    }
+  });
+
+  try {
+    await page.goto(route, { waitUntil: "networkidle", timeout: 20000 });
+    await page.waitForTimeout(3000); // Give time for retries
+
+    // Check if any endpoint was retried
+    let hasRetry = false;
+    for (const [, count] of requestCounts) {
+      if (count > 1) hasRetry = true;
+    }
+
+    // This is informational — not having retry is ok for some endpoints
+    if (!hasRetry && requestCounts.size > 0) {
+      bugs.push(
+        makeBug(
+          `No automatic retry on ${route} after 503 response`,
+          "cosmetic",
+          route,
+          [
+            `Navigate to ${route}`,
+            `First API request returns 503`,
+            `No automatic retry detected (${requestCount} total requests)`,
+          ],
+          "SWR should automatically retry failed requests",
+          `No retry observed after initial 503 failure`,
+          "Configure SWR with errorRetryCount and errorRetryInterval for automatic retries on server errors.",
+          ["retry", "resilience"],
+          45
+        )
+      );
+    }
+  } finally {
+    await page.unroute("**/api/listings**");
+  }
+
+  return bugs;
+}
+
 // ── Main Network Agent ────────────────────────────────────────────
 
 export async function runNetworkAgent(
@@ -420,6 +562,24 @@ export async function runNetworkAgent(
     allBugs.push(...offlineBugs);
   } catch (err) {
     console.error(`    [Net] Offline test failed: ${(err as Error).message}`);
+  }
+
+  // Cache headers check
+  try {
+    console.log(`    [Net] Cache headers...`);
+    const cacheBugs = await checkCacheHeaders(page);
+    allBugs.push(...cacheBugs);
+  } catch (err) {
+    console.error(`    [Net] Cache check failed: ${(err as Error).message}`);
+  }
+
+  // Retry behavior check
+  try {
+    console.log(`    [Net] Retry behavior...`);
+    const retryBugs = await checkRetryBehavior(page, testRoutes[0] || "/");
+    allBugs.push(...retryBugs);
+  } catch (err) {
+    console.error(`    [Net] Retry check failed: ${(err as Error).message}`);
   }
 
   return allBugs;

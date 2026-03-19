@@ -362,6 +362,269 @@ function checkBudgets(metrics: PerformanceMetrics): BugReport[] {
   return bugs;
 }
 
+// ── Image Optimization Checks ─────────────────────────────────────
+
+async function checkImageOptimization(page: Page, route: string): Promise<BugReport[]> {
+  const bugs: BugReport[] = [];
+
+  await page.goto(route, { waitUntil: "networkidle", timeout: 20000 });
+
+  const imageReport = await page.evaluate(() => {
+    const images = Array.from(document.querySelectorAll("img"));
+    const issues: string[] = [];
+    let oversizedCount = 0;
+    let missingDimensionsCount = 0;
+    let notLazyCount = 0;
+    let nonNextImageCount = 0;
+
+    for (const img of images) {
+      const src = img.getAttribute("src") || "";
+      const width = img.naturalWidth;
+      const height = img.naturalHeight;
+      const displayWidth = img.clientWidth;
+      const displayHeight = img.clientHeight;
+
+      // Check for images rendered much smaller than their natural size (> 2x)
+      if (width > 0 && displayWidth > 0 && width > displayWidth * 2) {
+        oversizedCount++;
+      }
+
+      // Check for missing width/height attributes (causes CLS)
+      if (!img.getAttribute("width") && !img.getAttribute("height")) {
+        const style = getComputedStyle(img);
+        if (style.width === "auto" || !style.width) {
+          missingDimensionsCount++;
+        }
+      }
+
+      // Check for lazy loading on below-fold images
+      const rect = img.getBoundingClientRect();
+      if (rect.top > window.innerHeight && img.loading !== "lazy") {
+        notLazyCount++;
+      }
+
+      // Check if using Next.js Image component (rendered as img with data-nimg)
+      if (!img.hasAttribute("data-nimg") && src && !src.startsWith("data:")) {
+        nonNextImageCount++;
+      }
+    }
+
+    return {
+      totalImages: images.length,
+      oversizedCount,
+      missingDimensionsCount,
+      notLazyCount,
+      nonNextImageCount,
+    };
+  });
+
+  if (imageReport.oversizedCount > 0) {
+    bugs.push(
+      makeBug(
+        `${imageReport.oversizedCount} oversized image(s) on ${route}`,
+        imageReport.oversizedCount > 3 ? "major" : "minor",
+        route,
+        [
+          `Navigate to ${route}`,
+          `Found ${imageReport.oversizedCount} images rendered much smaller than their natural size`,
+        ],
+        "Images should be served at their display size to avoid wasting bandwidth",
+        `${imageReport.oversizedCount} of ${imageReport.totalImages} images are >2x their display size`,
+        "Use Next.js Image component with appropriate sizes prop, or serve properly sized images from your CDN.",
+        ["images", "optimization"],
+        75
+      )
+    );
+  }
+
+  if (imageReport.missingDimensionsCount > 0) {
+    bugs.push(
+      makeBug(
+        `${imageReport.missingDimensionsCount} image(s) missing dimensions on ${route}`,
+        "minor",
+        route,
+        [
+          `Navigate to ${route}`,
+          `Found ${imageReport.missingDimensionsCount} images without width/height attributes`,
+        ],
+        "Images should have explicit dimensions to prevent layout shifts (CLS)",
+        `${imageReport.missingDimensionsCount} images lack width/height`,
+        "Add width and height attributes to all images, or use Next.js Image with fill prop.",
+        ["images", "cls"],
+        70
+      )
+    );
+  }
+
+  if (imageReport.notLazyCount > 2) {
+    bugs.push(
+      makeBug(
+        `${imageReport.notLazyCount} below-fold image(s) not lazy-loaded on ${route}`,
+        "minor",
+        route,
+        [
+          `Navigate to ${route}`,
+          `Found ${imageReport.notLazyCount} images below the fold without loading="lazy"`,
+        ],
+        "Below-fold images should use lazy loading to improve initial page load",
+        `${imageReport.notLazyCount} below-fold images loaded eagerly`,
+        "Use Next.js Image (auto lazy-loads) or add loading='lazy' to below-fold img tags.",
+        ["images", "lazy-loading"],
+        65
+      )
+    );
+  }
+
+  return bugs;
+}
+
+// ── Resource Hints Check ──────────────────────────────────────────
+
+async function checkResourceHints(page: Page, route: string): Promise<BugReport[]> {
+  const bugs: BugReport[] = [];
+
+  await page.goto(route, { waitUntil: "networkidle", timeout: 20000 });
+
+  const resourceReport = await page.evaluate(() => {
+    // Check for font-display: swap
+    const styleSheets = Array.from(document.styleSheets);
+    let hasBlockingFont = false;
+    try {
+      for (const sheet of styleSheets) {
+        try {
+          const rules = Array.from(sheet.cssRules || []);
+          for (const rule of rules) {
+            if (rule instanceof CSSFontFaceRule) {
+              const display = (rule.style as CSSStyleDeclaration).getPropertyValue("font-display");
+              if (!display || display === "block" || display === "auto") {
+                hasBlockingFont = true;
+              }
+            }
+          }
+        } catch {
+          // Cross-origin stylesheet — can't inspect
+        }
+      }
+    } catch {
+      // Ignore
+    }
+
+    // Check for preconnect/dns-prefetch to external domains
+    const links = Array.from(document.querySelectorAll("link"));
+    const preconnects = links.filter((l) => l.rel === "preconnect" || l.rel === "dns-prefetch");
+    const externalScripts = Array.from(document.querySelectorAll("script[src]"))
+      .filter((s) => {
+        const src = s.getAttribute("src") || "";
+        return src.startsWith("http") && !src.includes(window.location.hostname);
+      });
+
+    // Check for render-blocking scripts in head
+    const headScripts = Array.from(document.head.querySelectorAll("script[src]"))
+      .filter((s) => !s.hasAttribute("defer") && !s.hasAttribute("async") && s.getAttribute("type") !== "module");
+
+    return {
+      hasBlockingFont,
+      preconnectCount: preconnects.length,
+      externalScriptCount: externalScripts.length,
+      renderBlockingScripts: headScripts.length,
+    };
+  });
+
+  if (resourceReport.renderBlockingScripts > 0) {
+    bugs.push(
+      makeBug(
+        `${resourceReport.renderBlockingScripts} render-blocking script(s) on ${route}`,
+        resourceReport.renderBlockingScripts > 2 ? "major" : "minor",
+        route,
+        [
+          `Navigate to ${route}`,
+          `Found ${resourceReport.renderBlockingScripts} scripts in <head> without defer/async`,
+        ],
+        "Scripts in <head> should use defer or async to avoid blocking rendering",
+        `${resourceReport.renderBlockingScripts} render-blocking scripts in <head>`,
+        "Add defer or async attribute to third-party scripts. Next.js handles this for its own bundles.",
+        ["render-blocking", "scripts"],
+        70
+      )
+    );
+  }
+
+  if (resourceReport.hasBlockingFont) {
+    bugs.push(
+      makeBug(
+        `Blocking font-display detected on ${route}`,
+        "minor",
+        route,
+        [
+          `Navigate to ${route}`,
+          `Found @font-face rules without font-display: swap`,
+        ],
+        "Fonts should use font-display: swap to prevent invisible text during load",
+        "Font blocks rendering until loaded (FOIT — Flash of Invisible Text)",
+        "Add font-display: swap to all @font-face rules, or use next/font which handles this automatically.",
+        ["fonts", "foit"],
+        60
+      )
+    );
+  }
+
+  return bugs;
+}
+
+// ── Bundle Analysis ───────────────────────────────────────────────
+
+async function checkBundleSize(page: Page, route: string): Promise<BugReport[]> {
+  const bugs: BugReport[] = [];
+
+  const resourceData: { jsSize: number; cssSize: number; jsCount: number; cssCount: number } = {
+    jsSize: 0, cssSize: 0, jsCount: 0, cssCount: 0,
+  };
+
+  page.on("response", async (response) => {
+    const url = response.url();
+    try {
+      const headers = response.headers();
+      const size = parseInt(headers["content-length"] || "0", 10);
+      if (url.endsWith(".js") || headers["content-type"]?.includes("javascript")) {
+        resourceData.jsSize += size;
+        resourceData.jsCount++;
+      } else if (url.endsWith(".css") || headers["content-type"]?.includes("css")) {
+        resourceData.cssSize += size;
+        resourceData.cssCount++;
+      }
+    } catch {
+      // Ignore
+    }
+  });
+
+  await page.goto(route, { waitUntil: "networkidle", timeout: 20000 });
+
+  const jsKb = Math.round(resourceData.jsSize / 1024);
+  const cssKb = Math.round(resourceData.cssSize / 1024);
+
+  // Flag if JS bundle > 500KB (compressed)
+  if (jsKb > 500) {
+    bugs.push(
+      makeBug(
+        `Large JS bundle on ${route}: ${jsKb}KB across ${resourceData.jsCount} files`,
+        jsKb > 1000 ? "major" : "minor",
+        route,
+        [
+          `Navigate to ${route}`,
+          `Total JS downloaded: ${jsKb}KB (${resourceData.jsCount} files)`,
+        ],
+        "Initial JS bundle should be < 500KB for fast interactivity",
+        `${jsKb}KB of JavaScript loaded`,
+        "Use dynamic imports for heavy components. Check for unused dependencies. Use next/bundle-analyzer to find large modules.",
+        ["bundle", "javascript"],
+        70
+      )
+    );
+  }
+
+  return bugs;
+}
+
 // ── Memory Leak Detection ─────────────────────────────────────────
 
 async function checkMemoryLeaks(page: Page, routes: string[]): Promise<BugReport[]> {
@@ -439,6 +702,35 @@ export async function runPerformanceAgent(
     } catch (err) {
       console.error(`    [Perf] FAILED ${route}: ${(err as Error).message}`);
     }
+  }
+
+  // Image optimization checks (first 4 routes)
+  const sampleRoutes = routes.slice(0, Math.min(routes.length, 4));
+  for (const route of sampleRoutes) {
+    try {
+      console.log(`    [Perf] Image optimization: ${route}`);
+      const imgBugs = await checkImageOptimization(page, route);
+      allBugs.push(...imgBugs);
+    } catch (err) {
+      console.error(`    [Perf] Image check failed on ${route}: ${(err as Error).message}`);
+    }
+  }
+
+  // Resource hints & bundle analysis (first route only for speed)
+  try {
+    console.log(`    [Perf] Resource hints: ${routes[0]}`);
+    const hintBugs = await checkResourceHints(page, routes[0]);
+    allBugs.push(...hintBugs);
+  } catch (err) {
+    console.error(`    [Perf] Resource hints check failed: ${(err as Error).message}`);
+  }
+
+  try {
+    console.log(`    [Perf] Bundle analysis: ${routes[0]}`);
+    const bundleBugs = await checkBundleSize(page, routes[0]);
+    allBugs.push(...bundleBugs);
+  } catch (err) {
+    console.error(`    [Perf] Bundle check failed: ${(err as Error).message}`);
   }
 
   // Memory leak check

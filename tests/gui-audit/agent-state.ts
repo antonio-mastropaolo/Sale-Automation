@@ -411,6 +411,227 @@ async function checkBootScreen(
   };
 }
 
+/**
+ * Check 7: SWR cache — data should appear quickly on revisited pages.
+ */
+async function checkSWRCache(
+  page: Page
+): Promise<{ check: StateCheck; bug?: BugReport }> {
+  // Visit a data page to prime the cache
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.waitForTimeout(1500);
+
+  const firstVisitContent = await page.evaluate(() => {
+    const text = document.body.innerText || "";
+    return text.length;
+  });
+
+  // Navigate away
+  await page.goto("/settings", { waitUntil: "networkidle" });
+
+  // Navigate back — measure how fast content appears
+  const startTime = Date.now();
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+
+  // Check immediately (before networkidle) if content is already there from cache
+  const cacheCheckResult = await page.evaluate(() => {
+    const text = document.body.innerText || "";
+    const hasContent = text.length > 50;
+    const hasDataElements =
+      document.querySelectorAll("table tbody tr, [data-listing], .card, [role='row']").length > 0;
+    return { hasContent, hasDataElements, contentLength: text.length };
+  });
+
+  const elapsed = Date.now() - startTime;
+
+  // SWR should show stale data instantly while revalidating
+  const passed = cacheCheckResult.hasContent && elapsed < 3000;
+
+  return {
+    check: {
+      name: "SWR cache behavior",
+      description: "Data pages should show cached content instantly on revisit",
+      passed,
+      before: `First visit content: ${firstVisitContent} chars`,
+      after: `Revisit content: ${cacheCheckResult.contentLength} chars in ${elapsed}ms`,
+      details: passed
+        ? `Cached data appeared in ${elapsed}ms`
+        : `Content took ${elapsed}ms to appear (expected < 3s from cache)`,
+    },
+    bug: !passed && firstVisitContent > 100
+      ? makeBug(
+          "SWR cache not working — data pages load slowly on revisit",
+          "minor", "/",
+          [
+            "Visit dashboard to prime data cache",
+            "Navigate to /settings",
+            "Navigate back to /",
+            `Content took ${elapsed}ms to appear`,
+          ],
+          "Cached data should appear instantly while SWR revalidates in the background",
+          `Content took ${elapsed}ms to display on revisit`,
+          "Ensure SWR's stale-while-revalidate is configured: useSWR(key, fetcher, { revalidateOnFocus: false }).",
+          ["swr-cache"], 60,
+        )
+      : undefined,
+  };
+}
+
+/**
+ * Check 8: Form state — input should survive accidental navigation.
+ */
+async function checkFormStatePersistence(
+  page: Page
+): Promise<{ check: StateCheck; bug?: BugReport }> {
+  // Navigate to the listing creation form
+  await page.goto("/listings/new", { waitUntil: "networkidle" });
+  await page.waitForTimeout(1000);
+
+  // Type into form fields
+  const hasForm = await page.evaluate(() => {
+    const inputs = document.querySelectorAll("input, textarea, select");
+    return inputs.length > 0;
+  });
+
+  if (!hasForm) {
+    return {
+      check: {
+        name: "Form state persistence",
+        description: "Form input should survive accidental back navigation",
+        passed: true,
+        before: "No form found on /listings/new",
+        after: "Skipped",
+        details: "No form inputs found — skipped",
+      },
+    };
+  }
+
+  // Fill in some test data
+  await page.evaluate(() => {
+    const inputs = document.querySelectorAll("input:not([type='hidden']):not([type='submit']):not([type='checkbox'])");
+    for (const input of inputs) {
+      const el = input as HTMLInputElement;
+      if (el.type === "text" || el.type === "" || el.type === "search") {
+        el.value = "QA_TEST_VALUE";
+        el.dispatchEvent(new Event("input", { bubbles: true }));
+        el.dispatchEvent(new Event("change", { bubbles: true }));
+        break; // Just test one field
+      }
+    }
+    const textareas = document.querySelectorAll("textarea");
+    for (const ta of textareas) {
+      (ta as HTMLTextAreaElement).value = "QA test description content";
+      ta.dispatchEvent(new Event("input", { bubbles: true }));
+      ta.dispatchEvent(new Event("change", { bubbles: true }));
+      break;
+    }
+  });
+
+  // Navigate away then come back with browser back
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.goBack({ waitUntil: "networkidle" });
+  await page.waitForTimeout(1000);
+
+  const preserved = await page.evaluate(() => {
+    const inputs = document.querySelectorAll("input:not([type='hidden']):not([type='submit']):not([type='checkbox'])");
+    for (const input of inputs) {
+      const el = input as HTMLInputElement;
+      if (el.value === "QA_TEST_VALUE") return true;
+    }
+    const textareas = document.querySelectorAll("textarea");
+    for (const ta of textareas) {
+      if ((ta as HTMLTextAreaElement).value.includes("QA test")) return true;
+    }
+    return false;
+  });
+
+  return {
+    check: {
+      name: "Form state persistence",
+      description: "Form input should survive browser back navigation",
+      passed: preserved,
+      before: "Typed 'QA_TEST_VALUE' into form",
+      after: `Value preserved after back: ${preserved}`,
+      details: preserved
+        ? "Form state preserved across back navigation"
+        : "Form data lost after navigating away and back",
+    },
+    bug: !preserved
+      ? makeBug(
+          "Form data lost when navigating away and pressing back",
+          "minor", "/listings/new",
+          [
+            "Navigate to /listings/new",
+            "Type test data into form fields",
+            "Navigate to another page",
+            "Press browser back button",
+            "Form data is gone",
+          ],
+          "Form data should be preserved when user accidentally navigates away and comes back",
+          "All form input was lost after back navigation",
+          "Use controlled state with useRef or persist draft to localStorage/sessionStorage. Consider beforeunload warning.",
+          ["form-state", "ux"], 55,
+        )
+      : undefined,
+  };
+}
+
+/**
+ * Check 9: Auth redirect — logged out users see login page.
+ */
+async function checkAuthRedirect(
+  page: Page
+): Promise<{ check: StateCheck; bug?: BugReport }> {
+  // Clear all cookies to simulate logged-out state
+  await page.context().clearCookies();
+
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.waitForTimeout(1000);
+
+  const url = page.url();
+  const isOnLogin = url.includes("/login") || url.includes("/register") || url.includes("/showcase");
+
+  // Check what the user sees
+  const pageContent = await page.evaluate(() => {
+    const text = document.body.innerText || "";
+    return {
+      hasLoginForm: !!document.querySelector("input[type='password'], input[name='password']"),
+      hasProtectedData: text.includes("Listings") && text.includes("Revenue"),
+      textLength: text.length,
+    };
+  });
+
+  const passed = isOnLogin || !pageContent.hasProtectedData;
+
+  return {
+    check: {
+      name: "Auth redirect",
+      description: "Logged out users should be redirected to login",
+      passed,
+      before: "Cleared all cookies",
+      after: `Redirected to: ${url}`,
+      details: passed
+        ? `Correctly redirected to ${url}`
+        : `Protected data visible without authentication at ${url}`,
+    },
+    bug: !passed
+      ? makeBug(
+          "Protected content visible without authentication",
+          "critical", "/",
+          [
+            "Clear all cookies",
+            "Navigate to /",
+            `Page shows protected data at ${url}`,
+          ],
+          "Unauthenticated users should be redirected to /login",
+          `Protected content visible at ${url} without session`,
+          "Ensure middleware.ts correctly checks for session_token cookie on all protected routes.",
+          ["auth", "redirect"], 90,
+        )
+      : undefined,
+  };
+}
+
 // ── Main State Agent ──────────────────────────────────────────────
 
 export async function runStateAgent(
@@ -429,6 +650,9 @@ export async function runStateAgent(
     { name: "Back button state", fn: () => checkBackButtonState(page) },
     { name: "Error boundary", fn: () => checkErrorBoundary(page) },
     { name: "Boot screen", fn: () => checkBootScreen(page) },
+    { name: "SWR cache", fn: () => checkSWRCache(page) },
+    { name: "Form state", fn: () => checkFormStatePersistence(page) },
+    { name: "Auth redirect", fn: () => checkAuthRedirect(page) },
   ];
 
   for (const runner of runners) {
