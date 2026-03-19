@@ -81,9 +81,9 @@ function getRoutes(): string[] {
   return QUICK_ROUTES;
 }
 
-function shouldRun(agent: AgentName | "accessibility" | "network"): boolean {
+function shouldRun(agent: string): boolean {
   if (AGENT_FILTER === "all") return true;
-  if (AGENT_FILTER === "a11y") return agent === "accessibility";
+  if (AGENT_FILTER === "a11y") return agent === "a11y" || agent === "accessibility";
   return AGENT_FILTER === agent;
 }
 
@@ -312,7 +312,7 @@ test.describe("TrendSmart QA — Multi-Agent Runner v2", () => {
     }
 
     // ── 11. Accessibility Agent ──
-    if (shouldRun("accessibility")) {
+    if (shouldRun("a11y")) {
       agents.push("a11y");
       console.log(`\n--- [11/12] ACCESSIBILITY AGENT ---`);
       try {

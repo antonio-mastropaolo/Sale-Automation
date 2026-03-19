@@ -276,6 +276,34 @@ async function auditPage(page: Page, route: string): Promise<{ audit: SEOAudit; 
     issues.push(`${seoData.imgsMissingAlt} images missing alt`);
   }
 
+  // Mobile viewport
+  if (!seoData.hasViewport) {
+    issues.push("Missing viewport meta tag");
+    bugs.push(makeBug(
+      `Missing viewport meta tag on ${route}`,
+      "major", route,
+      [`Navigate to ${route}`, `Check for <meta name="viewport">`],
+      'Every page should have <meta name="viewport" content="width=device-width, initial-scale=1">',
+      "No viewport meta tag found",
+      "Add viewport meta tag in the root layout. Next.js usually handles this automatically.",
+      ["viewport", "mobile"], 90,
+    ));
+  }
+
+  // Empty link text
+  if (seoData.emptyLinks > 0) {
+    issues.push(`${seoData.emptyLinks} links with empty text`);
+    bugs.push(makeBug(
+      `${seoData.emptyLinks} links with no accessible text on ${route}`,
+      seoData.emptyLinks > 5 ? "major" : "minor", route,
+      [`Navigate to ${route}`, `Found ${seoData.emptyLinks} <a> elements with no text, aria-label, or child image`],
+      "All links should have descriptive text or an aria-label",
+      `${seoData.emptyLinks} links have no accessible name`,
+      "Add text content or aria-label to all <a> elements. For icon-only links, use aria-label.",
+      ["empty-links", "accessibility"], 80,
+    ));
+  }
+
   // Language attribute
   if (!seoData.hasLangAttr) {
     issues.push("Missing lang attribute on <html>");

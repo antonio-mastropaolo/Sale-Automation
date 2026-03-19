@@ -26,7 +26,7 @@ export default defineConfig({
       testDir: "./tests/gui-audit",
       testMatch: "*.spec.ts",
       use: { ...devices["Desktop Chrome"] },
-      timeout: 300_000,
+      timeout: 900_000, // 15 min — 12 agents need time
     },
   ],
   webServer: {

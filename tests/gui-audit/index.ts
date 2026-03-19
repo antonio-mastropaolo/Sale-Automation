@@ -1,7 +1,7 @@
 /**
  * TrendSmart QA System v2 — Public API
  *
- * 10 specialized agents:
+ * 12 specialized agents:
  *
  *   npm run qa              # Quick (4 pages, all agents)
  *   npm run qa:full         # Full (28 pages, all agents)
