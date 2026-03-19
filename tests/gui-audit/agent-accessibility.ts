@@ -18,7 +18,7 @@
 import type { Page } from "@playwright/test";
 import type { BugReport, AgentName } from "./agent-types";
 
-const AGENT: AgentName = "visual"; // Reports under "visual" for accessibility
+const AGENT: AgentName = "a11y";
 let bugCounter = 0;
 
 function bugId(): string {
