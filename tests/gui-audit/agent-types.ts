@@ -149,7 +149,8 @@ export type SecurityCheckName =
   | "open-redirect"
   | "info-disclosure"
   | "rate-limiting"
-  | "session-fixation";
+  | "session-fixation"
+  | "stored-xss";
 
 export interface SecurityTestResult {
   check: SecurityCheckName;

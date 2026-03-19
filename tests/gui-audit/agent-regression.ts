@@ -245,8 +245,12 @@ export async function runRegressionAgent(
     threshold?: number;
   }
 ): Promise<{ results: RegressionResult[]; bugs: BugReport[] }> {
-  const viewports = options?.viewports || [{ width: 1280, height: 800 }];
-  const colorSchemes = options?.colorSchemes || ["light"];
+  const viewports = options?.viewports || [
+    { width: 1280, height: 800 },  // Desktop
+    { width: 375, height: 812 },   // iPhone (mobile)
+    { width: 768, height: 1024 },  // iPad (tablet)
+  ];
+  const colorSchemes = options?.colorSchemes || ["light", "dark"];
   const updateBaseline = options?.updateBaseline || process.env.QA_UPDATE_BASELINES === "true";
   const threshold = options?.threshold || DEFAULT_THRESHOLD;
 

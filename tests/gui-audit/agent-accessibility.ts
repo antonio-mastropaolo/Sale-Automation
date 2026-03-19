@@ -2,17 +2,19 @@
  * TrendSmart QA — Accessibility Agent
  *
  * Comprehensive WCAG 2.1 AA compliance testing:
- *  - Keyboard navigation (Tab order, focus visible, no keyboard traps)
- *  - Focus management (focus ring visible, skip links)
- *  - ARIA patterns (roles, states, properties, live regions)
- *  - Landmark regions (main, nav, banner, contentinfo)
- *  - Color independence (info not conveyed by color alone)
- *  - Motion preferences (prefers-reduced-motion support)
- *  - Form accessibility (labels, error messages, fieldsets)
- *  - Interactive widget patterns (accordions, tabs, modals)
- *  - Screen reader announcements (live regions, status updates)
+ *  1. Keyboard navigation (Tab order, focus visible, no keyboard traps)
+ *  2. Keyboard trap detection
+ *  3. Landmark regions (main, nav, banner, contentinfo)
+ *  4. Form accessibility (labels, autocomplete, required fields)
+ *  5. ARIA patterns (roles, states, properties, live regions)
+ *  6. Skip link presence
+ *  7. Escape dismisses modals/dialogs
+ *  8. Color independence (info not conveyed by color alone)
+ *  9. Touch target sizes (WCAG 2.5.8 — min 24x24px)
+ * 10. Focus order matches visual layout (WCAG 2.4.3)
+ * 11. Reduced motion support (prefers-reduced-motion)
  *
- * Goes far beyond the visual agent's contrast/label checks.
+ * 11 automated checks for WCAG 2.1 AA + 2.2 compliance.
  */
 
 import type { Page } from "@playwright/test";
@@ -606,6 +608,234 @@ async function checkColorIndependence(page: Page, route: string): Promise<BugRep
   return bugs;
 }
 
+/**
+ * Check 9: Touch target size — WCAG 2.5.8 requires 24x24px minimum.
+ */
+async function checkTouchTargets(page: Page, route: string): Promise<BugReport[]> {
+  const bugs: BugReport[] = [];
+
+  await page.goto(route, { waitUntil: "networkidle" });
+
+  const tooSmall = await page.evaluate(() => {
+    const interactives = document.querySelectorAll(
+      "a[href], button, input:not([type='hidden']), select, textarea, [role='button'], [role='tab'], [role='menuitem']"
+    );
+    const small: Array<{ selector: string; width: number; height: number }> = [];
+
+    for (const el of interactives) {
+      const rect = el.getBoundingClientRect();
+      const style = getComputedStyle(el as HTMLElement);
+      if (style.display === "none" || style.visibility === "hidden") continue;
+      if (rect.width === 0 || rect.height === 0) continue;
+
+      // WCAG 2.5.8: minimum 24x24 CSS pixels
+      if (rect.width < 24 || rect.height < 24) {
+        const htmlEl = el as HTMLElement;
+        small.push({
+          selector: htmlEl.id
+            ? `#${htmlEl.id}`
+            : `${htmlEl.tagName.toLowerCase()}${htmlEl.className ? "." + Array.from(htmlEl.classList).slice(0, 2).join(".") : ""}`,
+          width: Math.round(rect.width),
+          height: Math.round(rect.height),
+        });
+      }
+    }
+    return small;
+  });
+
+  if (tooSmall.length > 3) {
+    bugs.push(
+      makeBug(
+        `${tooSmall.length} interactive elements below 24x24px on ${route}`,
+        tooSmall.length > 10 ? "major" : "minor",
+        route,
+        [
+          `Navigate to ${route}`,
+          `Measure interactive element sizes`,
+          `${tooSmall.length} elements are smaller than 24x24px`,
+          `Examples: ${tooSmall.slice(0, 3).map((t) => `${t.selector} (${t.width}x${t.height}px)`).join(", ")}`,
+        ],
+        "Interactive elements should be at least 24x24 CSS pixels for touch accessibility",
+        `${tooSmall.length} elements are too small for reliable touch interaction`,
+        "Increase min-width and min-height of interactive elements to at least 24px (44px recommended). Use padding to expand click/touch area without changing visual size.",
+        "WCAG 2.5.8",
+        ["touch-target"],
+        70
+      )
+    );
+  }
+
+  return bugs;
+}
+
+/**
+ * Check 10: Focus order — Tab order should follow visual layout.
+ */
+async function checkFocusOrder(page: Page, route: string): Promise<BugReport[]> {
+  const bugs: BugReport[] = [];
+
+  await page.goto(route, { waitUntil: "networkidle" });
+  await page.waitForTimeout(300);
+
+  const focusPositions = await page.evaluate(() => {
+    const positions: Array<{ tag: string; x: number; y: number; tabIndex: number }> = [];
+    const focusable = document.querySelectorAll(
+      'a[href], button, input:not([type="hidden"]), select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+
+    for (const el of focusable) {
+      const htmlEl = el as HTMLElement;
+      const rect = htmlEl.getBoundingClientRect();
+      const style = getComputedStyle(htmlEl);
+      if (style.display === "none" || style.visibility === "hidden") continue;
+      if (rect.width === 0) continue;
+
+      positions.push({
+        tag: htmlEl.tagName.toLowerCase(),
+        x: Math.round(rect.left),
+        y: Math.round(rect.top),
+        tabIndex: htmlEl.tabIndex,
+      });
+    }
+    return positions;
+  });
+
+  // Check for positive tabindex (anti-pattern)
+  const positiveTabIndex = focusPositions.filter((p) => p.tabIndex > 0);
+  if (positiveTabIndex.length > 0) {
+    bugs.push(
+      makeBug(
+        `${positiveTabIndex.length} elements with positive tabindex on ${route}`,
+        "minor",
+        route,
+        [
+          `Navigate to ${route}`,
+          `Found ${positiveTabIndex.length} elements with tabindex > 0`,
+          `This overrides natural tab order and confuses keyboard users`,
+        ],
+        "Elements should not use positive tabindex values",
+        `${positiveTabIndex.length} elements use positive tabindex, disrupting natural focus order`,
+        "Remove positive tabindex values. Use DOM order to control focus order instead. Use tabindex='0' or tabindex='-1' only.",
+        "WCAG 2.4.3",
+        ["focus-order", "tabindex"],
+        75
+      )
+    );
+  }
+
+  // Check for major focus order reversals (going backwards significantly)
+  let reversals = 0;
+  for (let i = 1; i < focusPositions.length; i++) {
+    const prev = focusPositions[i - 1];
+    const curr = focusPositions[i];
+    // If focus jumps up more than 200px, it's likely a tab order issue
+    if (curr.y < prev.y - 200) {
+      reversals++;
+    }
+  }
+
+  if (reversals > 2) {
+    bugs.push(
+      makeBug(
+        `Focus order doesn't match visual layout on ${route}: ${reversals} reversals`,
+        "minor",
+        route,
+        [
+          `Navigate to ${route}`,
+          `Tab through elements`,
+          `Focus jumps backwards ${reversals} times`,
+        ],
+        "Tab order should follow the visual reading order (top-left to bottom-right)",
+        `${reversals} significant focus order reversals detected`,
+        "Reorder DOM elements to match visual layout, or use CSS order/flexbox for visual changes while keeping DOM order logical.",
+        "WCAG 2.4.3",
+        ["focus-order"],
+        60
+      )
+    );
+  }
+
+  return bugs;
+}
+
+/**
+ * Check 11: Reduced motion — respect prefers-reduced-motion.
+ */
+async function checkReducedMotion(page: Page, route: string): Promise<BugReport[]> {
+  const bugs: BugReport[] = [];
+
+  // Set reduced motion preference
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto(route, { waitUntil: "networkidle" });
+  await page.waitForTimeout(500);
+
+  const animationIssues = await page.evaluate(() => {
+    const issues: string[] = [];
+    const allElements = document.querySelectorAll("*");
+
+    let animatedCount = 0;
+    let transitionCount = 0;
+
+    for (const el of allElements) {
+      const style = getComputedStyle(el);
+
+      // Check for active CSS animations
+      if (style.animationName && style.animationName !== "none") {
+        const duration = parseFloat(style.animationDuration);
+        if (duration > 0) {
+          animatedCount++;
+        }
+      }
+
+      // Check for transitions that aren't instant
+      if (style.transitionDuration && style.transitionDuration !== "0s") {
+        const duration = parseFloat(style.transitionDuration);
+        if (duration > 0.3) {
+          transitionCount++;
+        }
+      }
+    }
+
+    // Check for auto-playing videos/carousels
+    const autoplaying = document.querySelectorAll("video[autoplay], [data-autoplay], .carousel.active, .slider.active");
+
+    if (animatedCount > 5) {
+      issues.push(`${animatedCount} elements still animating with prefers-reduced-motion`);
+    }
+    if (autoplaying.length > 0) {
+      issues.push(`${autoplaying.length} auto-playing media with prefers-reduced-motion`);
+    }
+
+    return { issues, animatedCount, autoplaying: autoplaying.length };
+  });
+
+  // Reset media
+  await page.emulateMedia({ reducedMotion: null });
+
+  if (animationIssues.issues.length > 0) {
+    bugs.push(
+      makeBug(
+        `Animations not disabled with prefers-reduced-motion on ${route}`,
+        "minor",
+        route,
+        [
+          `Enable prefers-reduced-motion: reduce`,
+          `Navigate to ${route}`,
+          ...animationIssues.issues,
+        ],
+        "Animations should be disabled or reduced when prefers-reduced-motion is set",
+        animationIssues.issues.join("; "),
+        "Add @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } } or use motion-safe/motion-reduce Tailwind utilities.",
+        "WCAG 2.3.3",
+        ["motion", "reduced-motion"],
+        65
+      )
+    );
+  }
+
+  return bugs;
+}
+
 // ── Main Accessibility Agent ──────────────────────────────────────
 
 export async function runAccessibilityAgent(
@@ -626,6 +856,9 @@ export async function runAccessibilityAgent(
       () => checkSkipLink(page, route),
       () => checkEscapeDismiss(page, route),
       () => checkColorIndependence(page, route),
+      () => checkTouchTargets(page, route),
+      () => checkFocusOrder(page, route),
+      () => checkReducedMotion(page, route),
     ];
 
     for (const check of checks) {

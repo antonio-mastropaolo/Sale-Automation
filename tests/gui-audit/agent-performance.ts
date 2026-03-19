@@ -625,6 +625,74 @@ async function checkBundleSize(page: Page, route: string): Promise<BugReport[]> 
   return bugs;
 }
 
+// ── Third-Party Script Audit ──────────────────────────────────────
+
+async function checkThirdPartyScripts(page: Page, route: string): Promise<BugReport[]> {
+  const bugs: BugReport[] = [];
+
+  const thirdPartyData: Array<{ url: string; size: number; blocked: number }> = [];
+
+  page.on("response", async (response) => {
+    const url = response.url();
+    try {
+      const headers = response.headers();
+      const ct = headers["content-type"] || "";
+      if (!ct.includes("javascript")) return;
+      if (url.includes("localhost") || url.includes("127.0.0.1")) return;
+      // It's a third-party script
+      const size = parseInt(headers["content-length"] || "0", 10);
+      thirdPartyData.push({ url, size, blocked: 0 });
+    } catch {
+      // Ignore
+    }
+  });
+
+  await page.goto(route, { waitUntil: "networkidle", timeout: 20000 });
+
+  // Measure main-thread blocking from third-party scripts
+  const thirdPartyBlockingTime = await page.evaluate(() => {
+    return new Promise<number>((resolve) => {
+      let tbt = 0;
+      const observer = new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          // Long tasks attributed to third-party are hard to detect in browser,
+          // but we can count total long-task time
+          if (entry.duration > 50) {
+            tbt += entry.duration - 50;
+          }
+        }
+      });
+      try {
+        observer.observe({ type: "longtask", buffered: true });
+      } catch { resolve(0); return; }
+      setTimeout(() => { observer.disconnect(); resolve(tbt); }, 2000);
+    });
+  });
+
+  if (thirdPartyData.length > 5) {
+    const totalKb = Math.round(thirdPartyData.reduce((s, t) => s + t.size, 0) / 1024);
+    bugs.push(
+      makeBug(
+        `${thirdPartyData.length} third-party scripts on ${route} (${totalKb}KB)`,
+        thirdPartyData.length > 10 ? "major" : "minor",
+        route,
+        [
+          `Navigate to ${route}`,
+          `${thirdPartyData.length} external JS files loaded (${totalKb}KB total)`,
+          `Scripts from: ${[...new Set(thirdPartyData.map((t) => new URL(t.url).hostname))].slice(0, 5).join(", ")}`,
+        ],
+        "Minimize third-party scripts to reduce page weight and main-thread blocking",
+        `${thirdPartyData.length} third-party scripts adding ${totalKb}KB`,
+        "Audit third-party scripts. Remove unused ones. Load non-critical ones with async/defer. Consider self-hosting critical third-party code.",
+        ["third-party", "scripts"],
+        65
+      )
+    );
+  }
+
+  return bugs;
+}
+
 // ── Memory Leak Detection ─────────────────────────────────────────
 
 async function checkMemoryLeaks(page: Page, routes: string[]): Promise<BugReport[]> {
@@ -731,6 +799,15 @@ export async function runPerformanceAgent(
     allBugs.push(...bundleBugs);
   } catch (err) {
     console.error(`    [Perf] Bundle check failed: ${(err as Error).message}`);
+  }
+
+  // Third-party script audit (first route only)
+  try {
+    console.log(`    [Perf] Third-party scripts: ${routes[0]}`);
+    const tpBugs = await checkThirdPartyScripts(page, routes[0]);
+    allBugs.push(...tpBugs);
+  } catch (err) {
+    console.error(`    [Perf] Third-party check failed: ${(err as Error).message}`);
   }
 
   // Memory leak check

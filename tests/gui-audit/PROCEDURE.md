@@ -23,13 +23,13 @@ you run one command and get GitHub-issue-ready bug reports.
 │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────────┐        │
 │  │   Perf   │ │ Security │ │   Data   │ │     SEO      │        │
 │  │  Agent   │ │  Agent   │ │ Integrity│ │    Agent     │        │
-│  │ 10 checks│ │ 12 checks│ │ 8 checks │ │  9 checks   │        │
+│  │ 11 checks│ │ 14 checks│ │ 8 checks │ │  12 checks  │        │
 │  └──────────┘ └──────────┘ └──────────┘ └──────────────┘        │
 │                                                                   │
 │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────────┐        │
 │  │Regression│ │  State   │ │  A11y    │ │   Network    │        │
 │  │  Agent   │ │  Agent   │ │  Agent   │ │    Agent     │        │
-│  │ baselines│ │ 9 checks │ │ 8 checks │ │  6 checks   │        │
+│  │ 3vp × 2t │ │ 9 checks │ │ 11 checks│ │  6 checks   │        │
 │  └──────────┘ └──────────┘ └──────────┘ └──────────────┘        │
 │                                                                   │
 │  ┌────────────────────────────────────────────────────────┐      │
@@ -112,26 +112,26 @@ and accessibility attributes. Then runs 9 automated checks.
 19. Onboarding page
 20. Diagnostics page
 
-### Agent 5: Performance Agent (10 checks)
-Core Web Vitals, memory leaks, image optimization, bundle analysis.
+### Agent 5: Performance Agent (11 checks)
+Core Web Vitals, memory leaks, image optimization, bundle analysis, third-party script audit.
 
-### Agent 6: Security Agent (12 checks)
-Auth bypass, XSS, SQL injection, CSRF, CORS, session fixation, rate limiting, headers.
+### Agent 6: Security Agent (14 checks)
+Auth bypass, reflected XSS, stored XSS, SQL injection, path traversal, CSRF, CORS, session fixation, rate limiting, headers, cookie security, open redirect, info disclosure, data exposure.
 
 ### Agent 7: Data Integrity Agent (8 checks)
 Cross-endpoint consistency, response shapes, idempotency, referential integrity, error consistency.
 
-### Agent 8: SEO Agent (9 checks)
-Title, meta description, OG tags, heading hierarchy, alt text, semantic HTML.
+### Agent 8: SEO Agent (12 checks)
+Title, meta description, OG tags, canonical URL, heading hierarchy, alt text, semantic HTML, viewport, empty links, JSON-LD structured data, robots meta, language attr.
 
-### Agent 9: Regression Agent
-Screenshot baseline diffing with configurable pixel threshold.
+### Agent 9: Regression Agent (3 viewports × 2 themes)
+Screenshot baseline diffing at desktop (1280px), mobile (375px), and tablet (768px) in both light and dark modes.
 
 ### Agent 10: State Agent (9 checks)
 Theme persistence, sidebar state, localStorage, back button, SWR cache, form state, auth redirect.
 
-### Agent 11: Accessibility Agent (8 checks)
-Keyboard navigation, focus traps, landmarks, form labels, ARIA, skip links, escape dismiss.
+### Agent 11: Accessibility Agent (11 checks)
+Keyboard navigation, focus traps, landmarks, form labels, ARIA, skip links, escape dismiss, color independence, touch targets (WCAG 2.5.8), focus order (WCAG 2.4.3), reduced motion (WCAG 2.3.3).
 
 ### Agent 12: Network Agent (6 checks)
 API failure degradation, slow network, offline recovery, timeout handling, cache headers, retry behavior.
@@ -164,13 +164,13 @@ npm run qa:visual      # Visual consistency
 npm run qa:logic       # Business logic
 npm run qa:api         # API contracts (90+ tests)
 npm run qa:flow        # User journeys (20 flows)
-npm run qa:perf        # Core Web Vitals + image optimization
-npm run qa:security    # OWASP security (12 checks)
-npm run qa:seo         # SEO audit
+npm run qa:perf        # Core Web Vitals + images + memory + 3rd-party
+npm run qa:security    # OWASP security (14 checks)
+npm run qa:seo         # SEO audit (12 checks)
 npm run qa:data        # Data integrity (8 checks)
-npm run qa:regression  # Screenshot baselines
+npm run qa:regression  # Screenshot baselines (3 viewports × 2 themes)
 npm run qa:state       # Client state persistence (9 checks)
-npm run qa:a11y        # WCAG 2.1 AA accessibility
+npm run qa:a11y        # WCAG 2.1/2.2 AA accessibility (11 checks)
 npm run qa:network     # Network resilience (6 checks)
 ```
 

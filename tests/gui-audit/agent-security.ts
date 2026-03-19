@@ -2,19 +2,22 @@
  * TrendSmart QA — Security Agent
  *
  * Tests the app for common security vulnerabilities:
- *  - Reflected XSS via URL params and form inputs
  *  - Auth bypass (access protected routes without session)
- *  - Security headers (CSP, X-Frame-Options, etc.)
+ *  - Security headers (CSP, X-Frame-Options, HSTS, etc.)
  *  - Cookie security flags (httpOnly, secure, sameSite)
- *  - Open redirect via login redirect params
- *  - Path traversal in file/image endpoints
- *  - Information disclosure (stack traces, debug info)
- *  - CSRF protection
+ *  - Reflected XSS via URL params
+ *  - Stored XSS via form/API inputs
  *  - SQL injection via API params
- *  - Session fixation
+ *  - Path traversal in file/export endpoints
+ *  - Information disclosure (stack traces, debug info)
+ *  - Open redirect via login redirect params
  *  - Sensitive data exposure in API responses
+ *  - CORS misconfiguration
+ *  - CSRF protection on state-changing endpoints
+ *  - Session fixation
+ *  - Rate limiting on auth endpoints
  *
- * This replaces a penetration tester doing a basic security audit.
+ * 14 automated checks replacing a penetration tester's basic audit.
  */
 
 import type { Page, APIRequestContext } from "@playwright/test";
@@ -948,6 +951,159 @@ async function checkRateLimiting(
   return { results, bugs };
 }
 
+/**
+ * Check 13: Stored XSS — submit payloads via forms, check if they render unescaped.
+ */
+async function checkStoredXSS(
+  page: Page,
+  request: APIRequestContext
+): Promise<{ results: SecurityTestResult[]; bugs: BugReport[] }> {
+  const results: SecurityTestResult[] = [];
+  const bugs: BugReport[] = [];
+
+  // Test endpoints that accept user content which is later displayed
+  const storedXSSTargets = [
+    { postEndpoint: "/api/listings", field: "title", readEndpoint: "/api/listings" },
+    { postEndpoint: "/api/templates", field: "name", readEndpoint: "/api/templates" },
+    { postEndpoint: "/api/settings", field: "storeName", readEndpoint: "/api/settings" },
+  ];
+
+  const xssPayload = '<img src=x onerror="alert(document.cookie)">';
+
+  for (const target of storedXSSTargets) {
+    try {
+      // Attempt to store XSS payload
+      const postResponse = await request.post(target.postEndpoint, {
+        data: { [target.field]: xssPayload },
+        headers: { "Content-Type": "application/json" },
+      });
+
+      // If stored, check if it comes back unescaped
+      if (postResponse.ok() || postResponse.status() === 201) {
+        const getResponse = await request.get(target.readEndpoint);
+        if (getResponse.ok()) {
+          const body = await getResponse.text();
+          const unescaped = body.includes(xssPayload);
+
+          const passed = !unescaped;
+          results.push({
+            check: "xss-stored",
+            target: `${target.postEndpoint} → ${target.field}`,
+            passed,
+            severity: passed ? "cosmetic" : "critical",
+            details: passed
+              ? "Stored XSS payload properly sanitized"
+              : `Stored XSS payload returned unescaped from ${target.readEndpoint}`,
+            evidence: !passed ? xssPayload : undefined,
+          });
+
+          if (!passed) {
+            bugs.push(
+              makeBug(
+                `Stored XSS: ${target.postEndpoint} field "${target.field}" not sanitized`,
+                "critical",
+                target.postEndpoint,
+                [
+                  `POST ${target.postEndpoint} with ${target.field} = ${xssPayload}`,
+                  `GET ${target.readEndpoint}`,
+                  `Payload returned unescaped in response body`,
+                ],
+                "User-submitted content should be sanitized before storage or escaped on output",
+                `XSS payload stored and returned unescaped via ${target.readEndpoint}`,
+                "Sanitize HTML input server-side (use DOMPurify or similar). Never use dangerouslySetInnerHTML with user content.",
+                ["xss-stored", "owasp-a03"],
+                95,
+              )
+            );
+          }
+        }
+      } else {
+        // Couldn't store = likely auth-protected or validation blocked it
+        results.push({
+          check: "xss-stored",
+          target: `${target.postEndpoint} → ${target.field}`,
+          passed: true,
+          severity: "cosmetic",
+          details: `POST returned ${postResponse.status()} — endpoint blocked/protected`,
+        });
+      }
+    } catch {
+      // Endpoint unreachable = OK
+    }
+  }
+
+  return { results, bugs };
+}
+
+/**
+ * Check 14: Path traversal — access files outside the web root.
+ */
+async function checkPathTraversal(
+  request: APIRequestContext
+): Promise<{ results: SecurityTestResult[]; bugs: BugReport[] }> {
+  const results: SecurityTestResult[] = [];
+  const bugs: BugReport[] = [];
+
+  const traversalPayloads = [
+    { url: "/api/export?file=../../../etc/passwd", name: "etc/passwd via export" },
+    { url: "/api/export?file=....//....//....//etc/passwd", name: "double-dot bypass" },
+    { url: "/api/listings?image=..%2F..%2F..%2Fetc%2Fpasswd", name: "encoded traversal" },
+    { url: "/_next/static/../../../.env", name: ".env via _next/static" },
+    { url: "/api/templates?path=../../../../package.json", name: "package.json leak" },
+  ];
+
+  for (const { url, name } of traversalPayloads) {
+    try {
+      const response = await request.get(url);
+      const status = response.status();
+      const body = await response.text();
+
+      // Check for signs of file access
+      const fileAccessIndicators = [
+        "root:", // /etc/passwd content
+        "DATABASE_URL", // .env content
+        '"dependencies"', // package.json content
+        "node_modules", // file system paths
+        "/home/", // Unix paths
+      ];
+
+      const leaked = fileAccessIndicators.some((indicator) => body.includes(indicator));
+      const passed = !leaked && status !== 200;
+
+      results.push({
+        check: "path-traversal",
+        target: name,
+        passed: !leaked,
+        severity: leaked ? "critical" : "cosmetic",
+        details: leaked
+          ? `Path traversal succeeded: file content leaked`
+          : `Properly blocked (HTTP ${status})`,
+        evidence: leaked ? body.substring(0, 200) : undefined,
+      });
+
+      if (leaked) {
+        bugs.push(
+          makeBug(
+            `Path traversal: ${name} leaks file content`,
+            "critical",
+            url,
+            [`Send GET ${url}`, `Response contains file system content`],
+            "Path parameters should be validated to prevent directory traversal",
+            `File content leaked via path traversal payload`,
+            "Validate and sanitize all file path parameters. Use path.resolve() and verify the result is within the allowed directory. Never pass user input directly to fs operations.",
+            ["path-traversal", "owasp-a01"],
+            95,
+          )
+        );
+      }
+    } catch {
+      // Error = blocked = fine
+    }
+  }
+
+  return { results, bugs };
+}
+
 // ── Main Security Agent ───────────────────────────────────────────
 
 export async function runSecurityAgent(
@@ -965,7 +1121,9 @@ export async function runSecurityAgent(
     { name: "Security headers", fn: () => checkSecurityHeaders(request) },
     { name: "Cookie security", fn: () => checkCookieSecurity(page) },
     { name: "Reflected XSS", fn: () => checkReflectedXSS(page) },
+    { name: "Stored XSS", fn: () => checkStoredXSS(page, request) },
     { name: "SQL injection", fn: () => checkSQLInjection(request) },
+    { name: "Path traversal", fn: () => checkPathTraversal(request) },
     { name: "Info disclosure", fn: () => checkInfoDisclosure(request) },
     { name: "Open redirect", fn: () => checkOpenRedirect(page) },
     { name: "Data exposure", fn: () => checkDataExposure(request) },

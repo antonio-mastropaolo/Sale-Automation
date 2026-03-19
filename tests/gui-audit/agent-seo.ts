@@ -92,6 +92,26 @@ async function auditPage(page: Page, route: string): Promise<{ audit: SEOAudit; 
     const ogImage = document.querySelector('meta[property="og:image"]');
     const viewport = document.querySelector('meta[name="viewport"]');
     const lang = document.documentElement.lang;
+    const robotsMeta = document.querySelector('meta[name="robots"]');
+
+    // JSON-LD structured data
+    const jsonLdScripts = document.querySelectorAll('script[type="application/ld+json"]');
+    let jsonLdValid = true;
+    let jsonLdCount = jsonLdScripts.length;
+    let jsonLdTypes: string[] = [];
+    for (const script of jsonLdScripts) {
+      try {
+        const data = JSON.parse(script.textContent || "{}");
+        if (data["@type"]) jsonLdTypes.push(data["@type"]);
+        if (Array.isArray(data["@graph"])) {
+          for (const item of data["@graph"]) {
+            if (item["@type"]) jsonLdTypes.push(item["@type"]);
+          }
+        }
+      } catch {
+        jsonLdValid = false;
+      }
+    }
 
     // Headings
     const h1s = document.querySelectorAll("h1");
@@ -148,6 +168,11 @@ async function auditPage(page: Page, route: string): Promise<{ audit: SEOAudit; 
       hasViewport: !!viewport,
       hasLangAttr: !!lang,
       lang,
+      hasRobotsMeta: !!robotsMeta,
+      robotsContent: robotsMeta?.getAttribute("content") || "",
+      jsonLdCount,
+      jsonLdValid,
+      jsonLdTypes,
       h1Count: h1s.length,
       headingOrderValid,
       headingLevels: headings,
@@ -304,6 +329,20 @@ async function auditPage(page: Page, route: string): Promise<{ audit: SEOAudit; 
     ));
   }
 
+  // Canonical URL
+  if (!seoData.hasCanonical) {
+    issues.push("Missing canonical URL");
+    bugs.push(makeBug(
+      `Missing canonical URL on ${route}`,
+      "minor", route,
+      [`Navigate to ${route}`, `Check for <link rel="canonical">`],
+      'Every page should have <link rel="canonical" href="..."> to avoid duplicate content',
+      "No canonical link tag found",
+      "Add canonical URL via Next.js metadata export or <link rel='canonical'> in <Head>.",
+      ["canonical"], 70,
+    ));
+  }
+
   // Language attribute
   if (!seoData.hasLangAttr) {
     issues.push("Missing lang attribute on <html>");
@@ -316,6 +355,50 @@ async function auditPage(page: Page, route: string): Promise<{ audit: SEOAudit; 
       'Add lang="en" to the <html> element in layout.tsx.',
       ["lang-attr"], 90,
     ));
+  }
+
+  // JSON-LD structured data
+  if (seoData.jsonLdCount === 0 && route === "/") {
+    issues.push("No JSON-LD structured data on homepage");
+    bugs.push(makeBug(
+      `Missing JSON-LD structured data on ${route}`,
+      "minor", route,
+      [`Navigate to ${route}`, `Search for <script type="application/ld+json">`],
+      "Homepage should have structured data (Organization, WebSite, or BreadcrumbList)",
+      "No JSON-LD script tags found",
+      "Add JSON-LD structured data for your organization/website. Use Next.js metadata or a <script type='application/ld+json'> tag.",
+      ["json-ld", "structured-data"], 65,
+    ));
+  }
+
+  if (!seoData.jsonLdValid && seoData.jsonLdCount > 0) {
+    issues.push("Invalid JSON-LD (parse error)");
+    bugs.push(makeBug(
+      `Invalid JSON-LD on ${route}`,
+      "major", route,
+      [`Navigate to ${route}`, `Parse <script type="application/ld+json"> content`],
+      "JSON-LD must be valid JSON",
+      "JSON-LD script tag contains invalid JSON",
+      "Validate JSON-LD at https://search.google.com/structured-data/testing-tool. Fix syntax errors.",
+      ["json-ld"], 90,
+    ));
+  }
+
+  // Robots meta — check for accidental noindex
+  if (seoData.hasRobotsMeta && seoData.robotsContent.includes("noindex")) {
+    const isAuthPage = ["/login", "/register", "/forgot-password"].some((p) => route.startsWith(p));
+    if (!isAuthPage) {
+      issues.push("Page has noindex — will not appear in search results");
+      bugs.push(makeBug(
+        `Accidental noindex on ${route}`,
+        "major", route,
+        [`Navigate to ${route}`, `Found <meta name="robots" content="${seoData.robotsContent}">`],
+        "Public pages should not have noindex unless intentional",
+        `Page has robots meta: "${seoData.robotsContent}"`,
+        "Remove noindex from the robots meta tag unless this page should genuinely be excluded from search.",
+        ["robots", "noindex"], 80,
+      ));
+    }
   }
 
   // Semantic score (0-100)
