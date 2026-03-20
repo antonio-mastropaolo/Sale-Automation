@@ -47,22 +47,47 @@ type SortKey = "relevance" | "price-low" | "price-high" | "newest";
 
 const ITEM_TYPES = ["hoodie", "crewneck", "tee", "jacket", "pants"] as const;
 
+/** Generate a product-style placeholder SVG as a data URI */
+function placeholderImage(brand: string, itemType: string, index: number): string {
+  const gradients = [
+    ["#1a1a2e", "#16213e", "#0f3460"],
+    ["#2d132c", "#801336", "#c72c41"],
+    ["#1b262c", "#0f4c75", "#3282b8"],
+    ["#2c003e", "#512b58", "#8174a0"],
+    ["#1a1a1a", "#333333", "#4a4a4a"],
+    ["#0d0d0d", "#1a1a2e", "#2d2d44"],
+    ["#1c1c1c", "#2d4059", "#ea5455"],
+    ["#212121", "#323232", "#0d7377"],
+  ];
+  const g = gradients[index % gradients.length];
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+    <defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="${g[0]}"/><stop offset="50%" stop-color="${g[1]}"/><stop offset="100%" stop-color="${g[2]}"/></linearGradient></defs>
+    <rect width="400" height="400" fill="url(#bg)"/>
+    <text x="200" y="170" text-anchor="middle" font-family="system-ui,sans-serif" font-size="28" font-weight="800" fill="rgba(255,255,255,0.9)" letter-spacing="2">${brand.toUpperCase()}</text>
+    <text x="200" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="16" font-weight="500" fill="rgba(255,255,255,0.4)" letter-spacing="4">${itemType.toUpperCase()}</text>
+    <line x1="160" y1="230" x2="240" y2="230" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  </svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
+
 // Simulated search results for demo
 function generateMockResults(query: string): SearchResult[] {
   const q = query.toLowerCase();
   const brands = ["Supreme", "Nike", "Jordan", "Stussy", "Palace", "Arc'teryx", "Balenciaga", "New Balance"];
   const conditions = ["New with tags", "Like new", "Good", "Fair"];
   const sizes = ["XS", "S", "M", "L", "XL"];
+  const itemTypes = ["Hoodie", "Crewneck", "Tee", "Jacket", "Pants"];
 
   return Array.from({ length: 24 }, (_, i) => {
     const brand = brands[i % brands.length];
     const platform = PLATFORMS[i % PLATFORMS.length];
     const basePrice = 50 + Math.floor(Math.random() * 400);
     const hasDiscount = Math.random() > 0.6;
+    const itemType = itemTypes[i % 5];
 
     return {
       id: `result-${i}`,
-      title: `${brand} ${q.split(" ").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")} ${["Hoodie", "Crewneck", "Tee", "Jacket", "Pants"][i % 5]} ${["SS24", "FW23", "SS23", "Archive"][i % 4]}`,
+      title: `${brand} ${q.split(" ").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")} ${itemType} ${["SS24", "FW23", "SS23", "Archive"][i % 4]}`,
       price: basePrice,
       originalPrice: hasDiscount ? basePrice + Math.floor(Math.random() * 100) : undefined,
       platform: platform.label,
@@ -71,7 +96,7 @@ function generateMockResults(query: string): SearchResult[] {
       condition: conditions[i % conditions.length],
       size: sizes[i % sizes.length],
       brand,
-      images: [],
+      images: [placeholderImage(brand, itemType, i)],
       listingUrl: "#",
       likes: Math.floor(Math.random() * 50),
       views: Math.floor(Math.random() * 200),
