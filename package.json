@@ -24,7 +24,11 @@
     "qa:state": "QA_AGENT=state npx playwright test tests/gui-audit/qa.spec.ts --project=gui-audit",
     "qa:baselines": "QA_UPDATE_BASELINES=true QA_AGENT=regression npx playwright test tests/gui-audit/qa.spec.ts --project=gui-audit",
     "qa:a11y": "QA_AGENT=a11y npx playwright test tests/gui-audit/qa.spec.ts --project=gui-audit",
-    "qa:network": "QA_AGENT=network npx playwright test tests/gui-audit/qa.spec.ts --project=gui-audit"
+    "qa:network": "QA_AGENT=network npx playwright test tests/gui-audit/qa.spec.ts --project=gui-audit",
+    "watch": "npx ts-node tests/gui-watch/session-recorder.ts",
+    "watch:analyze": "npx ts-node tests/gui-watch/session-analyzer.ts",
+    "watch:run": "npx ts-node tests/gui-watch/test-runner.ts",
+    "watch:all": "npx ts-node tests/gui-watch/run-all.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.2.0",
