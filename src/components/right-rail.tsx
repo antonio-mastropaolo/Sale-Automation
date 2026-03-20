@@ -144,7 +144,7 @@ export function RightRail() {
   /* ── Collapsed ── */
   if (collapsed) {
     return (
-      <aside className="sticky top-0 hidden h-screen w-10 shrink-0 flex-col items-center border-l border-white/[0.06] bg-[var(--card)]/60 backdrop-blur-sm py-3 gap-2.5 xl:flex">
+      <aside className="sticky top-0 hidden h-screen w-10 shrink-0 flex-col items-center border-l border-white/[0.06] bg-[#0a0a12] py-3 gap-2.5 xl:flex">
         <button onClick={toggleCollapsed} title="Expand" className="flex h-7 w-7 items-center justify-center rounded-md text-white/40 hover:bg-white/[0.06] hover:text-white/70 transition-colors">
           <PanelRightOpen className="h-3.5 w-3.5" />
         </button>
@@ -161,7 +161,7 @@ export function RightRail() {
 
   /* ── Expanded ── */
   return (
-    <aside className="sticky top-0 hidden h-screen w-[260px] shrink-0 flex-col border-l border-white/[0.06] bg-[var(--card)]/60 backdrop-blur-sm xl:flex 2xl:w-[280px]">
+    <aside className="sticky top-0 hidden h-screen w-[260px] shrink-0 flex-col border-l border-white/[0.06] bg-[#0a0a12] xl:flex 2xl:w-[280px]">
 
       {/* Header */}
       <div className="flex items-center gap-2 border-b border-white/[0.06] px-3.5 py-2.5 shrink-0">
