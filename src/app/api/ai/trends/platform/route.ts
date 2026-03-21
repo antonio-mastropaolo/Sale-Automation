@@ -1,3 +1,4 @@
+export const maxDuration = 30;
 import { NextRequest, NextResponse } from "next/server";
 import { getAIClient } from "@/lib/settings";
 import { parseAIJson } from "@/lib/ai-utils";

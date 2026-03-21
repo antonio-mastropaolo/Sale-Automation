@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { enhanceDescription, optimizeForAllPlatforms, Platform } from "@/lib/ai";
 
+export const maxDuration = 30;
+
 export async function POST(request: NextRequest) {
   // Body size guard
   const contentLength = parseInt(request.headers.get("content-length") || "0");
