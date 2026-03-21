@@ -245,7 +245,7 @@ function TrendSection<T>({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
         {visible.map((item, i) => (
           <div key={i} className={`${expandedIndex === i ? "col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-4" : ""}`}>
-            <div onClick={() => setExpandedIndex(expandedIndex === i ? null : i)} className="cursor-pointer">
+            <div onClick={() => setExpandedIndex(expandedIndex === i ? null : i)} className="cursor-pointer h-full">
               {renderCard(item, i, expandedIndex === i)}
             </div>
             {expandedIndex === i && (
@@ -323,7 +323,7 @@ export default function TrendsPage() {
         renderCard={(cat) => {
           const heat = getHeatColor(cat.heat);
           return (
-            <div className="rounded-xl bg-card p-4 space-y-2.5 card-hover">
+            <div className="rounded-xl bg-card p-4 space-y-2.5 card-hover h-full flex flex-col">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-[13px] truncate pr-2">{cat.name}</h3>
                 <Badge variant="outline" className={`text-[10px] font-bold shrink-0 ${heat.text}`}>{cat.heat}</Badge>
@@ -331,8 +331,8 @@ export default function TrendsPage() {
               <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                 <div className={`h-full rounded-full ${heat.bar}`} style={{ width: `${cat.heat}%` }} />
               </div>
-              <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">{cat.description}</p>
-              <div className="flex items-center justify-between gap-2">
+              <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2 flex-1">{cat.description}</p>
+              <div className="flex items-center justify-between gap-2 mt-auto pt-1">
                 <DirectionBadge direction={cat.trendDirection} />
                 <CompetitionBadge level={cat.competitionLevel} />
               </div>
@@ -401,7 +401,7 @@ export default function TrendsPage() {
         renderCard={(brand, idx) => {
           const heat = getHeatColor(brand.heat);
           return (
-            <div className="rounded-xl bg-card p-4 space-y-2.5 card-hover">
+            <div className="rounded-xl bg-card p-4 space-y-2.5 card-hover h-full flex flex-col">
               <div className="flex items-center gap-2.5">
                 <div className={`w-9 h-9 rounded-full ${getBrandColor(idx)} flex items-center justify-center text-white font-bold text-xs shrink-0`}>
                   {brand.name.charAt(0).toUpperCase()}
@@ -452,7 +452,7 @@ export default function TrendsPage() {
         icon={<Zap className="h-5 w-5 text-orange-500" />}
         items={data.hotItems}
         renderCard={(item) => (
-          <div className="rounded-xl bg-card overflow-hidden card-hover">
+          <div className="rounded-xl bg-card overflow-hidden card-hover h-full flex flex-col">
             {/* Product image placeholder */}
             <div className="h-28 bg-gradient-to-br from-orange-500/10 to-amber-500/5 flex items-center justify-center relative">
               <ShoppingBag className="h-10 w-10 text-muted-foreground/10" />
@@ -461,10 +461,10 @@ export default function TrendsPage() {
                 <DirectionBadge direction={item.trendDirection} />
               </div>
             </div>
-            <div className="p-3.5 space-y-2">
+            <div className="p-3.5 space-y-2 flex-1 flex flex-col">
               <h3 className="font-semibold text-[13px] leading-tight line-clamp-2">{item.name}</h3>
-              <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">{item.description}</p>
-              <div className="flex items-center justify-between pt-1 border-t border-border">
+              <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2 flex-1">{item.description}</p>
+              <div className="flex items-center justify-between pt-1 border-t border-border mt-auto">
                 <CompetitionBadge level={item.competitionLevel} />
                 <span className="text-[10px] text-muted-foreground">{item.sellThroughRate || "—"}</span>
               </div>
@@ -513,7 +513,7 @@ export default function TrendsPage() {
         icon={<Gem className="h-5 w-5 text-emerald-500" />}
         items={data.sleeperPicks}
         renderCard={(pick) => (
-          <div className="rounded-xl bg-card overflow-hidden card-hover relative">
+          <div className="rounded-xl bg-card overflow-hidden card-hover relative h-full flex flex-col">
             {/* Product image placeholder with emerald gradient */}
             <div className="h-24 bg-gradient-to-br from-emerald-500/10 to-teal-500/5 flex items-center justify-center relative">
               <Gem className="h-8 w-8 text-emerald-500/15" />
@@ -522,10 +522,10 @@ export default function TrendsPage() {
                 <Badge variant="outline" className={`absolute top-2 left-2 text-[9px] px-1.5 py-0 ${RISK_COLORS[pick.riskLevel] || ""}`}>{pick.riskLevel} risk</Badge>
               )}
             </div>
-            <div className="p-3.5 space-y-2">
-              <h3 className="font-semibold text-[13px]">{pick.name}</h3>
-              <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">{pick.reasoning}</p>
-              <div className="flex items-center justify-between pt-1 border-t border-border">
+            <div className="p-3.5 space-y-2 flex-1 flex flex-col">
+              <h3 className="font-semibold text-[13px] line-clamp-2">{pick.name}</h3>
+              <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2 flex-1">{pick.reasoning}</p>
+              <div className="flex items-center justify-between pt-1 border-t border-border mt-auto">
                 {pick.currentAvgPrice && <span className="text-[11px] font-semibold">{pick.currentAvgPrice}</span>}
                 {pick.timeframe && <span className="text-[10px] text-muted-foreground flex items-center gap-0.5"><Clock className="h-3 w-3" /> {pick.timeframe}</span>}
               </div>
