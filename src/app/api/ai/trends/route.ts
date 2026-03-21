@@ -92,7 +92,7 @@ export async function GET(_request: NextRequest) {
     const response = await client.chat.completions.create(
       {
         model: fastModel,
-        ...tokenParams(fastModel, 4096),
+        ...tokenParams(fastModel, 2048),
         messages: [{ role: "user", content: prompt }],
       },
       { signal: controller.signal }
