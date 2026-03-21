@@ -48,390 +48,87 @@
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════
-   COLOR PALETTE — iOS-inspired defaults
+   COLOR PALETTE — Vercel-inspired: clean black & white
    ══════════════════════════════════════════════════════════════════════════════ */
 
 :root {
-  --background: #f2f2f7;
-  --foreground: #000000;
+  --background: #ffffff;
+  --foreground: #0a0a0a;
   --card: #ffffff;
-  --card-foreground: #000000;
+  --card-foreground: #0a0a0a;
   --popover: #ffffff;
-  --popover-foreground: #000000;
-  --primary: #007aff;
-  --primary-foreground: #ffffff;
-  --secondary: #e5e5ea;
-  --secondary-foreground: #1c1c1e;
-  --muted: #e5e5ea;
-  --muted-foreground: #8e8e93;
-  --accent: #e8f0fe;
-  --accent-foreground: #0055d4;
-  --destructive: #ff3b30;
-  --success: #10b981;
-  --warning: #f59e0b;
-  --border: rgba(0, 0, 0, 0.08);
-  --input: #e5e5ea;
-  --ring: #007aff;
-  --chart-1: #007aff;
-  --chart-2: #34c759;
-  --chart-3: #ff9500;
-  --chart-4: #af52de;
-  --chart-5: #ff3b30;
-  --radius: 0.75rem;
-  --sidebar: rgba(242, 242, 247, 0.8);
-  --sidebar-foreground: #3c3c43;
-  --sidebar-primary: #007aff;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: rgba(0, 122, 255, 0.1);
-  --sidebar-accent-foreground: #007aff;
-  --sidebar-border: rgba(0, 0, 0, 0.06);
-  --sidebar-ring: #007aff;
-
-  /* Layout-aware variables (defaults = "default" style) */
-  --card-radius: 1rem;
-  --btn-radius: 0.75rem;
-  --card-shadow: none;
-  --card-border-style: 1px solid var(--border);
-  --card-hover-scale: 1;
-  --card-hover-shadow: none;
-  --sidebar-blur: none;
-  --sidebar-bg: var(--sidebar);
-  --nav-radius: 0.75rem;
-  --spacing-card: 1.25rem;
-  --btn-press: none;
+  --popover-foreground: #0a0a0a;
+  --primary: #0a0a0a;
+  --primary-foreground: #fafafa;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #0a0a0a;
+  --muted: #f5f5f5;
+  --muted-foreground: #737373;
+  --accent: #f5f5f5;
+  --accent-foreground: #0a0a0a;
+  --destructive: #ef4444;
+  --success: #22c55e;
+  --warning: #eab308;
+  --border: #e5e5e5;
+  --input: #e5e5e5;
+  --ring: #0a0a0a;
+  --chart-1: #0a0a0a;
+  --chart-2: #22c55e;
+  --chart-3: #eab308;
+  --chart-4: #a855f7;
+  --chart-5: #ef4444;
+  --radius: 0.5rem;
+  --sidebar: #fafafa;
+  --sidebar-foreground: #0a0a0a;
+  --sidebar-primary: #0a0a0a;
+  --sidebar-primary-foreground: #fafafa;
+  --sidebar-accent: #f5f5f5;
+  --sidebar-accent-foreground: #0a0a0a;
+  --sidebar-border: #e5e5e5;
+  --sidebar-ring: #0a0a0a;
 }
 
 .dark {
-  --background: #000000;
-  --foreground: #ffffff;
-  --card: #1c1c1e;
-  --card-foreground: #ffffff;
-  --popover: #2c2c2e;
-  --popover-foreground: #ffffff;
-  --primary: #0a84ff;
-  --primary-foreground: #ffffff;
-  --secondary: #2c2c2e;
-  --secondary-foreground: #e5e5ea;
-  --muted: #2c2c2e;
-  --muted-foreground: #8e8e93;
-  --accent: #1a3a5c;
-  --accent-foreground: #64b5f6;
-  --destructive: #ff453a;
-  --success: #059669;
-  --warning: #d97706;
-  --border: rgba(255, 255, 255, 0.1);
-  --input: #2c2c2e;
-  --ring: #0a84ff;
-  --chart-1: #0a84ff;
-  --chart-2: #30d158;
-  --chart-3: #ff9f0a;
-  --chart-4: #bf5af2;
-  --chart-5: #ff453a;
-  --sidebar: rgba(0, 0, 0, 0.8);
-  --sidebar-foreground: #e5e5ea;
-  --sidebar-primary: #0a84ff;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: rgba(10, 132, 255, 0.15);
-  --sidebar-accent-foreground: #0a84ff;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-ring: #0a84ff;
+  --background: #0a0a0a;
+  --foreground: #fafafa;
+  --card: #111111;
+  --card-foreground: #fafafa;
+  --popover: #111111;
+  --popover-foreground: #fafafa;
+  --primary: #fafafa;
+  --primary-foreground: #0a0a0a;
+  --secondary: #1a1a1a;
+  --secondary-foreground: #fafafa;
+  --muted: #1a1a1a;
+  --muted-foreground: #a3a3a3;
+  --accent: #1a1a1a;
+  --accent-foreground: #fafafa;
+  --destructive: #ef4444;
+  --success: #22c55e;
+  --warning: #eab308;
+  --border: #262626;
+  --input: #262626;
+  --ring: #fafafa;
+  --chart-1: #fafafa;
+  --chart-2: #22c55e;
+  --chart-3: #eab308;
+  --chart-4: #a855f7;
+  --chart-5: #ef4444;
+  --sidebar: #0a0a0a;
+  --sidebar-foreground: #fafafa;
+  --sidebar-primary: #fafafa;
+  --sidebar-primary-foreground: #0a0a0a;
+  --sidebar-accent: #1a1a1a;
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-border: #262626;
+  --sidebar-ring: #fafafa;
 }
 
-/* ══════════════════════════════════════════════════════════════════════════════
-   LAYOUT STYLE OVERRIDES
-   Applied via data-layout attribute on <html>. Each layout changes shape,
-   spacing, shadows, and feel while inheriting the active color palette.
-   ══════════════════════════════════════════════════════════════════════════════ */
 
-/* ── iOS Style ─────────────────────────────────────────────────────────────── */
-[data-layout="ios"] {
-  --card-radius: 1.5rem;
-  --btn-radius: 0.75rem;
-  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
-  --card-border-style: 1px solid rgba(0, 0, 0, 0.08);
-  --card-hover-scale: 1.008;
-  --card-hover-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --sidebar-blur: saturate(180%) blur(20px);
-  --sidebar-bg: rgba(255, 255, 255, 0.72);
-  --nav-radius: 0.625rem;
-  --spacing-card: 1.5rem;
-  --btn-press: translateY(1px);
-}
-[data-layout="ios"]:where(.dark, .dark *),
-[data-layout="ios"] :where(.dark, .dark *) {
-  --sidebar-bg: rgba(28, 28, 30, 0.72);
-  --card-border-style: 1px solid rgba(255, 255, 255, 0.1);
-  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-  --card-hover-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
 
-/* ── Material Design ───────────────────────────────────────────────────────── */
-[data-layout="material"] {
-  --card-radius: 0.25rem;
-  --btn-radius: 0.25rem;
-  --card-shadow: 0 2px 1px -1px rgba(0,0,0,0.2), 0 1px 1px rgba(0,0,0,0.14), 0 1px 3px rgba(0,0,0,0.12);
-  --card-border-style: none;
-  --card-hover-scale: 1;
-  --card-hover-shadow: 0 3px 3px -2px rgba(0,0,0,0.2), 0 3px 4px rgba(0,0,0,0.14), 0 1px 8px rgba(0,0,0,0.12);
-  --sidebar-blur: none;
-  --sidebar-bg: var(--sidebar);
-  --nav-radius: 9999px;
-  --spacing-card: 1rem;
-  --btn-press: none;
-}
-[data-layout="material"]:where(.dark, .dark *),
-[data-layout="material"] :where(.dark, .dark *) {
-  --card-shadow: 0 2px 1px -1px rgba(0,0,0,0.4), 0 1px 1px rgba(0,0,0,0.28), 0 1px 3px rgba(0,0,0,0.24);
-  --card-hover-shadow: 0 3px 3px -2px rgba(0,0,0,0.4), 0 3px 4px rgba(0,0,0,0.28), 0 1px 8px rgba(0,0,0,0.24);
-}
 
-/* ── Flat Design ───────────────────────────────────────────────────────────── */
-[data-layout="flat"] {
-  --card-radius: 0;
-  --btn-radius: 0;
-  --card-shadow: none;
-  --card-border-style: 2px solid var(--border);
-  --card-hover-scale: 1;
-  --card-hover-shadow: none;
-  --sidebar-blur: none;
-  --sidebar-bg: var(--sidebar);
-  --nav-radius: 0;
-  --spacing-card: 1rem;
-  --btn-press: none;
-}
 
-/* ── Neumorphism (Soft UI) ─────────────────────────────────────────────────── */
-[data-layout="neumorphism"] {
-  --card-radius: 1.25rem;
-  --btn-radius: 0.75rem;
-  --card-shadow: 6px 6px 12px rgba(0,0,0,0.08), -6px -6px 12px rgba(255,255,255,0.8);
-  --card-border-style: none;
-  --card-hover-scale: 1;
-  --card-hover-shadow: 4px 4px 8px rgba(0,0,0,0.1), -4px -4px 8px rgba(255,255,255,0.9);
-  --sidebar-blur: none;
-  --sidebar-bg: var(--background);
-  --nav-radius: 0.625rem;
-  --spacing-card: 1.25rem;
-  --btn-press: none;
-}
-[data-layout="neumorphism"]:where(.dark, .dark *),
-[data-layout="neumorphism"] :where(.dark, .dark *) {
-  --card-shadow: 6px 6px 12px rgba(0,0,0,0.35), -6px -6px 12px rgba(255,255,255,0.04);
-  --card-hover-shadow: 4px 4px 8px rgba(0,0,0,0.4), -4px -4px 8px rgba(255,255,255,0.06);
-}
 
-/* ── Glassmorphism ─────────────────────────────────────────────────────────── */
-[data-layout="glassmorphism"] {
-  --card-radius: 1.25rem;
-  --btn-radius: 0.75rem;
-  --card-shadow: 0 8px 32px rgba(0,0,0,0.08);
-  --card-border-style: 1px solid rgba(255,255,255,0.3);
-  --card-hover-scale: 1.005;
-  --card-hover-shadow: 0 8px 32px rgba(0,0,0,0.12);
-  --sidebar-blur: saturate(180%) blur(24px);
-  --sidebar-bg: rgba(255,255,255,0.25);
-  --nav-radius: 0.625rem;
-  --spacing-card: 1.25rem;
-  --btn-press: translateY(0.5px);
-}
-[data-layout="glassmorphism"]:where(.dark, .dark *),
-[data-layout="glassmorphism"] :where(.dark, .dark *) {
-  --sidebar-bg: rgba(255,255,255,0.06);
-  --card-border-style: 1px solid rgba(255,255,255,0.1);
-  --card-shadow: 0 8px 32px rgba(0,0,0,0.3);
-  --card-hover-shadow: 0 8px 32px rgba(0,0,0,0.4);
-}
-
-/* ── Skeuomorphism — tactile, textured, real-world depth ──────────────────── */
-[data-layout="skeuomorphism"] {
-  --card-radius: 0.5rem;
-  --btn-radius: 0.5rem;
-  --card-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 2px 4px rgba(0,0,0,0.2), 0 4px 8px rgba(0,0,0,0.1);
-  --card-border-style: 1px solid rgba(0,0,0,0.18);
-  --card-hover-scale: 1;
-  --card-hover-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 4px 12px rgba(0,0,0,0.25), 0 2px 4px rgba(0,0,0,0.15);
-  --sidebar-blur: none;
-  --sidebar-bg: linear-gradient(180deg, #f7f7f7 0%, #e8e8e8 100%);
-  --nav-radius: 0.375rem;
-  --spacing-card: 1rem;
-  --btn-press: translateY(1px);
-  --background: #e0ddd5;
-  --card: #f5f4f0;
-  --border: rgba(0,0,0,0.15);
-  --sidebar-border: rgba(0,0,0,0.12);
-}
-[data-layout="skeuomorphism"]:where(.dark, .dark *),
-[data-layout="skeuomorphism"] :where(.dark, .dark *) {
-  --background: #1a1a1a;
-  --card: #2a2a28;
-  --sidebar-bg: linear-gradient(180deg, #2c2c2a 0%, #1e1e1c 100%);
-  --card-shadow: 0 1px 0 rgba(255,255,255,0.08) inset, 0 2px 4px rgba(0,0,0,0.4), 0 4px 8px rgba(0,0,0,0.3);
-  --card-hover-shadow: 0 1px 0 rgba(255,255,255,0.08) inset, 0 4px 12px rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.35);
-  --card-border-style: 1px solid rgba(255,255,255,0.08);
-  --border: rgba(255,255,255,0.08);
-  --sidebar-border: rgba(255,255,255,0.06);
-}
-
-/* ══════════════════════════════════════════════════════════════════════════════
-   LAYOUT UTILITY CLASS
-   Wrapped in @layer components so Tailwind utilities can override when set.
-   ══════════════════════════════════════════════════════════════════════════════ */
-
-@layer components {
-  .layout-card {
-    border-radius: var(--card-radius);
-    box-shadow: var(--card-shadow);
-    border: var(--card-border-style);
-    background: var(--card);
-    color: var(--card-foreground);
-    padding: var(--spacing-card);
-  }
-}
-
-/* Apply layout-aware radius and shadows to common card patterns.
-   This makes design style switches actually visible across all pages. */
-[data-layout] .bg-card,
-[data-layout] [class*="bg-card"] {
-  border-radius: var(--card-radius);
-  box-shadow: var(--card-shadow);
-}
-
-/* Buttons pick up the layout button radius */
-[data-layout] button:not([class*="rounded-full"]),
-[data-layout] a[class*="rounded-lg"],
-[data-layout] a[class*="rounded-xl"] {
-  border-radius: var(--btn-radius);
-}
-
-/* Nav items pick up layout nav radius */
-[data-layout] nav a {
-  border-radius: var(--nav-radius) !important;
-}
-
-/* ── iOS: glass sidebar + hover scale + press effect ──────────────────────── */
-[data-layout="ios"] .layout-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-[data-layout="ios"] .layout-card:hover {
-  transform: scale(var(--card-hover-scale));
-  box-shadow: var(--card-hover-shadow, var(--card-shadow));
-}
-[data-layout="ios"] aside {
-  backdrop-filter: var(--sidebar-blur);
-  -webkit-backdrop-filter: var(--sidebar-blur);
-  background: var(--sidebar-bg) !important;
-}
-[data-layout="ios"] button:active,
-[data-layout="ios"] a:active {
-  transform: var(--btn-press);
-}
-
-/* ── Material: state-layer hover on cards, pill nav ───────────────────────── */
-[data-layout="material"] .layout-card {
-  position: relative;
-  overflow: hidden;
-}
-[data-layout="material"] .layout-card::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: var(--primary);
-  opacity: 0;
-  transition: opacity 0.15s ease;
-  pointer-events: none;
-}
-[data-layout="material"] .layout-card:hover::after {
-  opacity: 0.06;
-}
-[data-layout="material"] .layout-card:active::after {
-  opacity: 0.1;
-}
-[data-layout="material"] nav a {
-  border-radius: var(--nav-radius) !important;
-}
-
-/* Material elevation utilities */
-[data-layout="material"] .elevation-1 {
-  box-shadow: 0 2px 1px -1px rgba(0,0,0,0.2), 0 1px 1px rgba(0,0,0,0.14), 0 1px 3px rgba(0,0,0,0.12);
-}
-[data-layout="material"] .elevation-2 {
-  box-shadow: 0 3px 1px -2px rgba(0,0,0,0.2), 0 2px 2px rgba(0,0,0,0.14), 0 1px 5px rgba(0,0,0,0.12);
-}
-[data-layout="material"] .elevation-4 {
-  box-shadow: 0 2px 4px -1px rgba(0,0,0,0.2), 0 4px 5px rgba(0,0,0,0.14), 0 1px 10px rgba(0,0,0,0.12);
-}
-
-/* ── Flat: bold borders, no decoration, square nav ────────────────────────── */
-[data-layout="flat"] .layout-card {
-  transition: border-color 0.15s ease;
-}
-[data-layout="flat"] .layout-card:hover {
-  border-color: var(--primary);
-}
-[data-layout="flat"] nav a {
-  border-radius: 0 !important;
-}
-
-/* ── Neumorphism: pressed/inset buttons, sunken nav ───────────────────────── */
-[data-layout="neumorphism"] .layout-card {
-  transition: box-shadow 0.2s ease;
-}
-[data-layout="neumorphism"] .layout-card:hover {
-  box-shadow: var(--card-hover-shadow);
-}
-[data-layout="neumorphism"] button {
-  box-shadow: 3px 3px 6px rgba(0,0,0,0.06), -3px -3px 6px rgba(255,255,255,0.7);
-}
-[data-layout="neumorphism"] button:active {
-  box-shadow: inset 3px 3px 6px rgba(0,0,0,0.06), inset -3px -3px 6px rgba(255,255,255,0.7);
-}
-[data-layout="neumorphism"] aside {
-  background: var(--background) !important;
-  box-shadow: 4px 0 12px rgba(0,0,0,0.06);
-  color: var(--foreground);
-}
-
-/* ── Glassmorphism: frosted glass cards + sidebar ─────────────────────────── */
-[data-layout="glassmorphism"] .layout-card {
-  backdrop-filter: saturate(160%) blur(16px);
-  -webkit-backdrop-filter: saturate(160%) blur(16px);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-[data-layout="glassmorphism"] .layout-card:hover {
-  transform: scale(var(--card-hover-scale));
-  box-shadow: var(--card-hover-shadow);
-}
-[data-layout="glassmorphism"] aside {
-  backdrop-filter: var(--sidebar-blur);
-  -webkit-backdrop-filter: var(--sidebar-blur);
-  background: var(--sidebar-bg) !important;
-}
-:root:not(.dark) [data-layout="glassmorphism"] aside {
-  background: rgba(242, 242, 247, 0.85) !important;
-}
-[data-layout="glassmorphism"] button:active,
-[data-layout="glassmorphism"] a:active {
-  transform: var(--btn-press);
-}
-
-/* ── Skeuomorphism: textured gradients, embossed buttons, leather feel ───── */
-[data-layout="skeuomorphism"] aside {
-  background: var(--sidebar-bg) !important;
-  border-right: 1px solid rgba(0,0,0,0.12);
-}
-[data-layout="skeuomorphism"] .layout-card {
-  background-image: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 60%);
-  background-blend-mode: overlay;
-  transition: box-shadow 0.2s ease;
-}
-[data-layout="skeuomorphism"] .layout-card:hover {
-  box-shadow: var(--card-hover-shadow);
-}
-[data-layout="skeuomorphism"] button:active,
-[data-layout="skeuomorphism"] a:active {
-  transform: var(--btn-press);
-}
 
 /* ══════════════════════════════════════════════════════════════════════════════
    BASE STYLES
