@@ -341,31 +341,31 @@ export function Sidebar({ className }: { className?: string }) {
         </button>
 
         {userMenuOpen && (
-          <div className="absolute bottom-full mb-1 left-2 right-2 rounded-xl bg-[#1c1c1e] dark:bg-[#111113] border border-white/10 shadow-2xl overflow-hidden z-50" style={{ animation: "fadeIn 150ms ease-out" }}>
-            <div className="px-3 py-2 border-b border-white/[0.08]">
-              <p className="text-[11px] font-semibold text-white truncate">{userName}</p>
-              <p className="text-[9px] text-white/40 truncate">{userEmail}</p>
+          <div className="absolute bottom-full mb-1 left-2 right-2 rounded-xl bg-popover border border-border shadow-2xl overflow-hidden z-50" style={{ animation: "fadeIn 150ms ease-out" }}>
+            <div className="px-3 py-2 border-b border-border">
+              <p className="text-[11px] font-semibold text-popover-foreground truncate">{userName}</p>
+              <p className="text-[9px] text-muted-foreground truncate">{userEmail}</p>
             </div>
             <div className="py-1">
-              <button onClick={handleProfilePicUpload} className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-white/80 hover:bg-white/[0.08] transition-colors">
-                <Camera className="h-3 w-3 text-blue-400" />
+              <button onClick={handleProfilePicUpload} className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-popover-foreground hover:bg-accent transition-colors">
+                <Camera className="h-3 w-3 text-blue-500" />
                 {profilePic ? "Change picture" : "Upload picture"}
               </button>
-              <button onClick={() => { toggleDark(); setUserMenuOpen(false); }} className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-white/80 hover:bg-white/[0.08] transition-colors">
-                {dark ? <Sun className="h-3 w-3 text-amber-400" /> : <Moon className="h-3 w-3 text-amber-400" />}
+              <button onClick={() => { toggleDark(); setUserMenuOpen(false); }} className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-popover-foreground hover:bg-accent transition-colors">
+                {dark ? <Sun className="h-3 w-3 text-amber-500" /> : <Moon className="h-3 w-3 text-amber-500" />}
                 {dark ? "Light mode" : "Dark mode"}
               </button>
-              <button onClick={() => { const next = !collapsed; setCollapsed(next); try { localStorage.setItem("sidebar-collapsed", String(next)); } catch {} setUserMenuOpen(false); }} className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-white/80 hover:bg-white/[0.08] transition-colors">
-                <Columns2 className="h-3 w-3 text-blue-400" />
+              <button onClick={() => { const next = !collapsed; setCollapsed(next); try { localStorage.setItem("sidebar-collapsed", String(next)); } catch {} setUserMenuOpen(false); }} className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-popover-foreground hover:bg-accent transition-colors">
+                <Columns2 className="h-3 w-3 text-blue-500" />
                 {collapsed ? "Expand sidebar" : "Compact sidebar"}
               </button>
-              <div className="h-px bg-white/[0.08] my-0.5" />
-              <button onClick={() => { setUserMenuOpen(false); window.location.href = "/settings"; }} className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-white/80 hover:bg-white/[0.08] transition-colors">
-                <Settings2 className="h-3 w-3 text-white/40" />Settings
+              <div className="h-px bg-border my-0.5" />
+              <button onClick={() => { setUserMenuOpen(false); window.location.href = "/settings"; }} className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-popover-foreground hover:bg-accent transition-colors">
+                <Settings2 className="h-3 w-3 text-muted-foreground" />Settings
               </button>
-              <div className="h-px bg-white/[0.08] my-0.5" />
+              <div className="h-px bg-border my-0.5" />
               <button onClick={() => { fetch("/api/auth/logout", { method: "POST" }).then(() => { window.location.href = "/login"; }); }}
-                className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-red-400 hover:bg-red-500/15 transition-colors">
+                className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-red-500 hover:bg-red-500/10 transition-colors">
                 <LogOut className="h-3 w-3" />Sign out
               </button>
             </div>
