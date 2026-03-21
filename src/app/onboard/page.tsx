@@ -25,7 +25,7 @@ import { PlatformAuthButtons } from "@/components/platform-auth-buttons";
 
 const AI_PROVIDERS = [
   { id: "openai", name: "OpenAI", models: ["gpt-5.4", "gpt-5.2", "gpt-5-mini", "gpt-4o", "gpt-4o-mini", "o4-mini"] },
-  { id: "google", name: "Google Gemini", models: ["gemini-3.1-pro-preview", "gemini-2.5-flash", "gemini-2.5-pro"] },
+  { id: "google", name: "Google Gemini", models: ["gemini-3.1-pro-preview", "gemini-2.5-pro", "gemini-2.5-flash"] },
   { id: "groq", name: "Groq", models: ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"] },
   { id: "together", name: "Together AI", models: ["meta-llama/Llama-3.3-70B-Instruct-Turbo"] },
   { id: "openrouter", name: "OpenRouter", models: ["anthropic/claude-sonnet-4", "openai/gpt-5.4"] },
@@ -42,6 +42,17 @@ const PLATFORMS = [
   { id: "facebook", name: "Facebook Marketplace", color: "#1877f2" },
   { id: "vestiaire", name: "Vestiaire Collective", color: "#b8860b" },
 ];
+
+const PLATFORM_SET_PASSWORD: Record<string, string> = {
+  depop: "https://www.depop.com/settings/account/",
+  grailed: "https://www.grailed.com/account/settings",
+  poshmark: "https://poshmark.com/account/info",
+  mercari: "https://www.mercari.com/mypage/settings/",
+  ebay: "https://accountsettings.ebay.com/uas/change-password",
+  vinted: "https://www.vinted.com/member/settings",
+  facebook: "https://www.facebook.com/settings/?tab=security",
+  vestiaire: "https://www.vestiairecollective.com/settings/",
+};
 
 // ═══════════════════════════════════════════════════════════════
 // PAGE
@@ -273,19 +284,24 @@ export default function OnboardPage() {
                               </p>
                             )}
                           </div>
+                          {!connected && (
+                            <PlatformAuthButtons
+                              platform={p.id}
+                              onAuthMethodSelected={(method) => saveWithAuthMethod(p.id, method)}
+                              loading={isSaving}
+                            />
+                          )}
                         </div>
                         {!connected && (
                           <>
-                          <PlatformAuthButtons
-                            platform={p.id}
-                            onAuthMethodSelected={(method) => saveWithAuthMethod(p.id, method)}
-                            loading={isSaving}
-                          />
+                          <p className="text-[10px] text-muted-foreground leading-relaxed">
+                            Use Google/Apple? <a href={PLATFORM_SET_PASSWORD[p.id] || "#"} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Set a password in {p.name} settings</a> first, then enter it below.
+                          </p>
                           <div className="flex gap-2 items-end">
                             <Input
                               value={cred.username}
                               onChange={(e) => updateCred(p.id, "username", e.target.value)}
-                              placeholder="Username / email"
+                              placeholder="Email"
                               className="h-8 text-xs flex-1"
                             />
                             <div className="relative flex-1">

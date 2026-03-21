@@ -53,10 +53,35 @@ import {
   Palette,
   RefreshCw,
   Camera,
+  HelpCircle,
+  ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useHelp } from "@/components/help-context";
 import { PlatformAuthButtons } from "@/components/platform-auth-buttons";
+
+const PLATFORM_SOCIALS: Record<string, string[]> = {
+  depop: ["google", "apple", "facebook"],
+  grailed: ["google", "apple"],
+  poshmark: ["google", "apple", "facebook"],
+  mercari: ["google", "apple", "facebook"],
+  ebay: ["google", "apple"],
+  vinted: ["google", "apple", "facebook"],
+  facebook: ["facebook"],
+  vestiaire: ["google", "apple", "facebook"],
+};
+
+const PLATFORM_SET_PASSWORD_URLS: Record<string, string> = {
+  depop: "https://www.depop.com/settings/account/",
+  grailed: "https://www.grailed.com/account/settings",
+  poshmark: "https://poshmark.com/account/info",
+  mercari: "https://www.mercari.com/mypage/settings/",
+  ebay: "https://accountsettings.ebay.com/uas/change-password",
+  vinted: "https://www.vinted.com/member/settings",
+  facebook: "https://www.facebook.com/settings/?tab=security",
+  vestiaire: "https://www.vestiairecollective.com/settings/",
+};
+
 import { platformBranding } from "@/lib/colors";
 import { THEMES as THEME_MAP, applyTheme as applyThemeFromLib, saveTheme as saveThemeToStorage, getSavedTheme as getSavedThemeFromStorage, DESIGN_STYLES, applyDesignStyle, saveDesignStyle, getSavedDesignStyle } from "@/lib/themes";
 
@@ -101,7 +126,7 @@ const AI_DIRECT_PROVIDERS = [
 ];
 
 const AI_ROUTERS = [
-  { id: "openrouter", name: "OpenRouter", defaultModel: "anthropic/claude-sonnet-4", models: ["anthropic/claude-sonnet-4", "anthropic/claude-haiku-4", "openai/gpt-5.4", "openai/gpt-5-mini", "google/gemini-3.1-pro-preview", "google/gemini-2.5-flash", "meta-llama/llama-3.3-70b", "mistralai/mistral-large"] },
+  { id: "openrouter", name: "OpenRouter", defaultModel: "anthropic/claude-sonnet-4", models: ["anthropic/claude-sonnet-4", "anthropic/claude-haiku-4", "openai/gpt-5.4", "openai/gpt-5-mini", "google/gemini-2.5-pro", "google/gemini-2.5-flash", "meta-llama/llama-3.3-70b", "mistralai/mistral-large"] },
   { id: "litellm", name: "LiteLLM Proxy", defaultModel: "gpt-5.4", models: ["gpt-5.4", "gpt-5-mini", "claude-sonnet-4", "claude-haiku-4", "gemini-2.5-flash", "gemini-2.5-pro", "llama-3.3-70b"] },
 ];
 
@@ -1131,13 +1156,14 @@ function PlatformsTab() {
         </CardContent>
       </Card>
 
-      {/* Platform list */}
-      <div className="grid grid-cols-1 2xl:grid-cols-2 gap-3">
+      {/* Platform list — 2 columns */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         {platforms.map((p) => {
           const info = platformInfo[p.platform];
           if (!info) return null;
           const cred = credentials[p.platform] || { username: "", password: "" };
           const isSaving = saving === p.platform;
+          const supportedSocials = PLATFORM_SOCIALS[p.platform] || [];
 
           return (
             <Card key={p.platform} className="border-0 shadow-sm">
@@ -1146,43 +1172,88 @@ function PlatformsTab() {
                 <div className="flex items-center gap-3">
                   <img src={info.logo} alt={info.name} className="w-10 h-10 rounded-xl shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold">{info.name}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold">{info.name}</p>
+                      {/* Social login icons */}
+                      <div className="flex items-center gap-0.5">
+                        {supportedSocials.includes("google") && (
+                          <span title="Google login supported" className="inline-flex items-center justify-center h-4 w-4 rounded-sm bg-white border border-gray-200">
+                            <svg className="h-2.5 w-2.5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                          </span>
+                        )}
+                        {supportedSocials.includes("apple") && (
+                          <span title="Apple login supported" className="inline-flex items-center justify-center h-4 w-4 rounded-sm bg-black">
+                            <svg className="h-2.5 w-2.5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+                          </span>
+                        )}
+                        {supportedSocials.includes("facebook") && (
+                          <span title="Facebook login supported" className="inline-flex items-center justify-center h-4 w-4 rounded-sm bg-[#1877F2]">
+                            <svg className="h-2.5 w-2.5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                          </span>
+                        )}
+                      </div>
+                    </div>
                     {p.connected ? (
                       <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                         <CheckCircle2 className="h-3 w-3" />
                         Connected{p.username && p.username !== "extension-session" ? ` as ${p.username}` : ""}
+                        {p.authMethod && p.authMethod !== "credentials" && (
+                          <span className="text-[10px] text-muted-foreground ml-1">via {p.authMethod}</span>
+                        )}
                       </p>
                     ) : (
                       <p className="text-xs text-muted-foreground">Not connected</p>
                     )}
                   </div>
-                  {p.connected && (
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-7 text-xs"
-                        disabled={testingPlatform === p.platform}
-                        onClick={() => testConnection(p.platform)}
-                      >
-                        {testingPlatform === p.platform ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Play className="h-3.5 w-3.5 mr-1" />}
-                        Test
-                      </Button>
-                      <Button variant="outline" size="sm" className="h-7 text-xs text-destructive" onClick={() => disconnect(p.platform)}>
-                        Disconnect
-                      </Button>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {!p.connected && (
+                      <PlatformAuthButtons
+                        platform={p.platform}
+                        onAuthMethodSelected={(method) => saveWithAuthMethod(p.platform, method)}
+                        isConnected={p.connected}
+                        connectedMethod={p.authMethod}
+                        loading={isSaving}
+                      />
+                    )}
+                    {p.connected && (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs"
+                          disabled={testingPlatform === p.platform}
+                          onClick={() => testConnection(p.platform)}
+                        >
+                          {testingPlatform === p.platform ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Play className="h-3.5 w-3.5 mr-1" />}
+                          Test
+                        </Button>
+                        <Button variant="outline" size="sm" className="h-7 text-xs text-destructive" onClick={() => disconnect(p.platform)}>
+                          Disconnect
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 </div>
 
-                {/* Auth method buttons */}
-                <PlatformAuthButtons
-                  platform={p.platform}
-                  onAuthMethodSelected={(method) => saveWithAuthMethod(p.platform, method)}
-                  isConnected={p.connected}
-                  connectedMethod={p.authMethod}
-                  loading={isSaving}
-                />
+                {/* Google/Apple login helper — only when not connected */}
+                {!p.connected && PLATFORM_SOCIALS[p.platform]?.length > 0 && (
+                  <div className="rounded-lg bg-blue-500/5 border border-blue-500/10 p-2.5 text-xs space-y-1.5">
+                    <p className="font-medium text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
+                      <HelpCircle className="h-3 w-3" />
+                      Signed up with {PLATFORM_SOCIALS[p.platform].map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(" / ")}?
+                    </p>
+                    <ol className="text-muted-foreground space-y-0.5 pl-4 list-decimal">
+                      <li>
+                        <a href={PLATFORM_SET_PASSWORD_URLS[p.platform] || "#"} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline font-medium inline-flex items-center gap-0.5">
+                          Open {info.name} Account Settings <ExternalLink className="h-2.5 w-2.5" />
+                        </a>
+                      </li>
+                      <li>Go to Security / Password section</li>
+                      <li>Click &quot;Set password&quot; or &quot;Add password&quot;</li>
+                      <li>Come back here and enter that email + password below</li>
+                    </ol>
+                  </div>
+                )}
 
                 {/* Credential fields */}
                 <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2 items-end">
@@ -1191,7 +1262,7 @@ function PlatformsTab() {
                     <Input
                       value={cred.username}
                       onChange={(e) => updateCred(p.platform, "username", e.target.value)}
-                      placeholder={`${info.name} username`}
+                      placeholder={`${info.name} email`}
                       className="h-9 text-sm"
                     />
                   </div>

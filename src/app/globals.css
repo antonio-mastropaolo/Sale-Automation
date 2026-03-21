@@ -128,7 +128,7 @@
   --chart-4: #bf5af2;
   --chart-5: #ff453a;
   --sidebar: rgba(0, 0, 0, 0.8);
-  --sidebar-foreground: #8e8e93;
+  --sidebar-foreground: #e5e5ea;
   --sidebar-primary: #0a84ff;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: rgba(10, 132, 255, 0.15);
@@ -389,6 +389,7 @@
 [data-layout="neumorphism"] aside {
   background: var(--background) !important;
   box-shadow: 4px 0 12px rgba(0,0,0,0.06);
+  color: var(--foreground);
 }
 
 /* ── Glassmorphism: frosted glass cards + sidebar ─────────────────────────── */
@@ -405,6 +406,9 @@
   backdrop-filter: var(--sidebar-blur);
   -webkit-backdrop-filter: var(--sidebar-blur);
   background: var(--sidebar-bg) !important;
+}
+:root:not(.dark) [data-layout="glassmorphism"] aside {
+  background: rgba(242, 242, 247, 0.85) !important;
 }
 [data-layout="glassmorphism"] button:active,
 [data-layout="glassmorphism"] a:active {
@@ -467,6 +471,74 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+}
+
+/* ── Light mode text contrast fix ──────────────────────────────────────────── */
+/* Force all text to use proper foreground colors in light mode */
+:root:not(.dark) {
+  color-scheme: light;
+}
+:root:not(.dark) aside,
+:root:not(.dark) aside * {
+  color: var(--sidebar-foreground, #1c1c1e) !important;
+}
+:root:not(.dark) aside .text-muted-foreground {
+  color: var(--muted-foreground, #8e8e93) !important;
+}
+:root:not(.dark) aside a:hover,
+:root:not(.dark) aside button:hover {
+  color: var(--foreground, #000000) !important;
+}
+/* Main content: ensure labels, stat values, card text are visible */
+:root:not(.dark) p,
+:root:not(.dark) span,
+:root:not(.dark) h1, :root:not(.dark) h2, :root:not(.dark) h3, :root:not(.dark) h4,
+:root:not(.dark) label,
+:root:not(.dark) td, :root:not(.dark) th {
+  color: var(--foreground, #000000);
+}
+:root:not(.dark) .text-muted-foreground {
+  color: var(--muted-foreground, #8e8e93) !important;
+}
+:root:not(.dark) .text-primary {
+  color: var(--primary, #007aff) !important;
+}
+:root:not(.dark) .text-destructive {
+  color: var(--destructive, #ff3b30) !important;
+}
+/* Cards in light mode need visible borders */
+:root:not(.dark) [class*="rounded-xl"],
+:root:not(.dark) [class*="rounded-lg"] {
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+/* ── Dark mode text contrast fix ──────────────────────────────────────────── */
+.dark aside,
+.dark aside * {
+  color: var(--sidebar-foreground, #e5e5ea) !important;
+}
+.dark aside .text-muted-foreground {
+  color: var(--muted-foreground, #8e8e93) !important;
+}
+.dark aside a:hover,
+.dark aside button:hover {
+  color: #ffffff !important;
+}
+.dark p,
+.dark span,
+.dark h1, .dark h2, .dark h3, .dark h4,
+.dark label,
+.dark td, .dark th {
+  color: var(--foreground, #ffffff);
+}
+.dark .text-muted-foreground {
+  color: var(--muted-foreground, #8e8e93) !important;
+}
+.dark .text-primary {
+  color: var(--primary, #0a84ff) !important;
+}
+.dark .text-destructive {
+  color: var(--destructive, #ff453a) !important;
 }
 
 /* Safe-area insets for notched phones */

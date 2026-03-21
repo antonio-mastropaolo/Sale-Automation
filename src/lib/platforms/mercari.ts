@@ -34,8 +34,14 @@ export class MercariAutomation extends PlatformAutomation {
         return { success: false, message: "Too many login attempts on Mercari", errorCode: "network_error", tip: "Wait a few minutes before testing again." };
       }
       if (status === 404) {
-        // API endpoint may not exist — credentials are stored, can't verify
-        return { success: true, message: "Credentials stored for Mercari (direct login verification not available)", tip: "Your credentials are saved securely. They will be used when publishing listings." };
+        // API endpoint may not exist — validate credential format at minimum
+        if (!creds.username || !creds.username.includes("@")) {
+          return { success: false, message: "Mercari email appears invalid", errorCode: "invalid_credentials", tip: "Enter the email you use to log in to Mercari." };
+        }
+        if (!creds.password || creds.password.length < 6) {
+          return { success: false, message: "Mercari password appears too short", errorCode: "invalid_credentials", tip: "Enter your full Mercari password." };
+        }
+        return { success: true, message: "Mercari credentials stored (login API unavailable for direct verification)", tip: "Credentials look valid. Full verification will happen when publishing. If you use Google/Facebook login, set a password in Mercari settings first." };
       }
       return { success: false, message: `Mercari returned HTTP ${status}`, errorCode: "platform_down", tip: "Mercari may be experiencing issues." };
     } catch (err) {

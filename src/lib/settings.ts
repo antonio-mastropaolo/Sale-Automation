@@ -46,7 +46,7 @@ export const AI_PROVIDERS: AIProvider[] = [
     baseURL: "https://generativelanguage.googleapis.com/v1beta/openai",
     defaultModel: "gemini-2.5-flash",
     models: [
-      "gemini-3.1-pro-preview",  // Latest flagship (Feb 2026)
+      "gemini-3.1-pro-preview",  // Latest flagship
       "gemini-2.5-pro",          // Previous flagship
       "gemini-2.5-flash",        // Fast + balanced
     ],
@@ -73,7 +73,7 @@ export const AI_PROVIDERS: AIProvider[] = [
     name: "OpenRouter",
     baseURL: "https://openrouter.ai/api/v1",
     defaultModel: "anthropic/claude-sonnet-4",
-    models: ["anthropic/claude-sonnet-4", "anthropic/claude-haiku-4", "openai/gpt-5.4", "google/gemini-3.1-pro-preview"],
+    models: ["anthropic/claude-sonnet-4", "anthropic/claude-haiku-4", "openai/gpt-5.4", "google/gemini-2.5-pro"],
     supportsVision: true,
   },
   {
@@ -107,6 +107,8 @@ export async function getSettingParsed<T>(key: string, fallback: T): Promise<T> 
   try {
     return JSON.parse(raw) as T;
   } catch {
+    // If it's a string type and raw is already a plain string, return it directly
+    if (typeof fallback === "string") return raw as unknown as T;
     return fallback;
   }
 }

@@ -27,9 +27,52 @@ import {
   Clock,
   AlertTriangle,
   X,
+  ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
 import { heatColor as getHeatColorFn, brandGradient } from "@/lib/colors";
+
+// Relevant website links per category keyword for sourcing & research
+function getCategoryLinks(categoryName: string): { title: string; url: string }[] {
+  const name = categoryName.toLowerCase();
+  const links: { title: string; url: string }[] = [];
+
+  // Platform search links
+  links.push({ title: "Grailed", url: `https://www.grailed.com/shop?query=${encodeURIComponent(categoryName)}` });
+  links.push({ title: "eBay", url: `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(categoryName)}` });
+  links.push({ title: "Depop", url: `https://www.depop.com/search/?q=${encodeURIComponent(categoryName)}` });
+
+  // Category-specific resources
+  if (name.includes("denim") || name.includes("jean") || name.includes("levi")) {
+    links.push({ title: "Heddels (Denim Guide)", url: "https://www.heddels.com" });
+    links.push({ title: "r/rawdenim", url: "https://www.reddit.com/r/rawdenim/" });
+  }
+  if (name.includes("gorpcore") || name.includes("outdoor") || name.includes("technical")) {
+    links.push({ title: "Switchback Travel", url: "https://www.switchbacktravel.com" });
+    links.push({ title: "r/Gorpcore", url: "https://www.reddit.com/r/gorpcore/" });
+  }
+  if (name.includes("y2k") || name.includes("2000")) {
+    links.push({ title: "Y2K Aesthetic Wiki", url: "https://aesthetics.fandom.com/wiki/Y2K" });
+    links.push({ title: "r/VintageFashion", url: "https://www.reddit.com/r/VintageFashion/" });
+  }
+  if (name.includes("luxury") || name.includes("designer") || name.includes("knit")) {
+    links.push({ title: "Vestiaire Collective", url: `https://www.vestiairecollective.com/search/?q=${encodeURIComponent(categoryName)}` });
+    links.push({ title: "The RealReal", url: `https://www.therealreal.com/search?q=${encodeURIComponent(categoryName)}` });
+  }
+  if (name.includes("sport") || name.includes("athletic") || name.includes("retro")) {
+    links.push({ title: "Vintage Sports Guide", url: "https://www.reddit.com/r/VintageNBA/" });
+    links.push({ title: "StockX", url: `https://stockx.com/search?s=${encodeURIComponent(categoryName)}` });
+  }
+  if (name.includes("streetwear") || name.includes("supreme") || name.includes("palace")) {
+    links.push({ title: "StockX", url: `https://stockx.com/search?s=${encodeURIComponent(categoryName)}` });
+    links.push({ title: "r/streetwear", url: "https://www.reddit.com/r/streetwear/" });
+  }
+
+  // Always include Google Trends
+  links.push({ title: "Google Trends", url: `https://trends.google.com/trends/explore?q=${encodeURIComponent(categoryName)}` });
+
+  return links;
+}
 
 // ── Types ──
 
@@ -41,6 +84,7 @@ interface TrendCategory {
   sourcingTips?: string[]; targetBuyer?: string;
   relatedKeywords?: string[]; riskLevel?: string;
   trendDirection?: string;
+  relevantLinks?: { title: string; url: string }[];
 }
 
 interface TrendBrand {
@@ -323,6 +367,28 @@ export default function TrendsPage() {
                 </DetailRow>
               </div>
             ) : null}
+            {/* Relevant Links */}
+            <div className="sm:col-span-2">
+              <DetailRow icon={<ExternalLink className="h-3.5 w-3.5 text-blue-500" />} label="Explore & Source">
+                <div className="flex flex-wrap gap-1.5">
+                  {(cat.relevantLinks && cat.relevantLinks.length > 0
+                    ? cat.relevantLinks
+                    : getCategoryLinks(cat.name)
+                  ).map((link, i) => (
+                    <a
+                      key={i}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded-md bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 transition-colors"
+                    >
+                      <ExternalLink className="h-2.5 w-2.5" />
+                      {link.title}
+                    </a>
+                  ))}
+                </div>
+              </DetailRow>
+            </div>
           </div>
         )}
       />

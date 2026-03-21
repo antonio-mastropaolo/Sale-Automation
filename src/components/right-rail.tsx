@@ -129,15 +129,26 @@ export function RightRail() {
 
   if (AUTH_ROUTES.includes(pathname)) return null;
 
+  // Instead of filtering out, sort matching events to top and mark others as dimmed
   const filteredEvents = useMemo(() => {
     if (!data?.events) return [];
-    if (monitorFilter === "all") return data.events;
-    return data.events.filter((e) => {
-      const meta = EVENT_META[e.type];
-      if (!meta) return monitorFilter === "errors" ? e.severity === "error" : monitorFilter === "success" ? e.severity === "success" : false;
-      return meta.filter === monitorFilter;
-    });
-  }, [data?.events, monitorFilter]);
+    return data.events;
+  }, [data?.events]);
+
+  const isEventMatch = useCallback((e: OpsEvent): boolean => {
+    if (monitorFilter === "all") return true;
+    const meta = EVENT_META[e.type];
+    if (!meta) return monitorFilter === "errors" ? e.severity === "error" : monitorFilter === "success" ? e.severity === "success" : false;
+    return meta.filter === monitorFilter;
+  }, [monitorFilter]);
+
+  const sortedEvents = useMemo(() => {
+    if (monitorFilter === "all") return filteredEvents;
+    // Matching events first, then non-matching — stable sort preserves time order within each group
+    const matched = filteredEvents.filter(isEventMatch);
+    const unmatched = filteredEvents.filter((e) => !isEventMatch(e));
+    return [...matched, ...unmatched];
+  }, [filteredEvents, monitorFilter, isEventMatch]);
 
   const connectedCount = data?.platforms?.connected?.length ?? 0;
 
@@ -190,17 +201,19 @@ export function RightRail() {
         </div>
 
         {/* Event list — limited height, not flex-1 */}
-        <div className="max-h-[200px] overflow-y-auto min-h-0 px-1">
-          {filteredEvents.length === 0 ? (
+        <div className="max-h-[280px] overflow-y-auto min-h-0 px-1">
+          {sortedEvents.length === 0 ? (
             <p className="px-3 py-4 text-center text-[11px] text-white/20">No events</p>
           ) : (
-            filteredEvents.slice(0, 12).map((event) => {
+            sortedEvents.slice(0, 20).map((event) => {
               const meta = EVENT_META[event.type] ?? { label: event.type.replace(/_/g, " "), dot: "bg-white/20", filter: "all" as const };
               const isExpanded = expandedEventId === event.id;
+              const matches = isEventMatch(event);
+              const dimmed = monitorFilter !== "all" && !matches;
               return (
-                <div key={event.id}>
+                <div key={event.id} className={cn("transition-all duration-300", dimmed && "opacity-25 scale-[0.97]")}>
                   <button onClick={() => setExpandedEventId(isExpanded ? null : event.id)}
-                    className={cn("flex w-full items-center gap-2 px-2.5 py-[5px] text-left transition-colors rounded-md hover:bg-white/[0.04]", isExpanded && "bg-white/[0.04]")}>
+                    className={cn("flex w-full items-center gap-2 px-2.5 py-[5px] text-left transition-colors rounded-md hover:bg-white/[0.04]", isExpanded && "bg-white/[0.04]", matches && monitorFilter !== "all" && "bg-white/[0.03]")}>
                     <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", meta.dot)} />
                     <span className="flex-1 truncate text-[11px] text-white/70">
                       <span className="font-medium text-white/90">{meta.label}</span>

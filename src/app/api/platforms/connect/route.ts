@@ -24,7 +24,7 @@ export async function GET() {
           connected: true,
           username,
           updatedAt: c.updatedAt,
-          authMethod: (c as any).authMethod || "credentials",
+          authMethod: c.authMethod || "credentials",
         };
       })
     );
