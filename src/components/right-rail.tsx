@@ -30,6 +30,8 @@ import {
   ExternalLink,
   Wifi,
   WifiOff,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import useSWR from "swr";
@@ -116,6 +118,27 @@ export function RightRail() {
   const [monitorFilter, setMonitorFilter] = useState<FilterKey>("all");
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState(false);
+  const [railDark, setRailDark] = useState(() => {
+    try { return localStorage.getItem("right-rail-dark") === "true"; } catch { return false; }
+  });
+
+  const toggleRailTheme = () => {
+    const next = !railDark;
+    setRailDark(next);
+    try { localStorage.setItem("right-rail-dark", String(next)); } catch {}
+  };
+
+  // Dynamic styles for dark/glass mode
+  const railStyle = railDark
+    ? { background: "rgba(28,28,30,0.88)", backdropFilter: "saturate(180%) blur(40px)", WebkitBackdropFilter: "saturate(180%) blur(40px)" }
+    : { backdropFilter: "saturate(180%) blur(40px)", WebkitBackdropFilter: "saturate(180%) blur(40px)" };
+  const railBg = railDark ? "bg-transparent" : "bg-[var(--sidebar)]";
+  const railText = railDark ? "text-white/80" : "text-[var(--foreground)]";
+  const railMuted = railDark ? "text-white/40" : "text-[var(--muted-foreground)]";
+  const railBorder = railDark ? "border-white/[0.08]" : "border-[var(--border)]";
+  const railCardBg = railDark ? "bg-white/[0.05]" : "bg-[var(--muted)]";
+  const railHover = railDark ? "hover:bg-white/[0.08]" : "hover:bg-[var(--muted)]";
+  const railActive = railDark ? "bg-white/[0.12] text-white" : "bg-[var(--accent)] text-[var(--accent-foreground)]";
 
   useEffect(() => {
     try { const s = localStorage.getItem("right-rail-collapsed"); if (s === "true") setCollapsed(true); } catch {}
@@ -155,7 +178,7 @@ export function RightRail() {
   /* ── Collapsed ── */
   if (collapsed) {
     return (
-      <aside className="sticky top-0 hidden h-screen w-10 shrink-0 flex-col items-center border-l border-[var(--border)] bg-[var(--sidebar)] py-3 gap-2.5 xl:flex" style={{ backdropFilter: "saturate(180%) blur(40px)", WebkitBackdropFilter: "saturate(180%) blur(40px)" }}>
+      <aside className={cn("sticky top-0 hidden h-screen w-10 shrink-0 flex-col items-center border-l py-3 gap-2.5 xl:flex", railBg, railBorder)} style={railStyle}>
         <button onClick={toggleCollapsed} title="Expand" className="flex h-7 w-7 items-center justify-center rounded-md text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]/70 transition-colors">
           <PanelRightOpen className="h-3.5 w-3.5" />
         </button>
@@ -172,14 +195,17 @@ export function RightRail() {
 
   /* ── Expanded ── */
   return (
-    <aside className="sticky top-0 hidden h-screen w-[260px] shrink-0 flex-col border-l border-[var(--border)] bg-[var(--sidebar)] xl:flex 2xl:w-[280px]" style={{ backdropFilter: "saturate(180%) blur(40px)", WebkitBackdropFilter: "saturate(180%) blur(40px)" }}>
+    <aside className={cn("sticky top-0 hidden h-screen w-[260px] shrink-0 flex-col border-l xl:flex 2xl:w-[280px]", railBg, railBorder)} style={railStyle}>
 
       {/* Header */}
-      <div className="flex items-center gap-2 border-b border-[var(--border)] px-3.5 py-2.5 shrink-0">
+      <div className={cn("flex items-center gap-2 border-b px-3.5 py-2.5 shrink-0", railBorder)}>
         <Activity className="h-3.5 w-3.5 text-[var(--primary)]" />
-        <span className="text-[13px] font-bold tracking-wide text-[var(--foreground)]">OPS</span>
+        <span className={cn("text-[13px] font-bold tracking-wide", railText)}>OPS</span>
         <div className="flex-1" />
-        <button onClick={toggleCollapsed} className="flex h-6 w-6 items-center justify-center rounded-md text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]/60 transition-colors">
+        <button onClick={toggleRailTheme} title={railDark ? "Glass mode" : "Dark mode"} className={cn("flex h-6 w-6 items-center justify-center rounded-md transition-colors", railMuted, railHover)}>
+          {railDark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+        </button>
+        <button onClick={toggleCollapsed} className={cn("flex h-6 w-6 items-center justify-center rounded-md transition-colors", railMuted, railHover)}>
           <PanelRightClose className="h-3.5 w-3.5" />
         </button>
       </div>
