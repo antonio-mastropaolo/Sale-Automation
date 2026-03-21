@@ -1,0 +1,2056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ListBlitz iOS — UI Mockups</title>
+<style>
+  :root {
+    --bg-primary: #0A0F0D;
+    --bg-secondary: #111916;
+    --bg-card: #161F1B;
+    --bg-elevated: #1C2721;
+    --accent: #52B788;
+    --accent-dark: #2D6A4F;
+    --gold: #D4A843;
+    --terracotta: #C4593A;
+    --text-primary: #FFFFFF;
+    --text-secondary: rgba(255,255,255,0.7);
+    --text-tertiary: rgba(255,255,255,0.45);
+    --depop: #F97316;
+    --grailed: #64748B;
+    --poshmark: #EC4899;
+    --mercari: #3B82F6;
+    --ebay: #E5B638;
+    --vinted: #14B8A6;
+    --facebook: #1877F2;
+    --vestiaire: #F59E0B;
+    --success: #10B981;
+    --info: #5B9BD5;
+    --amber: #F59E0B;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a1a2e;
+    color: #e0e0e0;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    padding: 40px 20px;
+  }
+
+  h1.page-title {
+    text-align: center;
+    font-size: 36px;
+    color: var(--accent);
+    margin-bottom: 8px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+
+  .page-subtitle {
+    text-align: center;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+    font-size: 16px;
+  }
+
+  /* Traceability Legend */
+  .legend {
+    max-width: 900px;
+    margin: 0 auto 40px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    padding: 20px 24px;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .legend h3 { color: var(--accent); margin-bottom: 12px; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+  .legend-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 6px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; padding: 4px 0; }
+  .legend-id { background: var(--accent); color: #000; font-weight: 700; font-size: 10px; padding: 2px 6px; border-radius: 4px; min-width: 56px; text-align: center; }
+  .legend-file { color: var(--text-tertiary); font-family: 'SF Mono', monospace; font-size: 10px; }
+
+  /* Screen sections */
+  .screen-section {
+    max-width: 1400px;
+    margin: 0 auto 60px;
+    scroll-margin-top: 20px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding-bottom: 12px;
+  }
+  .section-header h2 { font-size: 22px; color: #fff; }
+  .section-id { background: var(--accent); color: #000; font-weight: 800; font-size: 11px; padding: 3px 8px; border-radius: 5px; }
+  .section-spec { font-size: 11px; color: var(--text-tertiary); font-family: 'SF Mono', monospace; }
+  .section-file { font-size: 11px; color: var(--accent); font-family: 'SF Mono', monospace; opacity: 0.7; margin-left: auto; }
+
+  /* Phone frames */
+  .phone-row {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .phone-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .phone-label {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+
+  .phone {
+    width: 375px;
+    height: 812px;
+    background: var(--bg-primary);
+    border-radius: 44px;
+    border: 3px solid #333;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+
+  .phone-small {
+    height: 700px;
+  }
+
+  /* Dynamic Island */
+  .dynamic-island {
+    width: 120px;
+    height: 34px;
+    background: #000;
+    border-radius: 20px;
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+  }
+
+  /* Status bar */
+  .status-bar {
+    height: 54px;
+    padding: 14px 24px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .status-bar .time { margin-left: 30px; }
+  .status-bar .icons { display: flex; gap: 5px; font-size: 12px; margin-right: 4px; }
+
+  /* Navigation bar */
+  .nav-bar {
+    padding: 0 16px 8px;
+  }
+  .nav-bar-large-title {
+    font-size: 34px;
+    font-weight: 800;
+    color: #fff;
+    padding: 4px 0 8px;
+    letter-spacing: -0.5px;
+  }
+  .nav-bar-inline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+  }
+  .nav-bar-inline .title {
+    font-size: 17px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .nav-bar-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+  .nav-bar-btn.avatar {
+    background: rgba(82,183,136,0.2);
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  /* Tab bar */
+  .tab-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 83px;
+    background: rgba(17,25,22,0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 0.5px solid rgba(255,255,255,0.08);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-around;
+    padding-top: 8px;
+  }
+  .tab-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    font-size: 10px;
+    color: var(--text-tertiary);
+    position: relative;
+  }
+  .tab-item.active { color: var(--accent); }
+  .tab-icon { font-size: 22px; }
+  .tab-badge {
+    position: absolute;
+    top: -4px;
+    right: -8px;
+    background: #FF3B30;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+  }
+
+  /* Content area */
+  .content {
+    padding: 0 16px;
+    overflow-y: auto;
+    height: calc(100% - 137px);
+  }
+  .content.no-tabs {
+    height: calc(100% - 54px);
+  }
+
+  /* Shared component styles */
+  .card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 10px;
+  }
+
+  .stat-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 14px;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+  .stat-label .icon { font-size: 10px; }
+  .stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+    font-family: 'SF Pro Rounded', -apple-system, sans-serif;
+  }
+  .stat-subtitle { font-size: 10px; color: var(--text-tertiary); margin-top: 3px; }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .trend-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 10px;
+    float: right;
+  }
+  .trend-up { background: rgba(16,185,129,0.12); color: var(--success); }
+  .trend-down { background: rgba(196,89,58,0.12); color: var(--terracotta); }
+
+  /* Listing card */
+  .listing-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .listing-img {
+    width: 72px;
+    height: 72px;
+    border-radius: 8px;
+    background: var(--bg-elevated);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-tertiary);
+    font-size: 20px;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .listing-img img { width: 100%; height: 100%; object-fit: cover; }
+  .listing-info { flex: 1; min-width: 0; }
+  .listing-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .listing-meta {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 3px;
+  }
+  .listing-badges {
+    display: flex;
+    gap: 4px;
+    margin-top: 5px;
+    flex-wrap: wrap;
+  }
+  .listing-price {
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .listing-price .price {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--accent);
+    font-family: 'SF Pro Rounded', sans-serif;
+  }
+  .listing-price .profit {
+    font-size: 11px;
+    font-weight: 700;
+    margin-top: 3px;
+  }
+  .profit-pos { color: var(--success); }
+  .profit-neg { color: var(--terracotta); }
+
+  /* Badges */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 3px 7px;
+    border-radius: 10px;
+  }
+  .badge-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .badge-draft { background: rgba(245,158,11,0.12); color: var(--amber); }
+  .badge-draft .badge-dot { background: var(--amber); }
+  .badge-active { background: rgba(16,185,129,0.12); color: var(--success); }
+  .badge-active .badge-dot { background: var(--success); }
+  .badge-sold { background: rgba(20,184,166,0.12); color: var(--vinted); }
+  .badge-sold .badge-dot { background: var(--vinted); }
+
+  .platform-badge {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 10px;
+  }
+  .pb-depop { background: rgba(249,115,22,0.15); color: var(--depop); }
+  .pb-grailed { background: rgba(100,116,139,0.15); color: var(--grailed); }
+  .pb-poshmark { background: rgba(236,72,153,0.15); color: var(--poshmark); }
+  .pb-mercari { background: rgba(59,130,246,0.15); color: var(--mercari); }
+  .pb-ebay { background: rgba(229,182,56,0.15); color: var(--ebay); }
+  .pb-vinted { background: rgba(20,184,166,0.15); color: var(--vinted); }
+
+  /* Platform icon */
+  .platform-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  /* Filter chips */
+  .filter-bar {
+    display: flex;
+    gap: 8px;
+    padding: 10px 0;
+    overflow-x: auto;
+  }
+  .filter-chip {
+    padding: 7px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .filter-chip.active {
+    background: var(--accent);
+    color: #fff;
+  }
+  .filter-chip.inactive {
+    background: var(--bg-card);
+    color: var(--text-secondary);
+  }
+  .chip-count {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 8px;
+    margin-left: 3px;
+  }
+  .active .chip-count { background: rgba(255,255,255,0.2); }
+  .inactive .chip-count { background: rgba(82,183,136,0.2); color: var(--accent); }
+
+  /* Input fields */
+  .input-field {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid rgba(82,183,136,0.15);
+    margin-bottom: 14px;
+  }
+  .input-icon { color: var(--text-tertiary); font-size: 16px; width: 20px; text-align: center; }
+  .input-text { color: var(--text-primary); font-size: 16px; }
+  .input-placeholder { color: var(--text-tertiary); font-size: 16px; }
+
+  /* Buttons */
+  .btn-primary {
+    width: 100%;
+    height: 50px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 17px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .btn-primary.disabled { opacity: 0.3; }
+  .btn-outline {
+    width: 100%;
+    height: 46px;
+    background: var(--bg-card);
+    color: var(--accent);
+    border: 1px solid rgba(82,183,136,0.3);
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .btn-gradient {
+    width: 100%;
+    height: 46px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .btn-danger {
+    width: 100%;
+    height: 46px;
+    background: rgba(196,89,58,0.1);
+    color: var(--terracotta);
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  /* Search bar */
+  .search-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: var(--bg-card);
+    border-radius: 10px;
+    margin-bottom: 8px;
+  }
+  .search-bar .icon { color: var(--text-tertiary); font-size: 14px; }
+  .search-bar .text { color: var(--text-tertiary); font-size: 15px; }
+
+  /* Quick actions */
+  .quick-actions {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 4px 0;
+  }
+  .quick-action {
+    width: 85px;
+    height: 80px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .quick-action .icon { font-size: 22px; }
+  .quick-action .label { font-size: 11px; font-weight: 700; color: var(--text-secondary); }
+
+  /* Sale row */
+  .sale-row {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .sale-info { flex: 1; }
+  .sale-title { font-size: 14px; font-weight: 500; color: #fff; }
+  .sale-meta { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
+  .sale-price { text-align: right; }
+  .sale-price .amount { font-size: 14px; font-weight: 700; color: #fff; }
+  .sale-price .profit { font-size: 11px; font-weight: 700; margin-top: 2px; }
+
+  /* Message bubbles */
+  .msg-row { display: flex; margin-bottom: 8px; }
+  .msg-row.seller { justify-content: flex-end; }
+  .msg-row.buyer { justify-content: flex-start; }
+  .msg-bubble {
+    max-width: 70%;
+    padding: 10px 14px;
+    border-radius: 18px;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  .msg-bubble.seller { background: var(--accent); color: #fff; }
+  .msg-bubble.buyer { background: var(--bg-card); color: #fff; }
+  .msg-time { font-size: 10px; color: var(--text-tertiary); margin-top: 2px; padding: 0 4px; }
+  .msg-time.seller { text-align: right; }
+
+  /* Repricer card */
+  .reprice-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .reprice-header { display: flex; gap: 10px; align-items: flex-start; }
+  .reprice-icon { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+  .reprice-info { flex: 1; }
+  .reprice-title { font-size: 14px; font-weight: 600; color: #fff; }
+  .reprice-meta { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
+  .reprice-prices { text-align: right; flex-shrink: 0; }
+  .reprice-old { font-size: 12px; color: var(--text-tertiary); text-decoration: line-through; }
+  .reprice-new { font-size: 18px; font-weight: 700; }
+  .reprice-pct { font-size: 11px; font-weight: 700; margin-top: 1px; }
+  .reprice-reason { font-size: 12px; color: var(--text-secondary); margin-top: 8px; line-height: 1.4; }
+  .reprice-bottom { display: flex; gap: 6px; margin-top: 10px; align-items: center; }
+  .action-badge {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 10px;
+    letter-spacing: 0.5px;
+  }
+
+  /* Search result card */
+  .search-result {
+    background: var(--bg-card);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .search-img {
+    width: 100%;
+    height: 160px;
+    background: var(--bg-elevated);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-tertiary);
+    font-size: 24px;
+    position: relative;
+  }
+  .search-img .gradient-fill {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(82,183,136,0.15), rgba(45,106,79,0.15));
+  }
+  .search-body { padding: 8px; }
+  .search-title { font-size: 12px; font-weight: 500; color: #fff; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .search-price-row { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
+  .search-price { font-size: 15px; font-weight: 700; color: var(--accent); }
+  .search-size { font-size: 10px; color: var(--text-tertiary); margin-top: 3px; }
+
+  /* Search results grid */
+  .search-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  /* Section titles */
+  .section-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 12px;
+  }
+  .section-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .see-all { font-size: 12px; font-weight: 700; color: var(--accent); }
+
+  /* Conversation row */
+  .convo-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 0.5px solid rgba(255,255,255,0.06);
+  }
+  .convo-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .convo-info { flex: 1; min-width: 0; }
+  .convo-top { display: flex; justify-content: space-between; }
+  .convo-name { font-size: 14px; font-weight: 600; color: #fff; }
+  .convo-name.unread { font-weight: 700; }
+  .convo-time { font-size: 11px; color: var(--text-tertiary); }
+  .convo-mid { display: flex; gap: 6px; align-items: center; margin-top: 2px; }
+  .convo-listing { font-size: 12px; color: var(--text-tertiary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .convo-msg { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .convo-msg.unread { color: #fff; }
+  .unread-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+
+  /* Input bar */
+  .input-bar {
+    position: absolute;
+    bottom: 83px;
+    left: 0;
+    right: 0;
+    padding: 8px 16px;
+    background: var(--bg-secondary);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .msg-input {
+    flex: 1;
+    padding: 10px;
+    background: var(--bg-card);
+    border-radius: 20px;
+    color: var(--text-tertiary);
+    font-size: 14px;
+  }
+  .send-btn { font-size: 28px; color: var(--text-tertiary); }
+  .send-btn.active { color: var(--accent); }
+
+  /* Detail image gallery */
+  .gallery {
+    width: 100%;
+    height: 300px;
+    background: var(--bg-card);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .gallery .placeholder { font-size: 48px; color: var(--text-tertiary); }
+  .gallery-dots {
+    position: absolute;
+    bottom: 12px;
+    display: flex;
+    gap: 6px;
+  }
+  .gallery-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+  }
+  .gallery-dot.active { background: #fff; width: 18px; border-radius: 3px; }
+
+  /* Detail rows */
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+  }
+  .detail-label { font-size: 14px; color: var(--text-tertiary); }
+  .detail-value { font-size: 14px; font-weight: 500; color: #fff; }
+
+  /* Mini bar chart */
+  .mini-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    height: 100px;
+    padding: 8px 0;
+  }
+  .bar-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .bar {
+    width: 100%;
+    border-radius: 3px 3px 0 0;
+    background: linear-gradient(to top, var(--accent-dark), var(--accent));
+  }
+  .bar-label { font-size: 8px; color: var(--text-tertiary); }
+
+  /* Inventory bar */
+  .inventory-bar {
+    display: flex;
+    gap: 2px;
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 10px;
+  }
+  .inv-segment { height: 100%; }
+
+  /* Inventory metrics */
+  .inv-metrics {
+    display: flex;
+    gap: 12px;
+    text-align: center;
+  }
+  .inv-metric { flex: 1; }
+  .inv-metric .value { font-size: 20px; font-weight: 700; }
+  .inv-metric .label { font-size: 10px; color: var(--text-tertiary); margin-top: 2px; }
+
+  /* Platform row */
+  .platform-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 8px 0;
+  }
+  .platform-row .name { font-size: 14px; font-weight: 500; color: #fff; flex: 1; }
+  .platform-row .count { font-size: 12px; color: var(--text-tertiary); }
+  .platform-row .revenue { font-size: 14px; font-weight: 700; color: var(--accent); }
+
+  /* Smart list result */
+  .smart-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .smart-detail-cell {
+    background: var(--bg-card);
+    border-radius: 8px;
+    padding: 10px;
+  }
+  .smart-detail-label { font-size: 10px; color: var(--text-tertiary); }
+  .smart-detail-value { font-size: 14px; font-weight: 500; color: #fff; margin-top: 2px; }
+
+  /* Hashtag pills */
+  .hashtag-row { display: flex; gap: 4px; flex-wrap: wrap; }
+  .hashtag {
+    font-size: 11px;
+    color: var(--accent);
+    background: rgba(82,183,136,0.1);
+    padding: 3px 8px;
+    border-radius: 12px;
+  }
+
+  /* Error text */
+  .error-text { font-size: 12px; color: var(--terracotta); text-align: center; margin: 8px 0; }
+
+  /* Settings rows */
+  .settings-section { margin-bottom: 20px; }
+  .settings-label { font-size: 12px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; padding: 0 16px 6px; }
+  .settings-card { background: var(--bg-card); border-radius: 12px; overflow: hidden; }
+  .settings-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 0.5px solid rgba(255,255,255,0.06);
+  }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-row .label { font-size: 15px; color: #fff; flex: 1; }
+  .settings-row .value { font-size: 15px; color: var(--text-tertiary); }
+  .settings-row .check { color: var(--success); font-size: 16px; }
+  .settings-row .chevron { color: var(--text-tertiary); font-size: 12px; }
+
+  /* Annotation markers */
+  .anno {
+    position: absolute;
+    background: var(--accent);
+    color: #000;
+    font-size: 9px;
+    font-weight: 800;
+    padding: 1px 5px;
+    border-radius: 3px;
+    z-index: 20;
+    pointer-events: none;
+    line-height: 1.3;
+  }
+
+  /* Traceability table */
+  .trace-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+    font-size: 12px;
+  }
+  .trace-table th {
+    text-align: left;
+    padding: 8px 12px;
+    background: rgba(82,183,136,0.1);
+    color: var(--accent);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .trace-table td {
+    padding: 6px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    color: var(--text-secondary);
+  }
+  .trace-table td:first-child { color: var(--accent); font-weight: 700; font-family: monospace; }
+  .trace-table td:nth-child(3) { font-family: 'SF Mono', monospace; font-size: 10px; color: var(--text-tertiary); }
+
+  /* Segmented control */
+  .segmented {
+    display: flex;
+    background: var(--bg-card);
+    border-radius: 8px;
+    padding: 2px;
+    margin-bottom: 16px;
+  }
+  .seg-item {
+    flex: 1;
+    padding: 6px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 6px;
+    color: var(--text-tertiary);
+  }
+  .seg-item.active {
+    background: var(--bg-elevated);
+    color: #fff;
+  }
+
+  /* Mini stats */
+  .mini-stats {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .mini-stat {
+    flex: 1;
+    text-align: center;
+    padding: 10px 4px;
+    border-radius: 10px;
+  }
+  .mini-stat .value { font-size: 18px; font-weight: 700; }
+  .mini-stat .label { font-size: 10px; font-weight: 500; color: var(--text-tertiary); margin-top: 2px; }
+
+  /* Skeleton shimmer */
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  .skeleton {
+    background: linear-gradient(90deg, var(--bg-elevated) 25%, var(--bg-card) 50%, var(--bg-elevated) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 6px;
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+  }
+  .empty-icon { font-size: 48px; color: var(--text-tertiary); margin-bottom: 12px; }
+  .empty-title { font-size: 17px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+  .empty-msg { font-size: 14px; color: var(--text-tertiary); line-height: 1.4; }
+
+  /* Popover labels for traceability */
+  .trace-tag {
+    display: inline-block;
+    background: rgba(82,183,136,0.15);
+    color: var(--accent);
+    font-size: 8px;
+    font-weight: 700;
+    padding: 1px 4px;
+    border-radius: 3px;
+    vertical-align: super;
+    margin-left: 2px;
+    font-family: monospace;
+  }
+</style>
+</head>
+<body>
+
+<h1 class="page-title">⚡ ListBlitz iOS — UI Mockups</h1>
+<p class="page-subtitle">Interactive mockups with full traceability to DESIGN_SPEC.md and source files</p>
+
+<!-- TRACEABILITY LEGEND -->
+<div class="legend" id="traceability">
+  <h3>Traceability Matrix</h3>
+  <table class="trace-table">
+    <thead>
+      <tr>
+        <th>Mockup ID</th>
+        <th>Screen</th>
+        <th>Source File</th>
+        <th>Spec Section</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>SCR-01</td><td>Login</td><td>Views/Auth/LoginView.swift</td><td>SCREEN 1: LOGIN</td><td>✅ Implemented</td></tr>
+      <tr><td>SCR-02</td><td>Register</td><td>Views/Auth/RegisterView.swift</td><td>SCREEN 2: REGISTER</td><td>✅ Implemented</td></tr>
+      <tr><td>SCR-03</td><td>Dashboard</td><td>Views/Dashboard/DashboardView.swift</td><td>SCREEN 3: DASHBOARD</td><td>✅ Implemented</td></tr>
+      <tr><td>SCR-04</td><td>Listings</td><td>Views/Listings/ListingsView.swift</td><td>SCREEN 4: LISTINGS</td><td>✅ Implemented</td></tr>
+      <tr><td>SCR-05</td><td>Listing Detail</td><td>Views/Listings/ListingDetailView.swift</td><td>SCREEN 5: LISTING DETAIL</td><td>✅ Implemented</td></tr>
+      <tr><td>SCR-06</td><td>Create Listing</td><td>Views/Listings/CreateListingView.swift</td><td>SCREEN 6: CREATE LISTING</td><td>✅ Implemented</td></tr>
+      <tr><td>SCR-07</td><td>Smart List (AI)</td><td>Views/Listings/SmartListView.swift</td><td>SCREEN 7: SMART LIST</td><td>✅ Implemented</td></tr>
+      <tr><td>SCR-08</td><td>Cross-Market Search</td><td>Views/Search/CrossMarketSearchView.swift</td><td>SCREEN 8: CROSS-MARKET SEARCH</td><td>✅ Implemented</td></tr>
+      <tr><td>SCR-09</td><td>Inbox</td><td>Views/Inbox/InboxView.swift</td><td>SCREEN 9: INBOX</td><td>✅ Implemented</td></tr>
+      <tr><td>SCR-10</td><td>Conversation</td><td>Views/Inbox/ConversationDetailView.swift</td><td>SCREEN 10: CONVERSATION DETAIL</td><td>✅ Implemented</td></tr>
+      <tr><td>SCR-11</td><td>Analytics</td><td>Views/Analytics/AnalyticsView.swift</td><td>SCREEN 11: ANALYTICS</td><td>✅ Implemented</td></tr>
+      <tr><td>SCR-12</td><td>Smart Repricer</td><td>Views/Repricer/RepricerView.swift</td><td>SCREEN 12: SMART REPRICER</td><td>✅ Implemented</td></tr>
+      <tr><td>SCR-13</td><td>Settings</td><td>Views/Settings/SettingsView.swift</td><td>SCREEN 13: SETTINGS</td><td>✅ Implemented</td></tr>
+      <tr><td>CMP-01</td><td>ListingCard</td><td>Components/ListingCard.swift</td><td>SHARED: ListingCard</td><td>✅ Implemented</td></tr>
+      <tr><td>CMP-02</td><td>StatCard</td><td>Components/StatCard.swift</td><td>SHARED: StatCard</td><td>✅ Implemented</td></tr>
+      <tr><td>CMP-03</td><td>PlatformBadge</td><td>Components/PlatformBadge.swift</td><td>SHARED: PlatformBadge</td><td>✅ Implemented</td></tr>
+      <tr><td>CMP-04</td><td>StatusBadge</td><td>Components/StatusBadge.swift</td><td>SHARED: StatusBadge</td><td>✅ Implemented</td></tr>
+      <tr><td>CMP-05</td><td>EmptyState</td><td>Components/EmptyStateView.swift</td><td>SHARED: EmptyStateView</td><td>✅ Implemented</td></tr>
+      <tr><td>CMP-06</td><td>LoadingView</td><td>Components/LoadingView.swift</td><td>SHARED: LoadingView</td><td>✅ Implemented</td></tr>
+      <tr><td>SVC-01</td><td>API Client</td><td>Services/APIClient.swift</td><td>—</td><td>✅ Implemented</td></tr>
+      <tr><td>SVC-02</td><td>Auth Service</td><td>Services/AuthService.swift</td><td>—</td><td>✅ Implemented</td></tr>
+      <tr><td>SVC-03</td><td>Keychain</td><td>Services/KeychainHelper.swift</td><td>—</td><td>✅ Implemented</td></tr>
+      <tr><td>SVC-04</td><td>Cache</td><td>Services/CacheManager.swift</td><td>—</td><td>✅ Implemented</td></tr>
+      <tr><td>SVC-05</td><td>Haptics</td><td>Services/HapticEngine.swift</td><td>—</td><td>✅ Implemented</td></tr>
+      <tr><td>THM-01</td><td>Theme</td><td>Theme/Theme.swift</td><td>Design Language</td><td>✅ Implemented</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ==================== SCR-01: LOGIN ==================== -->
+<div class="screen-section" id="SCR-01">
+  <div class="section-header">
+    <span class="section-id">SCR-01</span>
+    <h2>Login</h2>
+    <span class="section-spec">DESIGN_SPEC.md → SCREEN 1</span>
+    <span class="section-file">Views/Auth/LoginView.swift</span>
+  </div>
+  <div class="phone-row">
+    <!-- Default state -->
+    <div class="phone-wrapper">
+      <span class="phone-label">Default State</span>
+      <div class="phone">
+        <div class="dynamic-island"></div>
+        <div class="status-bar"><span class="time">9:41</span><span class="icons">📶 📡 🔋</span></div>
+        <div class="content no-tabs" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 32px;">
+          <div style="text-align:center;margin-bottom:32px;">
+            <div style="font-size:52px;color:var(--accent);margin-bottom:12px;">⚡</div>
+            <div style="font-size:40px;font-weight:800;color:#fff;font-style:italic;letter-spacing:-1px;">ListBlitz</div>
+            <div style="font-size:14px;color:var(--text-tertiary);margin-top:8px;">List once, sell everywhere</div>
+          </div>
+          <div style="width:100%;">
+            <div class="input-field">
+              <span class="input-icon">✉️</span>
+              <span class="input-placeholder">Email</span>
+            </div>
+            <div class="input-field">
+              <span class="input-icon">🔒</span>
+              <span class="input-placeholder">Password</span>
+            </div>
+            <div style="height:16px;"></div>
+            <div class="btn-primary disabled">Sign In</div>
+            <div style="text-align:center;margin-top:16px;">
+              <span style="font-size:14px;color:var(--text-tertiary);">Don't have an account? </span>
+              <span style="font-size:14px;color:var(--accent);font-weight:600;">Sign Up</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filled state -->
+    <div class="phone-wrapper">
+      <span class="phone-label">Filled / Active</span>
+      <div class="phone">
+        <div class="dynamic-island"></div>
+        <div class="status-bar"><span class="time">9:41</span><span class="icons">📶 📡 🔋</span></div>
+        <div class="content no-tabs" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 32px;">
+          <div style="text-align:center;margin-bottom:32px;">
+            <div style="font-size:52px;color:var(--accent);margin-bottom:12px;">⚡</div>
+            <div style="font-size:40px;font-weight:800;color:#fff;font-style:italic;letter-spacing:-1px;">ListBlitz</div>
+            <div style="font-size:14px;color:var(--text-tertiary);margin-top:8px;">List once, sell everywhere</div>
+          </div>
+          <div style="width:100%;">
+            <div class="input-field">
+              <span class="input-icon">✉️</span>
+              <span class="input-text">admin@listblitz.io</span>
+            </div>
+            <div class="input-field">
+              <span class="input-icon">🔒</span>
+              <span class="input-text">•••••</span>
+            </div>
+            <div style="height:16px;"></div>
+            <div class="btn-primary">Sign In</div>
+            <div style="text-align:center;margin-top:16px;">
+              <span style="font-size:14px;color:var(--text-tertiary);">Don't have an account? </span>
+              <span style="font-size:14px;color:var(--accent);font-weight:600;">Sign Up</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error state -->
+    <div class="phone-wrapper">
+      <span class="phone-label">Error State</span>
+      <div class="phone">
+        <div class="dynamic-island"></div>
+        <div class="status-bar"><span class="time">9:41</span><span class="icons">📶 📡 🔋</span></div>
+        <div class="content no-tabs" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 32px;">
+          <div style="text-align:center;margin-bottom:32px;">
+            <div style="font-size:52px;color:var(--accent);margin-bottom:12px;">⚡</div>
+            <div style="font-size:40px;font-weight:800;color:#fff;font-style:italic;letter-spacing:-1px;">ListBlitz</div>
+            <div style="font-size:14px;color:var(--text-tertiary);margin-top:8px;">List once, sell everywhere</div>
+          </div>
+          <div style="width:100%;">
+            <div class="input-field">
+              <span class="input-icon">✉️</span>
+              <span class="input-text">admin@listblitz.com</span>
+            </div>
+            <div class="input-field">
+              <span class="input-icon">🔒</span>
+              <span class="input-text">•••••</span>
+            </div>
+            <div class="error-text">Invalid email or password</div>
+            <div class="btn-primary">Sign In</div>
+            <div style="text-align:center;margin-top:16px;">
+              <span style="font-size:14px;color:var(--text-tertiary);">Don't have an account? </span>
+              <span style="font-size:14px;color:var(--accent);font-weight:600;">Sign Up</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SCR-03: DASHBOARD ==================== -->
+<div class="screen-section" id="SCR-03">
+  <div class="section-header">
+    <span class="section-id">SCR-03</span>
+    <h2>Dashboard</h2>
+    <span class="section-spec">DESIGN_SPEC.md → SCREEN 3</span>
+    <span class="section-file">Views/Dashboard/DashboardView.swift</span>
+  </div>
+  <div class="phone-row">
+    <div class="phone-wrapper">
+      <span class="phone-label">Loaded State</span>
+      <div class="phone">
+        <div class="dynamic-island"></div>
+        <div class="status-bar"><span class="time">9:41</span><span class="icons">📶 📡 🔋</span></div>
+        <div class="nav-bar" style="display:flex;justify-content:space-between;align-items:center;">
+          <div class="nav-bar-large-title">Dashboard</div>
+          <div class="nav-bar-btn avatar">AM</div>
+        </div>
+        <div class="content" style="height:calc(100% - 190px);overflow-y:auto;padding:0 16px;">
+          <!-- Welcome -->
+          <div style="margin-bottom:16px;">
+            <div style="font-size:14px;color:var(--text-tertiary);">Welcome back,</div>
+            <div style="font-size:28px;font-weight:700;color:#fff;">antonio</div>
+          </div>
+          <!-- Stats grid -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-label"><span style="color:var(--accent);">💲</span> Revenue <span class="trend-badge trend-up">↗ 12%</span></div>
+              <div class="stat-value">$12,450</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label"><span style="color:#3B82F6;">🏷</span> Active Listings</div>
+              <div class="stat-value">48</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label"><span style="color:var(--gold);">🛒</span> Total Sales</div>
+              <div class="stat-value">23</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label"><span style="color:var(--success);">📈</span> Avg Profit</div>
+              <div class="stat-value">$34</div>
+            </div>
+          </div>
+          <!-- Quick Actions -->
+          <div class="section-title">Quick Actions</div>
+          <div class="quick-actions" style="margin-bottom:16px;">
+            <div class="quick-action" style="background:rgba(82,183,136,0.1);">
+              <span class="icon" style="color:var(--accent);">📷</span>
+              <span class="label">Smart List</span>
+            </div>
+            <div class="quick-action" style="background:rgba(59,130,246,0.1);">
+              <span class="icon" style="color:#3B82F6;">➕</span>
+              <span class="label">New Listing</span>
+            </div>
+            <div class="quick-action" style="background:rgba(168,85,247,0.1);">
+              <span class="icon" style="color:#A855F7;">🔍</span>
+              <span class="label">Search</span>
+            </div>
+            <div class="quick-action" style="background:rgba(212,168,67,0.1);">
+              <span class="icon" style="color:var(--gold);">💰</span>
+              <span class="label">Reprice</span>
+            </div>
+          </div>
+          <!-- Recent Listings -->
+          <div class="section-title-row">
+            <span class="section-title" style="margin:0;">Recent Listings</span>
+            <span class="see-all">See All</span>
+          </div>
+          <div class="listing-card">
+            <div class="listing-img" style="background:linear-gradient(135deg,rgba(82,183,136,0.2),rgba(45,106,79,0.2));">👕</div>
+            <div class="listing-info">
+              <div class="listing-title">Vintage Nike ACG Fleece</div>
+              <div class="listing-meta">Nike · L</div>
+              <div class="listing-badges">
+                <span class="badge badge-active"><span class="badge-dot"></span> Active</span>
+                <span class="platform-badge pb-depop">DEP</span>
+                <span class="platform-badge pb-grailed">GRL</span>
+              </div>
+            </div>
+            <div class="listing-price">
+              <div class="price">$85</div>
+              <div class="profit profit-pos">+$45</div>
+            </div>
+          </div>
+          <div class="listing-card">
+            <div class="listing-img" style="background:linear-gradient(135deg,rgba(236,72,153,0.15),rgba(168,85,247,0.15));">👟</div>
+            <div class="listing-info">
+              <div class="listing-title">Jordan 1 Retro High OG</div>
+              <div class="listing-meta">Nike · 10.5</div>
+              <div class="listing-badges">
+                <span class="badge badge-draft"><span class="badge-dot"></span> Draft</span>
+              </div>
+            </div>
+            <div class="listing-price">
+              <div class="price">$220</div>
+              <div class="profit profit-pos">+$90</div>
+            </div>
+          </div>
+          <div class="listing-card">
+            <div class="listing-img" style="background:linear-gradient(135deg,rgba(20,184,166,0.15),rgba(59,130,246,0.15));">🧥</div>
+            <div class="listing-info">
+              <div class="listing-title">Carhartt WIP Michigan Coat</div>
+              <div class="listing-meta">Carhartt · M</div>
+              <div class="listing-badges">
+                <span class="badge badge-sold"><span class="badge-dot"></span> Sold</span>
+                <span class="platform-badge pb-ebay">BAY</span>
+              </div>
+            </div>
+            <div class="listing-price">
+              <div class="price">$140</div>
+              <div class="profit profit-pos">+$65</div>
+            </div>
+          </div>
+          <!-- Recent Sales -->
+          <div class="section-title" style="margin-top:8px;">Recent Sales</div>
+          <div class="sale-row">
+            <div class="platform-icon" style="background:rgba(249,115,22,0.15);color:var(--depop);">D</div>
+            <div class="sale-info">
+              <div class="sale-title">Stussy Varsity Jacket</div>
+              <div class="sale-meta">Depop · 2h</div>
+            </div>
+            <div class="sale-price">
+              <div class="amount">$95</div>
+              <div class="profit profit-pos">+$52</div>
+            </div>
+          </div>
+          <div class="sale-row">
+            <div class="platform-icon" style="background:rgba(100,116,139,0.15);color:var(--grailed);">G</div>
+            <div class="sale-info">
+              <div class="sale-title">Raf Simons Archive Tee</div>
+              <div class="sale-meta">Grailed · 1d</div>
+            </div>
+            <div class="sale-price">
+              <div class="amount">$180</div>
+              <div class="profit profit-pos">+$120</div>
+            </div>
+          </div>
+          <div style="height:20px;"></div>
+        </div>
+        <!-- Tab Bar -->
+        <div class="tab-bar">
+          <div class="tab-item active"><span class="tab-icon">⊞</span><span>Dashboard</span></div>
+          <div class="tab-item"><span class="tab-icon">🏷</span><span>Listings</span></div>
+          <div class="tab-item"><span class="tab-icon">🔍</span><span>Search</span></div>
+          <div class="tab-item"><span class="tab-icon">💬</span><span>Inbox</span><span class="tab-badge">3</span></div>
+          <div class="tab-item"><span class="tab-icon">📊</span><span>Analytics</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading state -->
+    <div class="phone-wrapper">
+      <span class="phone-label">Loading / Skeleton</span>
+      <div class="phone">
+        <div class="dynamic-island"></div>
+        <div class="status-bar"><span class="time">9:41</span><span class="icons">📶 📡 🔋</span></div>
+        <div class="nav-bar"><div class="nav-bar-large-title">Dashboard</div></div>
+        <div class="content" style="height:calc(100% - 190px);padding:0 16px;">
+          <div style="margin-bottom:16px;">
+            <div style="font-size:14px;color:var(--text-tertiary);">Welcome back,</div>
+            <div style="font-size:28px;font-weight:700;color:#fff;">antonio</div>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card"><div class="skeleton" style="width:60px;height:10px;margin-bottom:8px;"></div><div class="skeleton" style="width:80px;height:24px;"></div></div>
+            <div class="stat-card"><div class="skeleton" style="width:60px;height:10px;margin-bottom:8px;"></div><div class="skeleton" style="width:80px;height:24px;"></div></div>
+            <div class="stat-card"><div class="skeleton" style="width:60px;height:10px;margin-bottom:8px;"></div><div class="skeleton" style="width:80px;height:24px;"></div></div>
+            <div class="stat-card"><div class="skeleton" style="width:60px;height:10px;margin-bottom:8px;"></div><div class="skeleton" style="width:80px;height:24px;"></div></div>
+          </div>
+          <!-- Skeleton listing cards -->
+          <div class="listing-card">
+            <div class="skeleton" style="width:72px;height:72px;border-radius:8px;flex-shrink:0;"></div>
+            <div class="listing-info">
+              <div class="skeleton" style="width:140px;height:14px;margin-bottom:8px;"></div>
+              <div class="skeleton" style="width:90px;height:10px;margin-bottom:8px;"></div>
+              <div style="display:flex;gap:6px;"><div class="skeleton" style="width:50px;height:18px;border-radius:9px;"></div><div class="skeleton" style="width:32px;height:18px;border-radius:9px;"></div></div>
+            </div>
+            <div class="skeleton" style="width:50px;height:20px;flex-shrink:0;"></div>
+          </div>
+          <div class="listing-card">
+            <div class="skeleton" style="width:72px;height:72px;border-radius:8px;flex-shrink:0;"></div>
+            <div class="listing-info">
+              <div class="skeleton" style="width:120px;height:14px;margin-bottom:8px;"></div>
+              <div class="skeleton" style="width:70px;height:10px;margin-bottom:8px;"></div>
+              <div style="display:flex;gap:6px;"><div class="skeleton" style="width:50px;height:18px;border-radius:9px;"></div></div>
+            </div>
+            <div class="skeleton" style="width:50px;height:20px;flex-shrink:0;"></div>
+          </div>
+          <div class="listing-card">
+            <div class="skeleton" style="width:72px;height:72px;border-radius:8px;flex-shrink:0;"></div>
+            <div class="listing-info">
+              <div class="skeleton" style="width:150px;height:14px;margin-bottom:8px;"></div>
+              <div class="skeleton" style="width:80px;height:10px;margin-bottom:8px;"></div>
+              <div style="display:flex;gap:6px;"><div class="skeleton" style="width:50px;height:18px;border-radius:9px;"></div><div class="skeleton" style="width:32px;height:18px;border-radius:9px;"></div></div>
+            </div>
+            <div class="skeleton" style="width:50px;height:20px;flex-shrink:0;"></div>
+          </div>
+        </div>
+        <div class="tab-bar">
+          <div class="tab-item active"><span class="tab-icon">⊞</span><span>Dashboard</span></div>
+          <div class="tab-item"><span class="tab-icon">🏷</span><span>Listings</span></div>
+          <div class="tab-item"><span class="tab-icon">🔍</span><span>Search</span></div>
+          <div class="tab-item"><span class="tab-icon">💬</span><span>Inbox</span></div>
+          <div class="tab-item"><span class="tab-icon">📊</span><span>Analytics</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SCR-04: LISTINGS ==================== -->
+<div class="screen-section" id="SCR-04">
+  <div class="section-header">
+    <span class="section-id">SCR-04</span>
+    <h2>Listings</h2>
+    <span class="section-spec">DESIGN_SPEC.md → SCREEN 4</span>
+    <span class="section-file">Views/Listings/ListingsView.swift</span>
+  </div>
+  <div class="phone-row">
+    <div class="phone-wrapper">
+      <span class="phone-label">With Data</span>
+      <div class="phone">
+        <div class="dynamic-island"></div>
+        <div class="status-bar"><span class="time">9:41</span><span class="icons">📶 📡 🔋</span></div>
+        <div class="nav-bar" style="display:flex;justify-content:space-between;align-items:flex-end;">
+          <div class="nav-bar-large-title" style="font-size:28px;">Listings</div>
+          <div style="display:flex;gap:12px;padding-bottom:10px;">
+            <span style="color:var(--text-secondary);font-size:18px;">↕</span>
+            <span style="color:var(--accent);font-size:22px;">⊕</span>
+          </div>
+        </div>
+        <div class="content" style="height:calc(100% - 190px);overflow-y:auto;padding:0 16px;">
+          <div class="search-bar">
+            <span class="icon">🔍</span>
+            <span class="text">Search listings...</span>
+          </div>
+          <!-- Filter bar -->
+          <div class="filter-bar">
+            <span class="filter-chip active">All</span>
+            <span class="filter-chip inactive">Draft <span class="chip-count">5</span></span>
+            <span class="filter-chip inactive">Active <span class="chip-count">12</span></span>
+            <span class="filter-chip inactive">Sold <span class="chip-count">6</span></span>
+          </div>
+          <!-- Listings -->
+          <div class="listing-card">
+            <div class="listing-img" style="background:linear-gradient(135deg,rgba(82,183,136,0.2),rgba(45,106,79,0.2));">👕</div>
+            <div class="listing-info">
+              <div class="listing-title">Vintage Nike ACG Fleece</div>
+              <div class="listing-meta">Nike · L</div>
+              <div class="listing-badges">
+                <span class="badge badge-active"><span class="badge-dot"></span> Active</span>
+                <span class="platform-badge pb-depop">DEP</span>
+                <span class="platform-badge pb-grailed">GRL</span>
+              </div>
+            </div>
+            <div class="listing-price">
+              <div class="price">$85</div>
+              <div class="profit profit-pos">+$45</div>
+            </div>
+          </div>
+          <div class="listing-card">
+            <div class="listing-img" style="background:linear-gradient(135deg,rgba(236,72,153,0.15),rgba(168,85,247,0.15));">👟</div>
+            <div class="listing-info">
+              <div class="listing-title">Jordan 1 Retro High OG</div>
+              <div class="listing-meta">Nike · 10.5</div>
+              <div class="listing-badges">
+                <span class="badge badge-draft"><span class="badge-dot"></span> Draft</span>
+              </div>
+            </div>
+            <div class="listing-price">
+              <div class="price">$220</div>
+              <div class="profit profit-pos">+$90</div>
+            </div>
+          </div>
+          <div class="listing-card">
+            <div class="listing-img" style="background:linear-gradient(135deg,rgba(20,184,166,0.15),rgba(59,130,246,0.15));">🧥</div>
+            <div class="listing-info">
+              <div class="listing-title">Carhartt WIP Michigan Coat</div>
+              <div class="listing-meta">Carhartt · M</div>
+              <div class="listing-badges">
+                <span class="badge badge-active"><span class="badge-dot"></span> Active</span>
+                <span class="platform-badge pb-ebay">BAY</span>
+                <span class="platform-badge pb-mercari">MRC</span>
+              </div>
+            </div>
+            <div class="listing-price">
+              <div class="price">$140</div>
+              <div class="profit profit-pos">+$65</div>
+            </div>
+          </div>
+          <div class="listing-card">
+            <div class="listing-img" style="background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(212,168,67,0.15));">👖</div>
+            <div class="listing-info">
+              <div class="listing-title">Levi's 501 Vintage Wash</div>
+              <div class="listing-meta">Levi's · 32</div>
+              <div class="listing-badges">
+                <span class="badge badge-sold"><span class="badge-dot"></span> Sold</span>
+                <span class="platform-badge pb-poshmark">PSH</span>
+              </div>
+            </div>
+            <div class="listing-price">
+              <div class="price">$55</div>
+              <div class="profit profit-pos">+$30</div>
+            </div>
+          </div>
+          <div class="listing-card">
+            <div class="listing-img" style="background:linear-gradient(135deg,rgba(100,116,139,0.15),rgba(82,183,136,0.15));">🧢</div>
+            <div class="listing-info">
+              <div class="listing-title">Stussy World Tour Cap</div>
+              <div class="listing-meta">Stussy · OS</div>
+              <div class="listing-badges">
+                <span class="badge badge-active"><span class="badge-dot"></span> Active</span>
+                <span class="platform-badge pb-vinted">VNT</span>
+              </div>
+            </div>
+            <div class="listing-price">
+              <div class="price">$35</div>
+              <div class="profit profit-pos">+$18</div>
+            </div>
+          </div>
+        </div>
+        <div class="tab-bar">
+          <div class="tab-item"><span class="tab-icon">⊞</span><span>Dashboard</span></div>
+          <div class="tab-item active"><span class="tab-icon">🏷</span><span>Listings</span></div>
+          <div class="tab-item"><span class="tab-icon">🔍</span><span>Search</span></div>
+          <div class="tab-item"><span class="tab-icon">💬</span><span>Inbox</span><span class="tab-badge">3</span></div>
+          <div class="tab-item"><span class="tab-icon">📊</span><span>Analytics</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div class="phone-wrapper">
+      <span class="phone-label">Empty State</span>
+      <div class="phone">
+        <div class="dynamic-island"></div>
+        <div class="status-bar"><span class="time">9:41</span><span class="icons">📶 📡 🔋</span></div>
+        <div class="nav-bar"><div class="nav-bar-large-title" style="font-size:28px;">Listings</div></div>
+        <div class="content" style="height:calc(100% - 190px);padding:0 16px;">
+          <div class="search-bar"><span class="icon">🔍</span><span class="text">Search listings...</span></div>
+          <div class="filter-bar">
+            <span class="filter-chip active">All</span>
+            <span class="filter-chip inactive">Draft</span>
+            <span class="filter-chip inactive">Active</span>
+            <span class="filter-chip inactive">Sold</span>
+          </div>
+          <div class="empty-state" style="margin-top:60px;">
+            <div class="empty-icon">🏷️</div>
+            <div class="empty-title">No Listings</div>
+            <div class="empty-msg">Create your first listing to get started</div>
+            <div style="margin-top:16px;">
+              <span style="background:var(--accent);color:#fff;padding:10px 24px;border-radius:20px;font-size:14px;font-weight:700;">Create Listing</span>
+            </div>
+          </div>
+        </div>
+        <div class="tab-bar">
+          <div class="tab-item"><span class="tab-icon">⊞</span><span>Dashboard</span></div>
+          <div class="tab-item active"><span class="tab-icon">🏷</span><span>Listings</span></div>
+          <div class="tab-item"><span class="tab-icon">🔍</span><span>Search</span></div>
+          <div class="tab-item"><span class="tab-icon">💬</span><span>Inbox</span></div>
+          <div class="tab-item"><span class="tab-icon">📊</span><span>Analytics</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SCR-08: SEARCH ==================== -->
+<div class="screen-section" id="SCR-08">
+  <div class="section-header">
+    <span class="section-id">SCR-08</span>
+    <h2>Cross-Market Search</h2>
+    <span class="section-spec">DESIGN_SPEC.md → SCREEN 8</span>
+    <span class="section-file">Views/Search/CrossMarketSearchView.swift</span>
+  </div>
+  <div class="phone-row">
+    <!-- Default -->
+    <div class="phone-wrapper">
+      <span class="phone-label">Default / No Search</span>
+      <div class="phone">
+        <div class="dynamic-island"></div>
+        <div class="status-bar"><span class="time">9:41</span><span class="icons">📶 📡 🔋</span></div>
+        <div class="nav-bar"><div class="nav-bar-large-title" style="font-size:28px;">Search</div></div>
+        <div class="content" style="height:calc(100% - 190px);padding:0 16px;">
+          <div class="search-bar"><span class="icon">🔍</span><span class="text">Search across marketplaces...</span></div>
+          <div class="filter-bar">
+            <span class="filter-chip active">All</span>
+            <span class="filter-chip inactive">Depop</span>
+            <span class="filter-chip inactive">Grailed</span>
+            <span class="filter-chip inactive">Poshmark</span>
+            <span class="filter-chip inactive">eBay</span>
+          </div>
+          <div style="text-align:center;padding-top:60px;">
+            <div style="font-size:56px;color:rgba(82,183,136,0.5);margin-bottom:16px;">🌎</div>
+            <div style="font-size:20px;font-weight:700;color:#fff;margin-bottom:8px;">Cross-Market Search</div>
+            <div style="font-size:14px;color:var(--text-tertiary);line-height:1.5;padding:0 20px;">Search across Depop, Grailed, Poshmark, Mercari, eBay, Vinted & more</div>
+            <div style="margin-top:24px;">
+              <div style="font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Popular Searches</div>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;">
+                <span style="font-size:12px;color:var(--text-secondary);background:var(--bg-card);padding:6px 12px;border-radius:20px;">Vintage Nike</span>
+                <span style="font-size:12px;color:var(--text-secondary);background:var(--bg-card);padding:6px 12px;border-radius:20px;">Y2K</span>
+                <span style="font-size:12px;color:var(--text-secondary);background:var(--bg-card);padding:6px 12px;border-radius:20px;">Archive Raf</span>
+                <span style="font-size:12px;color:var(--text-secondary);background:var(--bg-card);padding:6px 12px;border-radius:20px;">Carhartt WIP</span>
+                <span style="font-size:12px;color:var(--text-secondary);background:var(--bg-card);padding:6px 12px;border-radius:20px;">Stussy</span>
+                <span style="font-size:12px;color:var(--text-secondary);background:var(--bg-card);padding:6px 12px;border-radius:20px;">Jordan 1</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="tab-bar">
+          <div class="tab-item"><span class="tab-icon">⊞</span><span>Dashboard</span></div>
+          <div class="tab-item"><span class="tab-icon">🏷</span><span>Listings</span></div>
+          <div class="tab-item active"><span class="tab-icon">🔍</span><span>Search</span></div>
+          <div class="tab-item"><span class="tab-icon">💬</span><span>Inbox</span><span class="tab-badge">3</span></div>
+          <div class="tab-item"><span class="tab-icon">📊</span><span>Analytics</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="phone-wrapper">
+      <span class="phone-label">Search Results</span>
+      <div class="phone">
+        <div class="dynamic-island"></div>
+        <div class="status-bar"><span class="time">9:41</span><span class="icons">📶 📡 🔋</span></div>
+        <div class="nav-bar"><div class="nav-bar-large-title" style="font-size:28px;">Search</div></div>
+        <div class="content" style="height:calc(100% - 190px);padding:0 16px;overflow-y:auto;">
+          <div class="search-bar"><span class="icon">🔍</span><span class="input-text" style="font-size:15px;">Vintage Nike</span></div>
+          <div class="filter-bar">
+            <span class="filter-chip active">All</span>
+            <span class="filter-chip inactive">Depop</span>
+            <span class="filter-chip inactive">Grailed</span>
+            <span class="filter-chip inactive">Poshmark</span>
+          </div>
+          <div class="search-grid">
+            <div class="search-result">
+              <div class="search-img"><div class="gradient-fill"></div>👕</div>
+              <div class="search-body">
+                <div class="search-title">Nike ACG Vintage Fleece Half Zip</div>
+                <div class="search-price-row">
+                  <span class="search-price">$75</span>
+                  <span class="platform-badge pb-depop">DEP</span>
+                </div>
+                <div class="search-size">Size: L</div>
+              </div>
+            </div>
+            <div class="search-result">
+              <div class="search-img"><div class="gradient-fill"></div>🧥</div>
+              <div class="search-body">
+                <div class="search-title">90s Nike Windbreaker Jacket</div>
+                <div class="search-price-row">
+                  <span class="search-price">$120</span>
+                  <span class="platform-badge pb-grailed">GRL</span>
+                </div>
+                <div class="search-size">Size: XL</div>
+              </div>
+            </div>
+            <div class="search-result">
+              <div class="search-img"><div class="gradient-fill"></div>👟</div>
+              <div class="search-body">
+                <div class="search-title">Nike Air Max 97 Silver Bullet</div>
+                <div class="search-price-row">
+                  <span class="search-price">$185</span>
+                  <span class="platform-badge pb-ebay">BAY</span>
+                </div>
+                <div class="search-size">Size: 10</div>
+              </div>
+            </div>
+            <div class="search-result">
+              <div class="search-img"><div class="gradient-fill"></div>👕</div>
+              <div class="search-body">
+                <div class="search-title">Nike Center Swoosh Tee Y2K</div>
+                <div class="search-price-row">
+                  <span class="search-price">$45</span>
+                  <span class="platform-badge pb-poshmark">PSH</span>
+                </div>
+                <div class="search-size">Size: M</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="tab-bar">
+          <div class="tab-item"><span class="tab-icon">⊞</span><span>Dashboard</span></div>
+          <div class="tab-item"><span class="tab-icon">🏷</span><span>Listings</span></div>
+          <div class="tab-item active"><span class="tab-icon">🔍</span><span>Search</span></div>
+          <div class="tab-item"><span class="tab-icon">💬</span><span>Inbox</span><span class="tab-badge">3</span></div>
+          <div class="tab-item"><span class="tab-icon">📊</span><span>Analytics</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SCR-09/10: INBOX ==================== -->
+<div class="screen-section" id="SCR-09">
+  <div class="section-header">
+    <span class="section-id">SCR-09 / SCR-10</span>
+    <h2>Inbox & Conversation</h2>
+    <span class="section-spec">DESIGN_SPEC.md → SCREEN 9, 10</span>
+    <span class="section-file">Views/Inbox/InboxView.swift, ConversationDetailView.swift</span>
+  </div>
+  <div class="phone-row">
+    <!-- Inbox list -->
+    <div class="phone-wrapper">
+      <span class="phone-label">Conversation List</span>
+      <div class="phone">
+        <div class="dynamic-island"></div>
+        <div class="status-bar"><span class="time">9:41</span><span class="icons">📶 📡 🔋</span></div>
+        <div class="nav-bar"><div class="nav-bar-large-title" style="font-size:28px;">Inbox</div></div>
+        <div class="content" style="height:calc(100% - 190px);padding:0 16px;overflow-y:auto;">
+          <div class="filter-bar">
+            <span class="filter-chip active">All</span>
+            <span class="filter-chip inactive">Depop</span>
+            <span class="filter-chip inactive">Grailed</span>
+            <span class="filter-chip inactive">Poshmark</span>
+          </div>
+          <div class="convo-row">
+            <div class="convo-avatar" style="background:rgba(249,115,22,0.2);color:var(--depop);">M</div>
+            <div class="convo-info">
+              <div class="convo-top"><span class="convo-name unread">Mike_vintage</span><span class="convo-time">5m</span></div>
+              <div class="convo-mid"><span class="platform-badge pb-depop" style="font-size:8px;">DEP</span><span class="convo-listing">Vintage Nike ACG Fleece</span></div>
+              <div class="convo-msg unread">Hey, would you take $70 for this?</div>
+            </div>
+            <div class="unread-dot"></div>
+          </div>
+          <div class="convo-row">
+            <div class="convo-avatar" style="background:rgba(100,116,139,0.2);color:var(--grailed);">S</div>
+            <div class="convo-info">
+              <div class="convo-top"><span class="convo-name unread">streetwear_sam</span><span class="convo-time">23m</span></div>
+              <div class="convo-mid"><span class="platform-badge pb-grailed" style="font-size:8px;">GRL</span><span class="convo-listing">Raf Simons Archive Tee</span></div>
+              <div class="convo-msg unread">Is this still available? What's the lowest?</div>
+            </div>
+            <div class="unread-dot"></div>
+          </div>
+          <div class="convo-row">
+            <div class="convo-avatar" style="background:rgba(236,72,153,0.2);color:var(--poshmark);">J</div>
+            <div class="convo-info">
+              <div class="convo-top"><span class="convo-name">Jessica R.</span><span class="convo-time">2h</span></div>
+              <div class="convo-mid"><span class="platform-badge pb-poshmark" style="font-size:8px;">PSH</span><span class="convo-listing">Levi's 501 Vintage Wash</span></div>
+              <div class="convo-msg">Thanks for the quick shipping!</div>
+            </div>
+          </div>
+          <div class="convo-row">
+            <div class="convo-avatar" style="background:rgba(59,130,246,0.2);color:var(--mercari);">T</div>
+            <div class="convo-info">
+              <div class="convo-top"><span class="convo-name">thrift_king99</span><span class="convo-time">1d</span></div>
+              <div class="convo-mid"><span class="platform-badge pb-mercari" style="font-size:8px;">MRC</span><span class="convo-listing">Stussy World Tour Cap</span></div>
+              <div class="convo-msg">Can you bundle with the jacket?</div>
+            </div>
+          </div>
+          <div class="convo-row">
+            <div class="convo-avatar" style="background:rgba(229,182,56,0.2);color:var(--ebay);">R</div>
+            <div class="convo-info">
+              <div class="convo-top"><span class="convo-name unread">retro_buyer</span><span class="convo-time">3h</span></div>
+              <div class="convo-mid"><span class="platform-badge pb-ebay" style="font-size:8px;">BAY</span><span class="convo-listing">Jordan 1 Retro High OG</span></div>
+              <div class="convo-msg unread">Would you ship internationally?</div>
+            </div>
+            <div class="unread-dot"></div>
+          </div>
+        </div>
+        <div class="tab-bar">
+          <div class="tab-item"><span class="tab-icon">⊞</span><span>Dashboard</span></div>
+          <div class="tab-item"><span class="tab-icon">🏷</span><span>Listings</span></div>
+          <div class="tab-item"><span class="tab-icon">🔍</span><span>Search</span></div>
+          <div class="tab-item active"><span class="tab-icon">💬</span><span>Inbox</span><span class="tab-badge">3</span></div>
+          <div class="tab-item"><span class="tab-icon">📊</span><span>Analytics</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Conversation detail -->
+    <div class="phone-wrapper">
+      <span class="phone-label">Conversation Thread</span>
+      <div class="phone">
+        <div class="dynamic-island"></div>
+        <div class="status-bar"><span class="time">9:41</span><span class="icons">📶 📡 🔋</span></div>
+        <div class="nav-bar">
+          <div class="nav-bar-inline">
+            <span style="color:var(--accent);font-size:14px;">‹ Back</span>
+            <div style="text-align:center;">
+              <div class="title">Mike_vintage</div>
+              <div style="font-size:11px;color:var(--text-tertiary);">Depop</div>
+            </div>
+            <span style="color:var(--accent);font-size:18px;">✨</span>
+          </div>
+        </div>
+        <div class="content" style="height:calc(100% - 200px);padding:0 16px;overflow-y:auto;">
+          <div style="padding-top:12px;">
+            <div class="msg-row buyer">
+              <div>
+                <div class="msg-bubble buyer">Hey, I'm interested in the Nike ACG Fleece. Would you take $70?</div>
+                <div class="msg-time">2:30 PM</div>
+              </div>
+            </div>
+            <div class="msg-row seller">
+              <div>
+                <div class="msg-bubble seller">Thanks for the interest! The lowest I can do is $78 — it's in excellent condition and sold comps are around $90.</div>
+                <div class="msg-time seller">2:35 PM</div>
+              </div>
+            </div>
+            <div class="msg-row buyer">
+              <div>
+                <div class="msg-bubble buyer">Hmm, how about $75? I can pay right now.</div>
+                <div class="msg-time">2:38 PM</div>
+              </div>
+            </div>
+            <!-- AI suggestion -->
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg-card);border-radius:12px;margin:12px 0;">
+              <span style="font-size:12px;color:var(--accent);">✨</span>
+              <span style="font-size:12px;color:var(--text-secondary);flex:1;">Meet at $77 — splits the difference and closes the deal quickly.</span>
+              <span style="font-size:12px;font-weight:700;color:var(--accent);">Use</span>
+              <span style="font-size:10px;color:var(--text-tertiary);">✕</span>
+            </div>
+          </div>
+        </div>
+        <!-- Input bar -->
+        <div class="input-bar" style="bottom:0;">
+          <div class="msg-input">Type a message...</div>
+          <span class="send-btn">⬆</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SCR-11: ANALYTICS ==================== -->
+<div class="screen-section" id="SCR-11">
+  <div class="section-header">
+    <span class="section-id">SCR-11</span>
+    <h2>Analytics</h2>
+    <span class="section-spec">DESIGN_SPEC.md → SCREEN 11</span>
+    <span class="section-file">Views/Analytics/AnalyticsView.swift</span>
+  </div>
+  <div class="phone-row">
+    <div class="phone-wrapper">
+      <span class="phone-label">Loaded State</span>
+      <div class="phone">
+        <div class="dynamic-island"></div>
+        <div class="status-bar"><span class="time">9:41</span><span class="icons">📶 📡 🔋</span></div>
+        <div class="nav-bar"><div class="nav-bar-large-title" style="font-size:28px;">Analytics</div></div>
+        <div class="content" style="height:calc(100% - 190px);padding:0 16px;overflow-y:auto;">
+          <!-- Period selector -->
+          <div class="segmented">
+            <div class="seg-item">7D</div>
+            <div class="seg-item active">30D</div>
+            <div class="seg-item">90D</div>
+            <div class="seg-item">All</div>
+          </div>
+          <!-- Stats -->
+          <div class="stats-grid">
+            <div class="stat-card"><div class="stat-label"><span style="color:var(--accent);">💲</span> Total Revenue</div><div class="stat-value">$4,280</div></div>
+            <div class="stat-card"><div class="stat-label"><span style="color:var(--success);">📈</span> Net Profit</div><div class="stat-value">$2,140</div></div>
+            <div class="stat-card"><div class="stat-label"><span style="color:var(--gold);">🛒</span> Items Sold</div><div class="stat-value">18</div></div>
+            <div class="stat-card"><div class="stat-label"><span style="color:#3B82F6;">🏷</span> Avg Sale</div><div class="stat-value">$238</div></div>
+          </div>
+          <!-- Revenue chart -->
+          <div class="card">
+            <div class="section-title" style="margin-bottom:8px;">Revenue Trend</div>
+            <div class="mini-chart">
+              <div class="bar-col"><div class="bar" style="height:30px;"></div><div class="bar-label">Mon</div></div>
+              <div class="bar-col"><div class="bar" style="height:55px;"></div><div class="bar-label">Tue</div></div>
+              <div class="bar-col"><div class="bar" style="height:20px;"></div><div class="bar-label">Wed</div></div>
+              <div class="bar-col"><div class="bar" style="height:70px;"></div><div class="bar-label">Thu</div></div>
+              <div class="bar-col"><div class="bar" style="height:45px;"></div><div class="bar-label">Fri</div></div>
+              <div class="bar-col"><div class="bar" style="height:85px;"></div><div class="bar-label">Sat</div></div>
+              <div class="bar-col"><div class="bar" style="height:60px;"></div><div class="bar-label">Sun</div></div>
+            </div>
+          </div>
+          <!-- Platform breakdown -->
+          <div class="card">
+            <div class="section-title" style="margin-bottom:8px;">Sales by Platform</div>
+            <div class="platform-row"><div class="platform-icon" style="background:rgba(249,115,22,0.15);color:var(--depop);">D</div><div class="name">Depop<br><span style="font-size:12px;color:var(--text-tertiary);">8 sales</span></div><div class="revenue">$1,840</div></div>
+            <div class="platform-row"><div class="platform-icon" style="background:rgba(100,116,139,0.15);color:var(--grailed);">G</div><div class="name">Grailed<br><span style="font-size:12px;color:var(--text-tertiary);">5 sales</span></div><div class="revenue">$1,350</div></div>
+            <div class="platform-row"><div class="platform-icon" style="background:rgba(229,182,56,0.15);color:var(--ebay);">E</div><div class="name">eBay<br><span style="font-size:12px;color:var(--text-tertiary);">3 sales</span></div><div class="revenue">$720</div></div>
+            <div class="platform-row"><div class="platform-icon" style="background:rgba(236,72,153,0.15);color:var(--poshmark);">P</div><div class="name">Poshmark<br><span style="font-size:12px;color:var(--text-tertiary);">2 sales</span></div><div class="revenue">$370</div></div>
+          </div>
+          <!-- Inventory -->
+          <div class="card">
+            <div class="section-title" style="margin-bottom:8px;">Inventory Summary</div>
+            <div class="inv-metrics">
+              <div class="inv-metric"><div class="value" style="color:var(--text-secondary);">48</div><div class="label">Total</div></div>
+              <div class="inv-metric"><div class="value" style="color:var(--amber);">5</div><div class="label">Draft</div></div>
+              <div class="inv-metric"><div class="value" style="color:var(--success);">25</div><div class="label">Active</div></div>
+              <div class="inv-metric"><div class="value" style="color:var(--vinted);">18</div><div class="label">Sold</div></div>
+            </div>
+            <div class="inventory-bar">
+              <div class="inv-segment" style="width:10%;background:var(--amber);"></div>
+              <div class="inv-segment" style="width:52%;background:var(--success);"></div>
+              <div class="inv-segment" style="width:38%;background:var(--vinted);"></div>
+            </div>
+          </div>
+          <div style="height:20px;"></div>
+        </div>
+        <div class="tab-bar">
+          <div class="tab-item"><span class="tab-icon">⊞</span><span>Dashboard</span></div>
+          <div class="tab-item"><span class="tab-icon">🏷</span><span>Listings</span></div>
+          <div class="tab-item"><span class="tab-icon">🔍</span><span>Search</span></div>
+          <div class="tab-item"><span class="tab-icon">💬</span><span>Inbox</span></div>
+          <div class="tab-item active"><span class="tab-icon">📊</span><span>Analytics</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SCR-12: REPRICER ==================== -->
+<div class="screen-section" id="SCR-12">
+  <div class="section-header">
+    <span class="section-id">SCR-12</span>
+    <h2>Smart Repricer</h2>
+    <span class="section-spec">DESIGN_SPEC.md → SCREEN 12</span>
+    <span class="section-file">Views/Repricer/RepricerView.swift</span>
+  </div>
+  <div class="phone-row">
+    <div class="phone-wrapper">
+      <span class="phone-label">Loaded State</span>
+      <div class="phone">
+        <div class="dynamic-island"></div>
+        <div class="status-bar"><span class="time">9:41</span><span class="icons">📶 📡 🔋</span></div>
+        <div class="nav-bar"><div class="nav-bar-large-title" style="font-size:24px;">Smart Repricer</div></div>
+        <div class="content no-tabs" style="padding:0 16px;overflow-y:auto;">
+          <div class="filter-bar">
+            <span class="filter-chip active">All</span>
+            <span class="filter-chip inactive">Drop <span class="chip-count">3</span></span>
+            <span class="filter-chip inactive">Raise <span class="chip-count">2</span></span>
+            <span class="filter-chip inactive">Hold <span class="chip-count">4</span></span>
+            <span class="filter-chip inactive">Relist <span class="chip-count">1</span></span>
+          </div>
+          <div class="mini-stats">
+            <div class="mini-stat" style="background:rgba(196,89,58,0.08);"><div class="value" style="color:var(--terracotta);">3</div><div class="label">Drop</div></div>
+            <div class="mini-stat" style="background:rgba(16,185,129,0.08);"><div class="value" style="color:var(--success);">2</div><div class="label">Raise</div></div>
+            <div class="mini-stat" style="background:rgba(91,155,213,0.08);"><div class="value" style="color:var(--info);">4</div><div class="label">Hold</div></div>
+            <div class="mini-stat" style="background:rgba(212,168,67,0.08);"><div class="value" style="color:var(--gold);">1</div><div class="label">Relist</div></div>
+          </div>
+          <!-- Drop card -->
+          <div class="reprice-card" style="border-color:rgba(196,89,58,0.15);">
+            <div class="reprice-header">
+              <span class="reprice-icon" style="color:var(--terracotta);">⬇</span>
+              <div class="reprice-info">
+                <div class="reprice-title">Nike ACG Fleece Half Zip</div>
+                <div class="reprice-meta">14d listed · 89 views · 3 likes</div>
+              </div>
+              <div class="reprice-prices">
+                <div class="reprice-old">$85</div>
+                <div class="reprice-new" style="color:var(--terracotta);">$72</div>
+                <div class="reprice-pct" style="color:var(--terracotta);">-15%</div>
+              </div>
+            </div>
+            <div class="reprice-reason">High views but no offers. Market comps avg $70-75. Price drop recommended to drive conversion.</div>
+            <div class="reprice-bottom">
+              <span class="action-badge" style="background:rgba(196,89,58,0.12);color:var(--terracotta);">DROP</span>
+              <span class="platform-badge pb-depop">DEP</span>
+            </div>
+          </div>
+          <!-- Raise card -->
+          <div class="reprice-card" style="border-color:rgba(16,185,129,0.15);">
+            <div class="reprice-header">
+              <span class="reprice-icon" style="color:var(--success);">⬆</span>
+              <div class="reprice-info">
+                <div class="reprice-title">Raf Simons Archive Tee</div>
+                <div class="reprice-meta">3d listed · 245 views · 18 likes</div>
+              </div>
+              <div class="reprice-prices">
+                <div class="reprice-old">$180</div>
+                <div class="reprice-new" style="color:var(--success);">$210</div>
+                <div class="reprice-pct" style="color:var(--success);">+17%</div>
+              </div>
+            </div>
+            <div class="reprice-reason">Very high engagement. Comps selling at $200-230. Room to raise price.</div>
+            <div class="reprice-bottom">
+              <span class="action-badge" style="background:rgba(16,185,129,0.12);color:var(--success);">RAISE</span>
+              <span class="platform-badge pb-grailed">GRL</span>
+            </div>
+          </div>
+          <!-- Hold card -->
+          <div class="reprice-card" style="border-color:rgba(91,155,213,0.15);">
+            <div class="reprice-header">
+              <span class="reprice-icon" style="color:var(--info);">⏸</span>
+              <div class="reprice-info">
+                <div class="reprice-title">Jordan 1 Retro High OG</div>
+                <div class="reprice-meta">7d listed · 150 views · 8 likes</div>
+              </div>
+              <div class="reprice-prices">
+                <div class="reprice-old">$220</div>
+                <div class="reprice-new" style="color:var(--info);">$220</div>
+                <div class="reprice-pct" style="color:var(--info);">0%</div>
+              </div>
+            </div>
+            <div class="reprice-reason">Price is competitive. Steady engagement. Hold current price.</div>
+            <div class="reprice-bottom">
+              <span class="action-badge" style="background:rgba(91,155,213,0.12);color:var(--info);">HOLD</span>
+              <span class="platform-badge pb-ebay">BAY</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SCR-07: SMART LIST ==================== -->
+<div class="screen-section" id="SCR-07">
+  <div class="section-header">
+    <span class="section-id">SCR-07</span>
+    <h2>Smart List (AI Camera)</h2>
+    <span class="section-spec">DESIGN_SPEC.md → SCREEN 7</span>
+    <span class="section-file">Views/Listings/SmartListView.swift</span>
+  </div>
+  <div class="phone-row">
+    <!-- Capture -->
+    <div class="phone-wrapper">
+      <span class="phone-label">Phase 1: Capture</span>
+      <div class="phone">
+        <div class="dynamic-island"></div>
+        <div class="status-bar"><span class="time">9:41</span><span class="icons">📶 📡 🔋</span></div>
+        <div class="nav-bar"><div class="nav-bar-inline"><span style="color:var(--text-secondary);font-size:14px;">Cancel</span><span class="title">Smart List</span><span style="width:40px;"></span></div></div>
+        <div class="content no-tabs" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 32px;">
+          <div style="font-size:64px;color:var(--accent);margin-bottom:16px;">📷</div>
+          <div style="font-size:22px;font-weight:700;color:#fff;margin-bottom:8px;">AI-Powered Listing</div>
+          <div style="font-size:14px;color:var(--text-tertiary);text-align:center;line-height:1.5;margin-bottom:40px;">Take a photo or choose from library.<br>AI will generate title, description, pricing & more.</div>
+          <div style="width:100%;">
+            <div class="btn-gradient" style="margin-bottom:12px;">📸 Choose from Library</div>
+            <div class="btn-outline">📷 Take Photo</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Result -->
+    <div class="phone-wrapper">
+      <span class="phone-label">Phase 3: AI Result</span>
+      <div class="phone">
+        <div class="dynamic-island"></div>
+        <div class="status-bar"><span class="time">9:41</span><span class="icons">📶 📡 🔋</span></div>
+        <div class="nav-bar"><div class="nav-bar-inline"><span style="color:var(--text-secondary);font-size:14px;">Cancel</span><span class="title">Smart List</span><span style="width:40px;"></span></div></div>
+        <div class="content no-tabs" style="padding:0 16px;overflow-y:auto;">
+          <!-- Image preview -->
+          <div style="width:100%;height:180px;background:linear-gradient(135deg,rgba(82,183,136,0.2),rgba(45,106,79,0.2));border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:48px;margin-bottom:16px;">👕</div>
+          <!-- AI Generated label -->
+          <div style="display:flex;align-items:center;gap:4px;margin-bottom:4px;">
+            <span style="font-size:12px;color:var(--accent);">✨</span>
+            <span style="font-size:12px;font-weight:700;color:var(--accent);">AI Generated</span>
+          </div>
+          <div style="font-size:20px;font-weight:700;color:#fff;margin-bottom:12px;">Vintage Nike ACG Fleece Half-Zip Pullover</div>
+          <!-- Details grid -->
+          <div class="smart-detail-grid" style="margin-bottom:12px;">
+            <div class="smart-detail-cell"><div class="smart-detail-label">Brand</div><div class="smart-detail-value">Nike ACG</div></div>
+            <div class="smart-detail-cell"><div class="smart-detail-label">Category</div><div class="smart-detail-value">Fleece</div></div>
+            <div class="smart-detail-cell"><div class="smart-detail-label">Size</div><div class="smart-detail-value">L</div></div>
+            <div class="smart-detail-cell"><div class="smart-detail-label">Condition</div><div class="smart-detail-value">Good</div></div>
+            <div class="smart-detail-cell"><div class="smart-detail-label">Price</div><div class="smart-detail-value" style="color:var(--accent);">$85</div></div>
+            <div class="smart-detail-cell"><div class="smart-detail-label">Color</div><div class="smart-detail-value">Forest Green</div></div>
+          </div>
+          <!-- Hashtags -->
+          <div class="hashtag-row" style="margin-bottom:16px;">
+            <span class="hashtag">#vintagenike</span>
+            <span class="hashtag">#acg</span>
+            <span class="hashtag">#fleece</span>
+            <span class="hashtag">#gorpcore</span>
+            <span class="hashtag">#y2k</span>
+            <span class="hashtag">#outdoor</span>
+          </div>
+          <!-- Create button -->
+          <div class="btn-gradient" style="margin-bottom:12px;">➕ Create Listing</div>
+          <div style="text-align:center;margin-bottom:20px;">
+            <span style="font-size:14px;color:var(--text-secondary);">Try Another Photo</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SCR-13: SETTINGS ==================== -->
+<div class="screen-section" id="SCR-13">
+  <div class="section-header">
+    <span class="section-id">SCR-13</span>
+    <h2>Settings</h2>
+    <span class="section-spec">DESIGN_SPEC.md → SCREEN 13</span>
+    <span class="section-file">Views/Settings/SettingsView.swift</span>
+  </div>
+  <div class="phone-row">
+    <div class="phone-wrapper">
+      <span class="phone-label">Settings</span>
+      <div class="phone phone-small">
+        <div class="dynamic-island"></div>
+        <div class="status-bar"><span class="time">9:41</span><span class="icons">📶 📡 🔋</span></div>
+        <div class="nav-bar"><div class="nav-bar-large-title" style="font-size:28px;">Settings</div></div>
+        <div class="content no-tabs" style="padding:0 16px;overflow-y:auto;">
+          <!-- Account -->
+          <div class="settings-section">
+            <div class="settings-label">Account</div>
+            <div class="settings-card">
+              <div class="settings-row">
+                <div class="nav-bar-btn avatar" style="width:50px;height:50px;font-size:18px;">AM</div>
+                <div style="flex:1;">
+                  <div style="font-size:17px;font-weight:600;color:#fff;">antonio</div>
+                  <div style="font-size:13px;color:var(--text-tertiary);">admin@listblitz.io</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Platforms -->
+          <div class="settings-section">
+            <div class="settings-label">Connected Platforms</div>
+            <div class="settings-card">
+              <div class="settings-row"><div class="platform-icon" style="background:rgba(249,115,22,0.15);color:var(--depop);width:32px;height:32px;font-size:12px;">D</div><span class="label">Depop</span><span class="check">✓</span></div>
+              <div class="settings-row"><div class="platform-icon" style="background:rgba(100,116,139,0.15);color:var(--grailed);width:32px;height:32px;font-size:12px;">G</div><span class="label">Grailed</span><span class="check">✓</span></div>
+              <div class="settings-row"><div class="platform-icon" style="background:rgba(236,72,153,0.15);color:var(--poshmark);width:32px;height:32px;font-size:12px;">P</div><span class="label">Poshmark</span><span class="check">✓</span></div>
+              <div class="settings-row"><div class="platform-icon" style="background:rgba(229,182,56,0.15);color:var(--ebay);width:32px;height:32px;font-size:12px;">E</div><span class="label">eBay</span><span class="check">✓</span></div>
+            </div>
+          </div>
+          <!-- App -->
+          <div class="settings-section">
+            <div class="settings-label">App</div>
+            <div class="settings-card">
+              <div class="settings-row"><span class="label">Version</span><span class="value">1.0.0</span></div>
+              <div class="settings-row"><span class="label">Build</span><span class="value">1</span></div>
+              <div class="settings-row"><span class="label">Smart Repricer</span><span class="chevron">›</span></div>
+            </div>
+          </div>
+          <!-- Sign Out -->
+          <div class="settings-section">
+            <div class="settings-card">
+              <div class="settings-row" style="justify-content:center;">
+                <span style="color:var(--terracotta);font-size:14px;font-weight:700;">↗ Sign Out</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div style="text-align:center;padding:40px;color:var(--text-tertiary);font-size:12px;border-top:1px solid rgba(255,255,255,0.05);max-width:900px;margin:0 auto;">
+  <div style="color:var(--accent);font-size:14px;font-weight:700;margin-bottom:8px;">ListBlitz iOS Mockups v1.0</div>
+  <div>13 screens · 6 components · 5 services · Full traceability</div>
+  <div style="margin-top:8px;">Spec: <code>ios/DESIGN_SPEC.md</code> · Source: <code>ios/ListBlitz/</code></div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,1452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ListBlitz iOS v2 — Redesign + 3 New Features</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  :root {
+    /* iOS-NATIVE Dark Mode Palette */
+    --bg-pure: #000000;           /* OLED black - saves battery */
+    --bg-primary: #000000;
+    --bg-card: #1C1C1E;           /* iOS systemGray6 dark */
+    --bg-elevated: #2C2C2E;       /* iOS systemGray5 dark */
+    --bg-grouped: #1C1C1E;
+    --bg-tertiary: #3A3A3C;       /* iOS systemGray4 dark */
+
+    /* New Accent: Electric Mint — pops on OLED, feels premium */
+    --accent: #34D399;            /* Vibrant mint green */
+    --accent-soft: #059669;       /* Muted for backgrounds */
+    --accent-glow: rgba(52,211,153,0.15);
+
+    /* iOS System Colors */
+    --ios-blue: #0A84FF;
+    --ios-green: #30D158;
+    --ios-orange: #FF9F0A;
+    --ios-red: #FF453A;
+    --ios-yellow: #FFD60A;
+    --ios-purple: #BF5AF2;
+    --ios-pink: #FF375F;
+    --ios-teal: #64D2FF;
+    --ios-indigo: #5E5CE6;
+
+    /* Text — iOS standard */
+    --text-primary: #FFFFFF;
+    --text-secondary: #EBEBF5CC;  /* 80% */
+    --text-tertiary: #EBEBF54D;   /* 30% */
+    --text-quaternary: #EBEBF529; /* 16% */
+
+    /* Separators */
+    --separator: rgba(84,84,88,0.65);
+    --separator-opaque: #38383A;
+
+    /* Platform Colors */
+    --depop: #FF2300;
+    --grailed: #8B8B8B;
+    --poshmark: #C13584;
+    --mercari: #4DC8F1;
+    --ebay: #E53238;
+    --vinted: #09B1BA;
+    --facebook: #1877F2;
+    --vestiaire: #1A1A1A;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0a0a;
+    color: #f0f0f0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    padding: 40px 20px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Header */
+  .hero {
+    text-align: center;
+    padding: 60px 20px 40px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .hero-badge {
+    display: inline-block;
+    background: var(--accent-glow);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .hero h1 {
+    font-size: 48px;
+    font-weight: 900;
+    letter-spacing: -2px;
+    background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 12px;
+  }
+  .hero p { color: var(--text-secondary); font-size: 16px; line-height: 1.6; }
+
+  /* Design system showcase */
+  .design-system {
+    max-width: 1000px;
+    margin: 0 auto 60px;
+    background: var(--bg-card);
+    border-radius: 20px;
+    padding: 32px;
+    border: 1px solid var(--separator);
+  }
+  .ds-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 20px;
+  }
+  .color-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+  .color-swatch {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .swatch {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    border: 1px solid var(--separator);
+  }
+  .swatch-label { font-size: 10px; color: var(--text-tertiary); font-weight: 500; }
+  .swatch-hex { font-size: 9px; color: var(--text-quaternary); font-family: monospace; }
+
+  .ds-section { margin-bottom: 24px; }
+  .ds-section h4 { font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; font-weight: 600; }
+
+  /* Feature Proposal Cards */
+  .features-section {
+    max-width: 1100px;
+    margin: 0 auto 60px;
+  }
+  .features-title {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  .features-sub {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 40px;
+  }
+  .feature-card {
+    background: var(--bg-card);
+    border-radius: 24px;
+    border: 1px solid var(--separator);
+    padding: 36px;
+    margin-bottom: 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: center;
+  }
+  .feature-card:nth-child(even) { direction: rtl; }
+  .feature-card:nth-child(even) > * { direction: ltr; }
+  .feature-info {}
+  .feature-number {
+    font-size: 64px;
+    font-weight: 900;
+    color: var(--accent);
+    opacity: 0.15;
+    line-height: 1;
+    margin-bottom: -8px;
+  }
+  .feature-name {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+  .feature-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .feature-desc {
+    font-size: 15px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 20px;
+  }
+  .feature-bullets {
+    list-style: none;
+  }
+  .feature-bullets li {
+    font-size: 13px;
+    color: var(--text-secondary);
+    padding: 6px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .feature-bullets li::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  /* Phone frame v2 */
+  .screen-section {
+    max-width: 1300px;
+    margin: 0 auto 72px;
+  }
+  .section-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--separator);
+  }
+  .section-head .id {
+    background: var(--accent);
+    color: #000;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+  .section-head h2 { font-size: 24px; font-weight: 700; }
+  .section-head .meta { margin-left: auto; font-size: 11px; color: var(--text-tertiary); font-family: monospace; }
+
+  .phone-row {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .phone-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .phone-state {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 600;
+  }
+
+  .iphone {
+    width: 393px;
+    height: 852px;
+    background: var(--bg-pure);
+    border-radius: 55px;
+    border: 3px solid #333;
+    overflow: hidden;
+    position: relative;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.05),
+      0 25px 80px rgba(0,0,0,0.6),
+      0 0 40px rgba(52,211,153,0.03);
+  }
+  .iphone-sm { height: 740px; }
+
+  .notch {
+    width: 126px;
+    height: 37px;
+    background: #000;
+    border-radius: 22px;
+    position: absolute;
+    top: 11px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+  }
+
+  .sbar {
+    height: 59px;
+    padding: 16px 28px 0;
+    display: flex;
+    justify-content: space-between;
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .sbar-l { margin-left: 32px; }
+  .sbar-r { display: flex; gap: 6px; font-size: 12px; margin-right: 4px; }
+
+  .navbar {
+    padding: 0 20px 10px;
+  }
+  .navbar-lg {
+    font-size: 34px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.8px;
+  }
+  .navbar-inline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+  }
+  .navbar-title { font-size: 17px; font-weight: 600; color: #fff; }
+  .navbar-sub { font-size: 11px; color: var(--text-tertiary); text-align: center; }
+  .navbar-btn { color: var(--accent); font-size: 14px; font-weight: 600; }
+  .avatar-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent-soft));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+    color: #000;
+  }
+
+  .scroll-content {
+    padding: 0 20px;
+    overflow-y: auto;
+    height: calc(100% - 152px);
+  }
+  .scroll-content.no-tab { height: calc(100% - 59px); }
+
+  /* Tab bar v2 */
+  .tabbar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 83px;
+    background: rgba(28,28,30,0.92);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border-top: 0.33px solid var(--separator);
+    display: flex;
+    justify-content: space-around;
+    padding-top: 10px;
+  }
+  .tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    color: var(--text-tertiary);
+    position: relative;
+  }
+  .tab.on { color: var(--accent); }
+  .tab-ico { font-size: 20px; }
+  .tab-badge-v2 {
+    position: absolute;
+    top: -3px;
+    right: -6px;
+    width: 18px;
+    height: 18px;
+    background: var(--ios-red);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* iOS Cards */
+  .ios-card {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .ios-card-flush {
+    background: var(--bg-card);
+    border-radius: 16px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+
+  /* Stat cards v2 */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .stat-v2 {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 14px 16px;
+  }
+  .stat-v2-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .stat-v2-label {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    font-weight: 500;
+  }
+  .stat-v2-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+  .stat-v2-val {
+    font-size: 26px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -1px;
+  }
+  .stat-v2-change {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-top: 4px;
+  }
+
+  /* Listing card v2 */
+  .lc2 {
+    display: flex;
+    gap: 14px;
+    padding: 14px 16px;
+    border-bottom: 0.33px solid var(--separator);
+  }
+  .lc2:last-child { border-bottom: none; }
+  .lc2-img {
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
+    background: var(--bg-elevated);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .lc2-body { flex: 1; min-width: 0; }
+  .lc2-title { font-size: 15px; font-weight: 600; color: #fff; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lc2-meta { font-size: 13px; color: var(--text-tertiary); margin-bottom: 5px; }
+  .lc2-badges { display: flex; gap: 4px; }
+  .lc2-price { text-align: right; flex-shrink: 0; }
+  .lc2-price-val { font-size: 17px; font-weight: 700; color: var(--accent); }
+  .lc2-profit { font-size: 12px; font-weight: 600; margin-top: 2px; }
+
+  /* Badge v2 */
+  .bdg {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .bdg-dot { width: 5px; height: 5px; border-radius: 50%; }
+  .bdg-draft { background: rgba(255,214,10,0.12); color: var(--ios-yellow); }
+  .bdg-draft .bdg-dot { background: var(--ios-yellow); }
+  .bdg-active { background: rgba(48,209,88,0.12); color: var(--ios-green); }
+  .bdg-active .bdg-dot { background: var(--ios-green); }
+  .bdg-sold { background: rgba(100,210,255,0.12); color: var(--ios-teal); }
+  .bdg-sold .bdg-dot { background: var(--ios-teal); }
+
+  .plat-bdg {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 5px;
+  }
+  .pl-dep { background: rgba(255,35,0,0.12); color: var(--depop); }
+  .pl-grl { background: rgba(139,139,139,0.15); color: #aaa; }
+  .pl-psh { background: rgba(193,53,132,0.12); color: var(--poshmark); }
+  .pl-mrc { background: rgba(77,200,241,0.12); color: var(--mercari); }
+  .pl-bay { background: rgba(229,50,56,0.12); color: var(--ebay); }
+  .pl-vnt { background: rgba(9,177,186,0.12); color: var(--vinted); }
+
+  /* Filter chips v2 */
+  .chips { display: flex; gap: 8px; padding: 8px 0; overflow-x: auto; }
+  .chip {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .chip-on { background: var(--accent); color: #000; }
+  .chip-off { background: var(--bg-elevated); color: var(--text-secondary); }
+  .chip-cnt {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 0 5px;
+    border-radius: 6px;
+    margin-left: 4px;
+  }
+  .chip-on .chip-cnt { background: rgba(0,0,0,0.2); color: #000; }
+  .chip-off .chip-cnt { background: var(--accent-glow); color: var(--accent); }
+
+  /* Quick actions v2 */
+  .qa-grid { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; }
+  .qa-btn {
+    flex: 1;
+    min-width: 80px;
+    padding: 16px 8px;
+    border-radius: 16px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .qa-icon { font-size: 24px; }
+  .qa-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); }
+
+  /* Search bar v2 */
+  .search-v2 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: var(--bg-elevated);
+    border-radius: 12px;
+    margin-bottom: 10px;
+  }
+  .search-v2 .ico { font-size: 14px; color: var(--text-tertiary); }
+  .search-v2 .txt { font-size: 16px; color: var(--text-tertiary); }
+
+  /* Section label */
+  .sec-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .sec-label h3 { font-size: 20px; font-weight: 700; }
+  .sec-label .more { font-size: 13px; color: var(--accent); font-weight: 600; }
+
+  /* Sale row v2 */
+  .sale-v2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 0.33px solid var(--separator);
+  }
+  .sale-v2:last-child { border-bottom: none; }
+  .sale-v2-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 800;
+  }
+  .sale-v2-info { flex: 1; }
+  .sale-v2-title { font-size: 14px; font-weight: 600; color: #fff; }
+  .sale-v2-meta { font-size: 12px; color: var(--text-tertiary); margin-top: 1px; }
+  .sale-v2-price { text-align: right; }
+  .sale-v2-amt { font-size: 15px; font-weight: 700; color: #fff; }
+  .sale-v2-prof { font-size: 12px; font-weight: 600; margin-top: 1px; }
+
+  /* Convo row v2 */
+  .cv2 {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 0.33px solid var(--separator);
+    align-items: center;
+  }
+  .cv2-av {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+  .cv2-body { flex: 1; min-width: 0; }
+  .cv2-top { display: flex; justify-content: space-between; }
+  .cv2-name { font-size: 15px; font-weight: 600; color: #fff; }
+  .cv2-time { font-size: 12px; color: var(--text-tertiary); }
+  .cv2-listing { font-size: 13px; color: var(--text-tertiary); margin-top: 1px; }
+  .cv2-msg { font-size: 13px; color: var(--text-tertiary); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cv2-msg.unread { color: #fff; font-weight: 500; }
+  .cv2-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+
+  /* Message v2 */
+  .m2 { display: flex; margin-bottom: 10px; }
+  .m2.out { justify-content: flex-end; }
+  .m2-bubble {
+    max-width: 72%;
+    padding: 12px 16px;
+    border-radius: 20px;
+    font-size: 15px;
+    line-height: 1.45;
+  }
+  .m2-bubble.out { background: var(--accent); color: #000; font-weight: 500; border-bottom-right-radius: 6px; }
+  .m2-bubble.in { background: var(--bg-elevated); color: #fff; border-bottom-left-radius: 6px; }
+  .m2-time { font-size: 11px; color: var(--text-tertiary); margin-top: 3px; padding: 0 6px; }
+
+  /* Offer card (new feature) */
+  .offer-card {
+    background: var(--bg-card);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 12px;
+    border: 1px solid var(--separator);
+    position: relative;
+    overflow: hidden;
+  }
+  .offer-glow {
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    filter: blur(40px);
+    opacity: 0.15;
+  }
+  .offer-header { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; position: relative; }
+  .offer-ai-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 8px;
+    background: var(--accent-glow);
+    color: var(--accent);
+  }
+  .offer-prices {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 14px;
+    position: relative;
+  }
+  .offer-price-col { text-align: center; flex: 1; }
+  .offer-price-label { font-size: 11px; color: var(--text-tertiary); margin-bottom: 4px; }
+  .offer-price-val { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+  .offer-vs {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-tertiary);
+    background: var(--bg-elevated);
+    padding: 4px 8px;
+    border-radius: 6px;
+  }
+  .offer-actions {
+    display: flex;
+    gap: 8px;
+    position: relative;
+  }
+  .offer-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    border: none;
+  }
+  .offer-accept { background: rgba(48,209,88,0.15); color: var(--ios-green); }
+  .offer-counter { background: rgba(10,132,255,0.15); color: var(--ios-blue); }
+  .offer-decline { background: rgba(255,69,58,0.1); color: var(--ios-red); }
+
+  /* Swipe hint */
+  .swipe-hint {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-quaternary);
+    margin-top: 8px;
+  }
+
+  /* Widget card (new feature) */
+  .widget {
+    border-radius: 22px;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .widget-sm { width: 170px; height: 170px; flex-shrink: 0; }
+  .widget-md { width: 170px; height: 170px; flex-shrink: 0; }
+  .widget-lg { width: 100%; height: auto; }
+  .widget-label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.5); margin-bottom: 8px; }
+  .widget-value { font-size: 32px; font-weight: 800; color: #fff; letter-spacing: -1px; }
+  .widget-sub { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 4px; }
+
+  /* Search result v2 */
+  .sr2 {
+    background: var(--bg-card);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .sr2-img {
+    width: 100%;
+    height: 170px;
+    background: var(--bg-elevated);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    position: relative;
+  }
+  .sr2-body { padding: 10px 12px 12px; }
+  .sr2-title { font-size: 13px; font-weight: 600; color: #fff; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .sr2-row { display: flex; justify-content: space-between; align-items: center; }
+  .sr2-price { font-size: 17px; font-weight: 800; color: var(--accent); }
+  .sr2-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* Segmented v2 */
+  .seg2 {
+    display: flex;
+    background: var(--bg-elevated);
+    border-radius: 10px;
+    padding: 2px;
+    margin-bottom: 16px;
+  }
+  .seg2-item {
+    flex: 1;
+    padding: 7px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 8px;
+    color: var(--text-tertiary);
+  }
+  .seg2-item.on { background: var(--bg-tertiary); color: #fff; }
+
+  /* Bar chart v2 */
+  .chart-v2 { display: flex; align-items: flex-end; gap: 8px; height: 110px; }
+  .bar-v2 {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .bar-v2-fill {
+    width: 100%;
+    border-radius: 4px 4px 0 0;
+    background: linear-gradient(to top, var(--accent-soft), var(--accent));
+  }
+  .bar-v2-lbl { font-size: 9px; color: var(--text-tertiary); font-weight: 500; }
+
+  /* Skeleton v2 */
+  @keyframes shimmer2 {
+    0% { background-position: -300% 0; }
+    100% { background-position: 300% 0; }
+  }
+  .skel {
+    background: linear-gradient(90deg, var(--bg-elevated) 25%, var(--bg-tertiary) 50%, var(--bg-elevated) 75%);
+    background-size: 300% 100%;
+    animation: shimmer2 2s ease infinite;
+    border-radius: 8px;
+  }
+
+  /* Snap flow (new feature) */
+  .snap-step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 0.33px solid var(--separator);
+  }
+  .snap-step:last-child { border-bottom: none; }
+  .snap-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+  .snap-num.done { background: var(--accent); color: #000; }
+  .snap-num.current { background: var(--ios-blue); color: #fff; }
+  .snap-num.pending { background: var(--bg-elevated); color: var(--text-tertiary); }
+  .snap-text { flex: 1; }
+  .snap-label { font-size: 14px; font-weight: 600; color: #fff; }
+  .snap-desc { font-size: 12px; color: var(--text-tertiary); margin-top: 1px; }
+  .snap-check { color: var(--accent); font-size: 16px; }
+  .snap-time { font-size: 11px; color: var(--text-tertiary); }
+
+  /* Gradient text */
+  .grad-text {
+    background: linear-gradient(135deg, #fff, var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Glassmorphism card */
+  .glass {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 20px;
+  }
+
+  /* Notification card */
+  .notif {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 0.33px solid var(--separator);
+    align-items: flex-start;
+  }
+  .notif:last-child { border-bottom: none; }
+  .notif-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .notif-body { flex: 1; }
+  .notif-title { font-size: 14px; font-weight: 600; color: #fff; }
+  .notif-desc { font-size: 13px; color: var(--text-tertiary); margin-top: 2px; }
+  .notif-time { font-size: 11px; color: var(--text-quaternary); margin-top: 3px; }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">v2 Redesign</div>
+  <h1>ListBlitz iOS</h1>
+  <p>OLED-black native design + 3 new mobile-first features.<br>Built for iOS 18 with system colors, SF Pro, and haptic-driven interactions.</p>
+</div>
+
+<!-- DESIGN SYSTEM -->
+<div class="design-system">
+  <div class="ds-title">Redesigned Color System — iOS Native</div>
+  <div class="ds-section">
+    <h4>Backgrounds (OLED-optimized)</h4>
+    <div class="color-row">
+      <div class="color-swatch"><div class="swatch" style="background:#000;"></div><span class="swatch-label">Pure Black</span><span class="swatch-hex">#000000</span></div>
+      <div class="color-swatch"><div class="swatch" style="background:#1C1C1E;"></div><span class="swatch-label">Card</span><span class="swatch-hex">#1C1C1E</span></div>
+      <div class="color-swatch"><div class="swatch" style="background:#2C2C2E;"></div><span class="swatch-label">Elevated</span><span class="swatch-hex">#2C2C2E</span></div>
+      <div class="color-swatch"><div class="swatch" style="background:#3A3A3C;"></div><span class="swatch-label">Tertiary</span><span class="swatch-hex">#3A3A3C</span></div>
+    </div>
+  </div>
+  <div class="ds-section">
+    <h4>Accent + iOS System Colors</h4>
+    <div class="color-row">
+      <div class="color-swatch"><div class="swatch" style="background:#34D399;"></div><span class="swatch-label">Mint</span><span class="swatch-hex">#34D399</span></div>
+      <div class="color-swatch"><div class="swatch" style="background:#0A84FF;"></div><span class="swatch-label">Blue</span><span class="swatch-hex">#0A84FF</span></div>
+      <div class="color-swatch"><div class="swatch" style="background:#30D158;"></div><span class="swatch-label">Green</span><span class="swatch-hex">#30D158</span></div>
+      <div class="color-swatch"><div class="swatch" style="background:#FF9F0A;"></div><span class="swatch-label">Orange</span><span class="swatch-hex">#FF9F0A</span></div>
+      <div class="color-swatch"><div class="swatch" style="background:#FF453A;"></div><span class="swatch-label">Red</span><span class="swatch-hex">#FF453A</span></div>
+      <div class="color-swatch"><div class="swatch" style="background:#BF5AF2;"></div><span class="swatch-label">Purple</span><span class="swatch-hex">#BF5AF2</span></div>
+      <div class="color-swatch"><div class="swatch" style="background:#FFD60A;"></div><span class="swatch-label">Yellow</span><span class="swatch-hex">#FFD60A</span></div>
+      <div class="color-swatch"><div class="swatch" style="background:#64D2FF;"></div><span class="swatch-label">Teal</span><span class="swatch-hex">#64D2FF</span></div>
+    </div>
+  </div>
+  <div class="ds-section" style="margin-bottom:0;">
+    <h4>Key Design Changes from v1</h4>
+    <ul class="feature-bullets" style="columns:2;">
+      <li>Pure OLED black background — saves 40% battery</li>
+      <li>iOS systemGray scale for cards — feels native</li>
+      <li>Electric Mint accent — pops harder than forest green</li>
+      <li>iOS system colors for semantics (blue, red, green, etc.)</li>
+      <li>20px border radii — matches iOS 18 design language</li>
+      <li>0.33px separators — Apple's exact separator weight</li>
+      <li>Blur-backed tab bar — native vibrancy feel</li>
+      <li>SF Pro weight scale — 300 to 900</li>
+    </ul>
+  </div>
+</div>
+
+<!-- 3 NEW FEATURES -->
+<div class="features-section">
+  <div class="features-title">3 New Features</div>
+  <div class="features-sub">Mobile-first capabilities that maximize efficiency, speed, and usability</div>
+
+  <!-- FEATURE 1: SNAP & SHIP -->
+  <div class="feature-card">
+    <div class="feature-info">
+      <div class="feature-number">01</div>
+      <div class="feature-name">Snap & Ship</div>
+      <div class="feature-tag" style="background:rgba(52,211,153,0.12);color:var(--accent);">Efficiency</div>
+      <div class="feature-desc">
+        Open camera → snap → AI generates full listing in 2 seconds → one-tap publish to all platforms. The entire listing-to-live flow in <strong>under 10 seconds</strong>. No typing required.
+      </div>
+      <ul class="feature-bullets">
+        <li>Real-time camera viewfinder with AI object detection overlay</li>
+        <li>Auto-generates title, description, category, brand, size, condition, price</li>
+        <li>Shows confidence score and 3-tier pricing (Quick Sale / Fair / Premium)</li>
+        <li>One-tap "Publish All" sends to every connected platform simultaneously</li>
+        <li>Progress pipeline shows each step: Snap → Analyze → Optimize → Publish</li>
+        <li>Offline queue — snap without internet, auto-publishes when back online</li>
+      </ul>
+    </div>
+    <div style="display:flex;justify-content:center;">
+      <div class="iphone iphone-sm">
+        <div class="notch"></div>
+        <div class="sbar"><span class="sbar-l">9:41</span><span class="sbar-r">📶 📡 🔋</span></div>
+        <div class="navbar"><div class="navbar-inline"><span class="navbar-btn">Cancel</span><div><div class="navbar-title">Snap & Ship</div></div><span style="width:50px;"></span></div></div>
+        <div class="scroll-content no-tab" style="padding:0 20px;">
+          <!-- Pipeline -->
+          <div class="ios-card-flush">
+            <div class="snap-step">
+              <div class="snap-num done">✓</div>
+              <div class="snap-text"><div class="snap-label">Snap Photo</div><div class="snap-desc">Image captured</div></div>
+              <span class="snap-time">0.5s</span>
+            </div>
+            <div class="snap-step">
+              <div class="snap-num done">✓</div>
+              <div class="snap-text"><div class="snap-label">AI Analysis</div><div class="snap-desc">Nike ACG Fleece — $85</div></div>
+              <span class="snap-time">1.8s</span>
+            </div>
+            <div class="snap-step">
+              <div class="snap-num current">3</div>
+              <div class="snap-text"><div class="snap-label">Optimize for Platforms</div><div class="snap-desc">Generating for 4 platforms...</div></div>
+              <span style="font-size:14px;">⏳</span>
+            </div>
+            <div class="snap-step">
+              <div class="snap-num pending">4</div>
+              <div class="snap-text"><div class="snap-label">Publish Everywhere</div><div class="snap-desc">Waiting...</div></div>
+            </div>
+          </div>
+          <!-- Preview -->
+          <div style="margin-top:16px;text-align:center;">
+            <div style="width:100%;height:200px;background:var(--bg-card);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:56px;margin-bottom:12px;">👕</div>
+            <div style="font-size:11px;font-weight:700;color:var(--accent);">✨ AI GENERATED</div>
+            <div style="font-size:20px;font-weight:800;color:#fff;margin:4px 0;">Vintage Nike ACG Fleece</div>
+            <div style="font-size:28px;font-weight:900;color:var(--accent);letter-spacing:-1px;">$85</div>
+            <div style="font-size:12px;color:var(--text-tertiary);margin-top:2px;">Nike · L · Good condition</div>
+          </div>
+          <!-- Platforms -->
+          <div style="display:flex;gap:8px;justify-content:center;margin-top:16px;">
+            <span class="plat-bdg pl-dep">Depop</span>
+            <span class="plat-bdg pl-grl">Grailed</span>
+            <span class="plat-bdg pl-psh">Poshmark</span>
+            <span class="plat-bdg pl-bay">eBay</span>
+          </div>
+          <div style="margin-top:20px;">
+            <div style="width:100%;height:50px;background:var(--accent);border-radius:14px;display:flex;align-items:center;justify-content:center;gap:8px;color:#000;font-size:16px;font-weight:800;">🚀 Publish to All Platforms</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEATURE 2: OFFER BLITZ -->
+  <div class="feature-card">
+    <div class="feature-info">
+      <div class="feature-number">02</div>
+      <div class="feature-name">Offer Blitz</div>
+      <div class="feature-tag" style="background:rgba(10,132,255,0.12);color:var(--ios-blue);">Speed</div>
+      <div class="feature-desc">
+        Tinder-style offer management. Incoming offers stack as cards. See AI profit analysis, market comps, and buyer history at a glance. <strong>Accept, Counter, or Decline in one tap.</strong>
+      </div>
+      <ul class="feature-bullets">
+        <li>Card stack UI — swipe right to accept, left to decline</li>
+        <li>AI recommendation with confidence score on every offer</li>
+        <li>Real-time profit calculator (revenue - cost - fees - shipping)</li>
+        <li>Market comp data: "This item sells for $70-90 on avg"</li>
+        <li>Counter with AI-suggested amount pre-filled</li>
+        <li>Batch mode: review 20 offers in under a minute</li>
+      </ul>
+    </div>
+    <div style="display:flex;justify-content:center;">
+      <div class="iphone iphone-sm">
+        <div class="notch"></div>
+        <div class="sbar"><span class="sbar-l">9:41</span><span class="sbar-r">📶 📡 🔋</span></div>
+        <div class="navbar">
+          <div class="navbar-inline">
+            <span class="navbar-btn">‹ Back</span>
+            <div><div class="navbar-title">Offer Blitz</div><div class="navbar-sub">3 pending offers</div></div>
+            <span style="width:50px;"></span>
+          </div>
+        </div>
+        <div class="scroll-content no-tab" style="padding:0 20px;">
+          <div class="offer-card" style="margin-top:8px;">
+            <div class="offer-glow" style="background:var(--ios-green);"></div>
+            <div class="offer-header">
+              <div class="cv2-av" style="width:40px;height:40px;font-size:14px;background:rgba(255,35,0,0.15);color:var(--depop);">M</div>
+              <div style="flex:1;">
+                <div style="font-size:15px;font-weight:700;color:#fff;">Mike_vintage</div>
+                <div style="font-size:12px;color:var(--text-tertiary);">Vintage Nike ACG Fleece · <span class="plat-bdg pl-dep" style="font-size:9px;">Depop</span></div>
+              </div>
+              <div class="offer-ai-badge">✨ Accept</div>
+            </div>
+            <div class="offer-prices">
+              <div class="offer-price-col">
+                <div class="offer-price-label">Their Offer</div>
+                <div class="offer-price-val" style="color:var(--ios-orange);">$70</div>
+              </div>
+              <div class="offer-vs">VS</div>
+              <div class="offer-price-col">
+                <div class="offer-price-label">Your Price</div>
+                <div class="offer-price-val" style="color:#fff;">$85</div>
+              </div>
+            </div>
+            <!-- Profit calc -->
+            <div class="glass" style="padding:12px 16px;margin-bottom:14px;border-radius:12px;">
+              <div style="display:flex;justify-content:space-between;font-size:12px;">
+                <span style="color:var(--text-tertiary);">If you accept:</span>
+                <span style="color:var(--ios-green);font-weight:700;">Profit: +$30</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:11px;margin-top:4px;">
+                <span style="color:var(--text-quaternary);">Market avg: $70-90</span>
+                <span style="color:var(--text-quaternary);">82% sell probability</span>
+              </div>
+            </div>
+            <div class="offer-actions">
+              <div class="offer-btn offer-accept">✓ Accept</div>
+              <div class="offer-btn offer-counter">↩ Counter $78</div>
+              <div class="offer-btn offer-decline">✕</div>
+            </div>
+          </div>
+          <div class="swipe-hint">← Decline · Swipe · Accept →</div>
+          <!-- Next offer peek -->
+          <div style="background:var(--bg-card);border-radius:20px;padding:16px;margin-top:12px;opacity:0.5;transform:scale(0.96);">
+            <div style="display:flex;gap:10px;align-items:center;">
+              <div class="cv2-av" style="width:36px;height:36px;font-size:12px;background:rgba(139,139,139,0.15);color:#aaa;">S</div>
+              <div>
+                <div style="font-size:14px;font-weight:600;color:#fff;">streetwear_sam</div>
+                <div style="font-size:12px;color:var(--text-tertiary);">Raf Simons Archive Tee · $150 offer</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEATURE 3: LIVE PULSE -->
+  <div class="feature-card">
+    <div class="feature-info">
+      <div class="feature-number">03</div>
+      <div class="feature-name">Live Pulse</div>
+      <div class="feature-tag" style="background:rgba(191,90,242,0.12);color:var(--ios-purple);">Usability</div>
+      <div class="feature-desc">
+        Real-time activity feed + iOS Home Screen widgets. See sales, offers, messages, and price alerts as they happen. <strong>Never miss a sale again.</strong>
+      </div>
+      <ul class="feature-bullets">
+        <li>Live activity feed — sales, new offers, messages, price drops stream in real-time</li>
+        <li>iOS Home Screen widgets: revenue counter, active listings, pending offers</li>
+        <li>Lock Screen widget: today's sales at a glance</li>
+        <li>Smart push notifications grouped by priority (offers > sales > messages)</li>
+        <li>Daily digest: morning summary of overnight activity</li>
+        <li>Live Activity on Dynamic Island for active shipping tracking</li>
+      </ul>
+    </div>
+    <div style="display:flex;justify-content:center;">
+      <div class="iphone iphone-sm">
+        <div class="notch"></div>
+        <div class="sbar"><span class="sbar-l">9:41</span><span class="sbar-r">📶 📡 🔋</span></div>
+        <div class="navbar"><div class="navbar-lg" style="font-size:28px;">Live Pulse</div></div>
+        <div class="scroll-content no-tab" style="padding:0 20px;">
+          <!-- Widgets preview -->
+          <div style="display:flex;gap:10px;margin-bottom:16px;overflow-x:auto;">
+            <div class="widget widget-sm" style="background:linear-gradient(135deg,#0a3d2a,#000);">
+              <div class="widget-label">Today's Revenue</div>
+              <div class="widget-value" style="color:var(--accent);">$340</div>
+              <div class="widget-sub">↑ 24% vs yesterday</div>
+              <div style="position:absolute;bottom:16px;right:16px;font-size:24px;opacity:0.3;">💰</div>
+            </div>
+            <div class="widget widget-sm" style="background:linear-gradient(135deg,#1a1a3e,#000);">
+              <div class="widget-label">Pending Offers</div>
+              <div class="widget-value" style="color:var(--ios-blue);">3</div>
+              <div class="widget-sub">$295 total value</div>
+              <div style="position:absolute;bottom:16px;right:16px;font-size:24px;opacity:0.3;">🏷</div>
+            </div>
+          </div>
+          <!-- Live feed -->
+          <div class="sec-label"><h3>Activity</h3><span class="more">Filter</span></div>
+          <div class="ios-card-flush">
+            <div class="notif">
+              <div class="notif-icon" style="background:rgba(48,209,88,0.15);color:var(--ios-green);">💵</div>
+              <div class="notif-body">
+                <div class="notif-title">Sale! Stussy Varsity Jacket</div>
+                <div class="notif-desc">Sold for $95 on Depop · Profit: +$52</div>
+                <div class="notif-time">2 minutes ago</div>
+              </div>
+            </div>
+            <div class="notif">
+              <div class="notif-icon" style="background:rgba(255,159,10,0.15);color:var(--ios-orange);">🏷</div>
+              <div class="notif-body">
+                <div class="notif-title">New Offer: Nike ACG Fleece</div>
+                <div class="notif-desc">Mike_vintage offered $70 · AI says: Accept</div>
+                <div class="notif-time">5 minutes ago</div>
+              </div>
+            </div>
+            <div class="notif">
+              <div class="notif-icon" style="background:rgba(10,132,255,0.15);color:var(--ios-blue);">💬</div>
+              <div class="notif-body">
+                <div class="notif-title">New message from streetwear_sam</div>
+                <div class="notif-desc">"Is the Raf Simons tee still available?"</div>
+                <div class="notif-time">23 minutes ago</div>
+              </div>
+            </div>
+            <div class="notif">
+              <div class="notif-icon" style="background:rgba(255,69,58,0.15);color:var(--ios-red);">📉</div>
+              <div class="notif-body">
+                <div class="notif-title">Price Alert: Jordan 1 Retro</div>
+                <div class="notif-desc">Market price dropped 12% — consider repricing</div>
+                <div class="notif-time">1 hour ago</div>
+              </div>
+            </div>
+            <div class="notif">
+              <div class="notif-icon" style="background:rgba(191,90,242,0.15);color:var(--ios-purple);">📦</div>
+              <div class="notif-body">
+                <div class="notif-title">Shipment Delivered</div>
+                <div class="notif-desc">Levi's 501 delivered to Jessica R. in Chicago</div>
+                <div class="notif-time">3 hours ago</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REDESIGNED CORE SCREENS -->
+<div class="features-title" style="max-width:1100px;margin:0 auto 40px;">Redesigned Core Screens</div>
+
+<!-- DASHBOARD v2 -->
+<div class="screen-section" id="v2-dashboard">
+  <div class="section-head">
+    <span class="id">SCR-03</span>
+    <h2>Dashboard</h2>
+    <span class="meta">Views/Dashboard/DashboardView.swift</span>
+  </div>
+  <div class="phone-row">
+    <div class="phone-wrap">
+      <span class="phone-state">Loaded</span>
+      <div class="iphone">
+        <div class="notch"></div>
+        <div class="sbar"><span class="sbar-l">9:41</span><span class="sbar-r">📶 📡 🔋</span></div>
+        <div class="navbar" style="display:flex;justify-content:space-between;align-items:center;">
+          <div class="navbar-lg">Dashboard</div>
+          <div class="avatar-circle">AM</div>
+        </div>
+        <div class="scroll-content">
+          <div style="margin-bottom:16px;">
+            <span style="font-size:14px;color:var(--text-tertiary);">Welcome back,</span><br>
+            <span style="font-size:28px;font-weight:800;color:#fff;letter-spacing:-0.5px;">antonio</span>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-v2">
+              <div class="stat-v2-top">
+                <span class="stat-v2-label">Revenue</span>
+                <div class="stat-v2-icon" style="background:rgba(52,211,153,0.12);">💲</div>
+              </div>
+              <div class="stat-v2-val">$12,450</div>
+              <div class="stat-v2-change" style="color:var(--ios-green);">↗ 12%</div>
+            </div>
+            <div class="stat-v2">
+              <div class="stat-v2-top">
+                <span class="stat-v2-label">Active</span>
+                <div class="stat-v2-icon" style="background:rgba(10,132,255,0.12);">🏷</div>
+              </div>
+              <div class="stat-v2-val">48</div>
+            </div>
+            <div class="stat-v2">
+              <div class="stat-v2-top">
+                <span class="stat-v2-label">Sales</span>
+                <div class="stat-v2-icon" style="background:rgba(255,159,10,0.12);">🛒</div>
+              </div>
+              <div class="stat-v2-val">23</div>
+              <div class="stat-v2-change" style="color:var(--ios-green);">↗ 8%</div>
+            </div>
+            <div class="stat-v2">
+              <div class="stat-v2-top">
+                <span class="stat-v2-label">Avg Profit</span>
+                <div class="stat-v2-icon" style="background:rgba(191,90,242,0.12);">📈</div>
+              </div>
+              <div class="stat-v2-val">$34</div>
+            </div>
+          </div>
+          <!-- Quick actions -->
+          <div class="qa-grid">
+            <div class="qa-btn" style="background:rgba(52,211,153,0.08);">
+              <span class="qa-icon">📷</span><span class="qa-label">Snap & Ship</span>
+            </div>
+            <div class="qa-btn" style="background:rgba(10,132,255,0.08);">
+              <span class="qa-icon">🏷</span><span class="qa-label">Offers</span>
+            </div>
+            <div class="qa-btn" style="background:rgba(191,90,242,0.08);">
+              <span class="qa-icon">🔍</span><span class="qa-label">Search</span>
+            </div>
+            <div class="qa-btn" style="background:rgba(255,159,10,0.08);">
+              <span class="qa-icon">💰</span><span class="qa-label">Reprice</span>
+            </div>
+          </div>
+          <!-- Recent -->
+          <div class="sec-label"><h3>Recent</h3><span class="more">See All</span></div>
+          <div class="ios-card-flush">
+            <div class="lc2">
+              <div class="lc2-img" style="background:linear-gradient(135deg,rgba(52,211,153,0.15),rgba(5,150,105,0.15));">👕</div>
+              <div class="lc2-body">
+                <div class="lc2-title">Vintage Nike ACG Fleece</div>
+                <div class="lc2-meta">Nike · L</div>
+                <div class="lc2-badges"><span class="bdg bdg-active"><span class="bdg-dot"></span> Active</span><span class="plat-bdg pl-dep">DEP</span><span class="plat-bdg pl-grl">GRL</span></div>
+              </div>
+              <div class="lc2-price"><div class="lc2-price-val">$85</div><div class="lc2-profit" style="color:var(--ios-green);">+$45</div></div>
+            </div>
+            <div class="lc2">
+              <div class="lc2-img" style="background:linear-gradient(135deg,rgba(191,90,242,0.12),rgba(94,92,230,0.12));">👟</div>
+              <div class="lc2-body">
+                <div class="lc2-title">Jordan 1 Retro High OG</div>
+                <div class="lc2-meta">Nike · 10.5</div>
+                <div class="lc2-badges"><span class="bdg bdg-draft"><span class="bdg-dot"></span> Draft</span></div>
+              </div>
+              <div class="lc2-price"><div class="lc2-price-val">$220</div><div class="lc2-profit" style="color:var(--ios-green);">+$90</div></div>
+            </div>
+            <div class="lc2">
+              <div class="lc2-img" style="background:linear-gradient(135deg,rgba(100,210,255,0.12),rgba(10,132,255,0.12));">🧥</div>
+              <div class="lc2-body">
+                <div class="lc2-title">Carhartt WIP Michigan Coat</div>
+                <div class="lc2-meta">Carhartt · M</div>
+                <div class="lc2-badges"><span class="bdg bdg-sold"><span class="bdg-dot"></span> Sold</span><span class="plat-bdg pl-bay">eBay</span></div>
+              </div>
+              <div class="lc2-price"><div class="lc2-price-val">$140</div><div class="lc2-profit" style="color:var(--ios-green);">+$65</div></div>
+            </div>
+          </div>
+          <!-- Sales -->
+          <div class="sec-label" style="margin-top:8px;"><h3>Sales</h3></div>
+          <div class="ios-card">
+            <div class="sale-v2">
+              <div class="sale-v2-icon" style="background:rgba(255,35,0,0.12);color:var(--depop);">D</div>
+              <div class="sale-v2-info"><div class="sale-v2-title">Stussy Varsity Jacket</div><div class="sale-v2-meta">Depop · 2h ago</div></div>
+              <div class="sale-v2-price"><div class="sale-v2-amt">$95</div><div class="sale-v2-prof" style="color:var(--ios-green);">+$52</div></div>
+            </div>
+            <div class="sale-v2">
+              <div class="sale-v2-icon" style="background:rgba(139,139,139,0.12);color:#aaa;">G</div>
+              <div class="sale-v2-info"><div class="sale-v2-title">Raf Simons Archive Tee</div><div class="sale-v2-meta">Grailed · 1d ago</div></div>
+              <div class="sale-v2-price"><div class="sale-v2-amt">$180</div><div class="sale-v2-prof" style="color:var(--ios-green);">+$120</div></div>
+            </div>
+          </div>
+          <div style="height:20px;"></div>
+        </div>
+        <div class="tabbar">
+          <div class="tab on"><span class="tab-ico">⊞</span><span>Dashboard</span></div>
+          <div class="tab"><span class="tab-ico">🏷</span><span>Listings</span></div>
+          <div class="tab"><span class="tab-ico">🔍</span><span>Search</span></div>
+          <div class="tab"><span class="tab-ico">💬</span><span>Inbox</span><span class="tab-badge-v2">3</span></div>
+          <div class="tab"><span class="tab-ico">📊</span><span>Analytics</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inbox v2 -->
+    <div class="phone-wrap">
+      <span class="phone-state">Inbox</span>
+      <div class="iphone">
+        <div class="notch"></div>
+        <div class="sbar"><span class="sbar-l">9:41</span><span class="sbar-r">📶 📡 🔋</span></div>
+        <div class="navbar"><div class="navbar-lg" style="font-size:28px;">Inbox</div></div>
+        <div class="scroll-content">
+          <div class="chips">
+            <span class="chip chip-on">All</span>
+            <span class="chip chip-off">Depop</span>
+            <span class="chip chip-off">Grailed</span>
+            <span class="chip chip-off">Poshmark</span>
+            <span class="chip chip-off">eBay</span>
+          </div>
+          <div class="cv2">
+            <div class="cv2-av" style="background:rgba(255,35,0,0.15);color:var(--depop);">M</div>
+            <div class="cv2-body">
+              <div class="cv2-top"><span class="cv2-name" style="font-weight:700;">Mike_vintage</span><span class="cv2-time">5m</span></div>
+              <div class="cv2-listing"><span class="plat-bdg pl-dep" style="font-size:8px;margin-right:4px;">DEP</span>Vintage Nike ACG Fleece</div>
+              <div class="cv2-msg unread">Hey, would you take $70 for this?</div>
+            </div>
+            <div class="cv2-dot"></div>
+          </div>
+          <div class="cv2">
+            <div class="cv2-av" style="background:rgba(139,139,139,0.15);color:#aaa;">S</div>
+            <div class="cv2-body">
+              <div class="cv2-top"><span class="cv2-name" style="font-weight:700;">streetwear_sam</span><span class="cv2-time">23m</span></div>
+              <div class="cv2-listing"><span class="plat-bdg pl-grl" style="font-size:8px;margin-right:4px;">GRL</span>Raf Simons Archive Tee</div>
+              <div class="cv2-msg unread">Is this still available? What's the lowest?</div>
+            </div>
+            <div class="cv2-dot"></div>
+          </div>
+          <div class="cv2">
+            <div class="cv2-av" style="background:rgba(193,53,132,0.15);color:var(--poshmark);">J</div>
+            <div class="cv2-body">
+              <div class="cv2-top"><span class="cv2-name">Jessica R.</span><span class="cv2-time">2h</span></div>
+              <div class="cv2-listing"><span class="plat-bdg pl-psh" style="font-size:8px;margin-right:4px;">PSH</span>Levi's 501 Vintage Wash</div>
+              <div class="cv2-msg">Thanks for the quick shipping!</div>
+            </div>
+          </div>
+          <div class="cv2">
+            <div class="cv2-av" style="background:rgba(77,200,241,0.15);color:var(--mercari);">T</div>
+            <div class="cv2-body">
+              <div class="cv2-top"><span class="cv2-name">thrift_king99</span><span class="cv2-time">1d</span></div>
+              <div class="cv2-listing"><span class="plat-bdg pl-mrc" style="font-size:8px;margin-right:4px;">MRC</span>Stussy World Tour Cap</div>
+              <div class="cv2-msg">Can you bundle with the jacket?</div>
+            </div>
+          </div>
+          <div class="cv2">
+            <div class="cv2-av" style="background:rgba(229,50,56,0.15);color:var(--ebay);">R</div>
+            <div class="cv2-body">
+              <div class="cv2-top"><span class="cv2-name" style="font-weight:700;">retro_buyer</span><span class="cv2-time">3h</span></div>
+              <div class="cv2-listing"><span class="plat-bdg pl-bay" style="font-size:8px;margin-right:4px;">BAY</span>Jordan 1 Retro High OG</div>
+              <div class="cv2-msg unread">Would you ship internationally?</div>
+            </div>
+            <div class="cv2-dot"></div>
+          </div>
+        </div>
+        <div class="tabbar">
+          <div class="tab"><span class="tab-ico">⊞</span><span>Dashboard</span></div>
+          <div class="tab"><span class="tab-ico">🏷</span><span>Listings</span></div>
+          <div class="tab"><span class="tab-ico">🔍</span><span>Search</span></div>
+          <div class="tab on"><span class="tab-ico">💬</span><span>Inbox</span><span class="tab-badge-v2">3</span></div>
+          <div class="tab"><span class="tab-ico">📊</span><span>Analytics</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analytics v2 -->
+    <div class="phone-wrap">
+      <span class="phone-state">Analytics</span>
+      <div class="iphone">
+        <div class="notch"></div>
+        <div class="sbar"><span class="sbar-l">9:41</span><span class="sbar-r">📶 📡 🔋</span></div>
+        <div class="navbar"><div class="navbar-lg" style="font-size:28px;">Analytics</div></div>
+        <div class="scroll-content">
+          <div class="seg2">
+            <div class="seg2-item">7D</div>
+            <div class="seg2-item on">30D</div>
+            <div class="seg2-item">90D</div>
+            <div class="seg2-item">All</div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-v2"><div class="stat-v2-top"><span class="stat-v2-label">Revenue</span></div><div class="stat-v2-val" style="color:var(--accent);">$4,280</div></div>
+            <div class="stat-v2"><div class="stat-v2-top"><span class="stat-v2-label">Net Profit</span></div><div class="stat-v2-val" style="color:var(--ios-green);">$2,140</div></div>
+            <div class="stat-v2"><div class="stat-v2-top"><span class="stat-v2-label">Items Sold</span></div><div class="stat-v2-val">18</div></div>
+            <div class="stat-v2"><div class="stat-v2-top"><span class="stat-v2-label">Avg Price</span></div><div class="stat-v2-val">$238</div></div>
+          </div>
+          <div class="ios-card">
+            <div style="font-size:15px;font-weight:700;margin-bottom:8px;">Revenue Trend</div>
+            <div class="chart-v2">
+              <div class="bar-v2"><div class="bar-v2-fill" style="height:30px;"></div><div class="bar-v2-lbl">Mon</div></div>
+              <div class="bar-v2"><div class="bar-v2-fill" style="height:55px;"></div><div class="bar-v2-lbl">Tue</div></div>
+              <div class="bar-v2"><div class="bar-v2-fill" style="height:20px;"></div><div class="bar-v2-lbl">Wed</div></div>
+              <div class="bar-v2"><div class="bar-v2-fill" style="height:75px;"></div><div class="bar-v2-lbl">Thu</div></div>
+              <div class="bar-v2"><div class="bar-v2-fill" style="height:45px;"></div><div class="bar-v2-lbl">Fri</div></div>
+              <div class="bar-v2"><div class="bar-v2-fill" style="height:90px;"></div><div class="bar-v2-lbl">Sat</div></div>
+              <div class="bar-v2"><div class="bar-v2-fill" style="height:60px;"></div><div class="bar-v2-lbl">Sun</div></div>
+            </div>
+          </div>
+          <div class="ios-card">
+            <div style="font-size:15px;font-weight:700;margin-bottom:8px;">By Platform</div>
+            <div class="sale-v2" style="padding-top:4px;">
+              <div class="sale-v2-icon" style="background:rgba(255,35,0,0.12);color:var(--depop);border-radius:50%;">D</div>
+              <div class="sale-v2-info"><div class="sale-v2-title">Depop</div><div class="sale-v2-meta">8 sales</div></div>
+              <div style="font-size:16px;font-weight:800;color:var(--accent);">$1,840</div>
+            </div>
+            <div class="sale-v2">
+              <div class="sale-v2-icon" style="background:rgba(139,139,139,0.12);color:#aaa;border-radius:50%;">G</div>
+              <div class="sale-v2-info"><div class="sale-v2-title">Grailed</div><div class="sale-v2-meta">5 sales</div></div>
+              <div style="font-size:16px;font-weight:800;color:var(--accent);">$1,350</div>
+            </div>
+            <div class="sale-v2">
+              <div class="sale-v2-icon" style="background:rgba(229,50,56,0.12);color:var(--ebay);border-radius:50%;">E</div>
+              <div class="sale-v2-info"><div class="sale-v2-title">eBay</div><div class="sale-v2-meta">3 sales</div></div>
+              <div style="font-size:16px;font-weight:800;color:var(--accent);">$720</div>
+            </div>
+          </div>
+          <div style="height:20px;"></div>
+        </div>
+        <div class="tabbar">
+          <div class="tab"><span class="tab-ico">⊞</span><span>Dashboard</span></div>
+          <div class="tab"><span class="tab-ico">🏷</span><span>Listings</span></div>
+          <div class="tab"><span class="tab-ico">🔍</span><span>Search</span></div>
+          <div class="tab"><span class="tab-ico">💬</span><span>Inbox</span></div>
+          <div class="tab on"><span class="tab-ico">📊</span><span>Analytics</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TRACEABILITY -->
+<div class="design-system" style="margin-top:60px;">
+  <div class="ds-title">Traceability Matrix — v2</div>
+  <table style="width:100%;border-collapse:collapse;font-size:12px;">
+    <thead>
+      <tr style="border-bottom:1px solid var(--separator);">
+        <th style="text-align:left;padding:8px;color:var(--accent);font-size:10px;text-transform:uppercase;letter-spacing:1px;">ID</th>
+        <th style="text-align:left;padding:8px;color:var(--accent);font-size:10px;text-transform:uppercase;letter-spacing:1px;">Screen</th>
+        <th style="text-align:left;padding:8px;color:var(--accent);font-size:10px;text-transform:uppercase;letter-spacing:1px;">Source</th>
+        <th style="text-align:left;padding:8px;color:var(--accent);font-size:10px;text-transform:uppercase;letter-spacing:1px;">Spec</th>
+        <th style="text-align:left;padding:8px;color:var(--accent);font-size:10px;text-transform:uppercase;letter-spacing:1px;">Status</th>
+      </tr>
+    </thead>
+    <tbody style="color:var(--text-secondary);">
+      <tr style="border-bottom:1px solid rgba(84,84,88,0.3);"><td style="padding:6px 8px;color:var(--accent);font-weight:700;font-family:monospace;">NEW-01</td><td>Snap & Ship</td><td style="font-family:monospace;font-size:10px;color:var(--text-tertiary);">Views/SnapShip/SnapShipView.swift</td><td>DESIGN_SPEC.md → NEW FEATURE 1</td><td style="color:var(--ios-orange);">🟡 Proposed</td></tr>
+      <tr style="border-bottom:1px solid rgba(84,84,88,0.3);"><td style="padding:6px 8px;color:var(--accent);font-weight:700;font-family:monospace;">NEW-02</td><td>Offer Blitz</td><td style="font-family:monospace;font-size:10px;color:var(--text-tertiary);">Views/Offers/OfferBlitzView.swift</td><td>DESIGN_SPEC.md → NEW FEATURE 2</td><td style="color:var(--ios-orange);">🟡 Proposed</td></tr>
+      <tr style="border-bottom:1px solid rgba(84,84,88,0.3);"><td style="padding:6px 8px;color:var(--accent);font-weight:700;font-family:monospace;">NEW-03</td><td>Live Pulse</td><td style="font-family:monospace;font-size:10px;color:var(--text-tertiary);">Views/Pulse/LivePulseView.swift</td><td>DESIGN_SPEC.md → NEW FEATURE 3</td><td style="color:var(--ios-orange);">🟡 Proposed</td></tr>
+      <tr style="border-bottom:1px solid rgba(84,84,88,0.3);"><td style="padding:6px 8px;color:var(--accent);font-weight:700;font-family:monospace;">SCR-03</td><td>Dashboard (v2)</td><td style="font-family:monospace;font-size:10px;color:var(--text-tertiary);">Views/Dashboard/DashboardView.swift</td><td>DESIGN_SPEC.md → SCREEN 3</td><td style="color:var(--ios-blue);">🔵 Redesign</td></tr>
+      <tr style="border-bottom:1px solid rgba(84,84,88,0.3);"><td style="padding:6px 8px;color:var(--accent);font-weight:700;font-family:monospace;">SCR-09</td><td>Inbox (v2)</td><td style="font-family:monospace;font-size:10px;color:var(--text-tertiary);">Views/Inbox/InboxView.swift</td><td>DESIGN_SPEC.md → SCREEN 9</td><td style="color:var(--ios-blue);">🔵 Redesign</td></tr>
+      <tr><td style="padding:6px 8px;color:var(--accent);font-weight:700;font-family:monospace;">SCR-11</td><td>Analytics (v2)</td><td style="font-family:monospace;font-size:10px;color:var(--text-tertiary);">Views/Analytics/AnalyticsView.swift</td><td>DESIGN_SPEC.md → SCREEN 11</td><td style="color:var(--ios-blue);">🔵 Redesign</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div style="text-align:center;padding:48px;color:var(--text-tertiary);font-size:12px;">
+  <div style="font-size:14px;font-weight:800;color:var(--accent);margin-bottom:4px;">ListBlitz iOS v2</div>
+  <div>3 new features · Redesigned color system · iOS-native design language</div>
+</div>
+
+</body>
+</html>

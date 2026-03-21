@@ -19,6 +19,7 @@ import {
   EyeOff,
   Save,
 } from "lucide-react";
+import { PlatformAuthButtons } from "@/components/platform-auth-buttons";
 
 // ── Constants ───────────────────────────────────────────────
 
@@ -63,6 +64,9 @@ export default function OnboardPage() {
   const [aiModel, setAiModel] = useState("");
 
   const selectedProviderData = AI_PROVIDERS.find((p) => p.id === aiProvider);
+
+  // ── Dismiss boot screen ────────────────────────────────
+  useEffect(() => { window.dispatchEvent(new Event("app:ready")); }, []);
 
   // ── Fetch existing connections on mount ─────────────────
 
@@ -118,6 +122,22 @@ export default function OnboardPage() {
     setSavingPlatform(null);
   };
 
+  const saveWithAuthMethod = async (platform: string, authMethod: string) => {
+    setSavingPlatform(platform);
+    try {
+      const res = await fetch("/api/platforms/connect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ platform, authMethod, username: "", password: "" }),
+      });
+      if (!res.ok) throw new Error();
+      setConnectedPlatforms((prev) => new Set(prev).add(platform));
+    } catch {
+      toast.error("Failed to connect");
+    }
+    setSavingPlatform(null);
+  };
+
   // ── Finish ───────────────────────────────────────────────
 
   const handleFinish = async () => {
@@ -152,14 +172,8 @@ export default function OnboardPage() {
   ];
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
-      style={{ background: "linear-gradient(135deg, #0f766e, #134e4a)" }}>
+    <div className="flex items-start justify-center min-h-[calc(100vh-8rem)] py-6">
       <div className="w-full max-w-lg">
-        {/* Logo */}
-        <div className="flex items-center justify-center mb-5">
-          <img src="/logo-dark.svg" alt="ListBlitz" className="h-10 object-contain" />
-        </div>
-
         {/* Progress */}
         <div className="flex items-center justify-center gap-1.5 mb-5">
           {steps.map((s, i) => (
@@ -168,16 +182,16 @@ export default function OnboardPage() {
                 onClick={() => i < step && setStep(i)}
                 className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all ${
                   i === step
-                    ? "bg-white text-gray-900"
+                    ? "bg-primary text-primary-foreground"
                     : i < step
-                    ? "bg-white/30 text-white cursor-pointer"
-                    : "bg-white/10 text-white/40"
+                    ? "bg-primary/20 text-primary cursor-pointer"
+                    : "bg-muted text-muted-foreground"
                 }`}
               >
                 {i < step ? <CheckCircle className="h-3 w-3" /> : <s.icon className="h-3 w-3" />}
                 <span className="hidden sm:inline">{s.label}</span>
               </button>
-              {i < steps.length - 1 && <div className={`w-4 sm:w-8 h-px ${i < step ? "bg-white/50" : "bg-white/15"}`} />}
+              {i < steps.length - 1 && <div className={`w-4 sm:w-8 h-px ${i < step ? "bg-primary/50" : "bg-border"}`} />}
             </div>
           ))}
         </div>
@@ -261,6 +275,12 @@ export default function OnboardPage() {
                           </div>
                         </div>
                         {!connected && (
+                          <>
+                          <PlatformAuthButtons
+                            platform={p.id}
+                            onAuthMethodSelected={(method) => saveWithAuthMethod(p.id, method)}
+                            loading={isSaving}
+                          />
                           <div className="flex gap-2 items-end">
                             <Input
                               value={cred.username}
@@ -294,6 +314,7 @@ export default function OnboardPage() {
                               Save
                             </Button>
                           </div>
+                          </>
                         )}
                       </div>
                     );
@@ -421,7 +442,7 @@ export default function OnboardPage() {
         {step > 0 && step < 2 && (
           <button
             onClick={() => { setStep(2); }}
-            className="block mx-auto mt-3 text-white/50 text-xs hover:text-white/80 transition-colors"
+            className="block mx-auto mt-3 text-muted-foreground text-xs hover:text-foreground transition-colors"
           >
             Skip setup entirely →
           </button>

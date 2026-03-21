@@ -24,19 +24,20 @@ export async function GET() {
           connected: true,
           username,
           updatedAt: c.updatedAt,
+          authMethod: (c as any).authMethod || "credentials",
         };
       })
     );
 
     const result = ALL_PLATFORMS.map((p) => {
       const existing = connected.find((c) => c.platform === p);
-      return existing || { platform: p, connected: false, username: null, updatedAt: null };
+      return existing || { platform: p, connected: false, username: null, updatedAt: null, authMethod: null };
     });
 
     return NextResponse.json(result);
   } catch (err) {
     console.error("Platform GET error:", err);
-    return NextResponse.json(ALL_PLATFORMS.map((p) => ({ platform: p, connected: false, username: null, updatedAt: null })));
+    return NextResponse.json(ALL_PLATFORMS.map((p) => ({ platform: p, connected: false, username: null, updatedAt: null, authMethod: null })));
   }
 }
 
@@ -47,34 +48,96 @@ export async function POST(request: NextRequest) {
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
-  const { platform, username, password } = body as { platform?: string; username?: string; password?: string };
 
-  if (!platform || !username || !password) {
-    return NextResponse.json({ error: "Platform, username, and password required" }, { status: 400 });
+  const {
+    platform,
+    username,
+    password,
+    authMethod = "credentials",
+    sessionData,
+    appleIdToken,
+    appleAuthCode,
+  } = body as {
+    platform?: string;
+    username?: string;
+    password?: string;
+    authMethod?: string;
+    sessionData?: string;
+    appleIdToken?: string;
+    appleAuthCode?: string;
+  };
+
+  if (!platform) {
+    return NextResponse.json({ error: "Platform required" }, { status: 400 });
   }
 
   if (!ALL_PLATFORMS.includes(platform)) {
     return NextResponse.json({ error: "Invalid platform" }, { status: 400 });
   }
 
+  // Build data to encrypt based on auth method
+  let dataToEncrypt: Record<string, unknown>;
+
+  switch (authMethod) {
+    case "credentials":
+      if (!username || !password) {
+        return NextResponse.json({ error: "Username and password required for credential auth" }, { status: 400 });
+      }
+      dataToEncrypt = { username, password };
+      break;
+
+    case "api_key":
+      if (!password) {
+        return NextResponse.json({ error: "API key required" }, { status: 400 });
+      }
+      dataToEncrypt = { username: username || "", password };
+      break;
+
+    case "google":
+    case "facebook":
+    case "web_session":
+      dataToEncrypt = {
+        username: username || "",
+        password: "",
+        sessionData: sessionData || "",
+        authType: authMethod,
+      };
+      break;
+
+    case "apple":
+      dataToEncrypt = {
+        username: username || "",
+        password: "",
+        appleIdToken: appleIdToken || "",
+        appleAuthCode: appleAuthCode || "",
+        authType: "apple",
+      };
+      break;
+
+    default:
+      // Backward compatible: treat as credentials
+      if (!username || !password) {
+        return NextResponse.json({ error: "Platform, username, and password required" }, { status: 400 });
+      }
+      dataToEncrypt = { username, password };
+  }
+
   try {
-    // Store credentials — use simple base64 encoding as fallback if crypto fails
     let encryptedData: string;
     try {
       const { encrypt } = await import("@/lib/crypto");
-      encryptedData = encrypt(JSON.stringify({ username, password }));
+      encryptedData = encrypt(JSON.stringify(dataToEncrypt));
     } catch {
-      // Fallback: base64 encode (less secure but works everywhere)
-      encryptedData = Buffer.from(JSON.stringify({ username, password })).toString("base64");
+      encryptedData = Buffer.from(JSON.stringify(dataToEncrypt)).toString("base64");
     }
 
     await prisma.platformCredential.upsert({
       where: { platform },
-      update: { encryptedData },
-      create: { platform, encryptedData },
+      update: { encryptedData, authMethod: authMethod || "credentials" },
+      create: { platform, encryptedData, authMethod: authMethod || "credentials" },
     });
 
-    return NextResponse.json({ success: true, platform });
+    return NextResponse.json({ success: true, platform, authMethod });
   } catch (err) {
     console.error("Platform connect error:", err);
     return NextResponse.json({ error: "Failed to save credentials" }, { status: 500 });

@@ -56,6 +56,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useHelp } from "@/components/help-context";
+import { PlatformAuthButtons } from "@/components/platform-auth-buttons";
 import { platformBranding } from "@/lib/colors";
 import { THEMES as THEME_MAP, applyTheme as applyThemeFromLib, saveTheme as saveThemeToStorage, getSavedTheme as getSavedThemeFromStorage, DESIGN_STYLES, applyDesignStyle, saveDesignStyle, getSavedDesignStyle } from "@/lib/themes";
 
@@ -66,6 +67,7 @@ interface PlatformStatus {
   connected: boolean;
   username: string | null;
   updatedAt: string | null;
+  authMethod: string | null;
 }
 
 interface PromptEntry {
@@ -1087,6 +1089,23 @@ function PlatformsTab() {
     setTestingPlatform(null);
   };
 
+  const saveWithAuthMethod = async (platform: string, authMethod: string) => {
+    setSaving(platform);
+    try {
+      const res = await fetch("/api/platforms/connect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ platform, authMethod, username: "", password: "" }),
+      });
+      if (!res.ok) throw new Error();
+      toast.success(`${platformInfo[platform]?.name} connected via ${authMethod}`);
+      fetchPlatforms();
+    } catch {
+      toast.error("Failed to connect");
+    }
+    setSaving(null);
+  };
+
   const connectedCount = platforms.filter((p) => p.connected).length;
 
   return (
@@ -1155,6 +1174,15 @@ function PlatformsTab() {
                     </div>
                   )}
                 </div>
+
+                {/* Auth method buttons */}
+                <PlatformAuthButtons
+                  platform={p.platform}
+                  onAuthMethodSelected={(method) => saveWithAuthMethod(p.platform, method)}
+                  isConnected={p.connected}
+                  connectedMethod={p.authMethod}
+                  loading={isSaving}
+                />
 
                 {/* Credential fields */}
                 <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2 items-end">
