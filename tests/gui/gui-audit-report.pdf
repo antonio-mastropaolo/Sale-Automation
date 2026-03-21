@@ -1,0 +1,876 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+2 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+3 0 obj
+<< /Type /Pages /Kids [5 0 R 7 0 R 9 0 R 11 0 R] /Count 4 >>
+endobj
+4 0 obj
+<< /Length 3134 >>
+stream
+BT
+0.059 0.463 0.431 rg
+/F2 22 Tf
+50 742 Td
+(ListBlitz GUI Audit Report) Tj
+ET
+BT
+0.471 0.471 0.471 rg
+/F1 9 Tf
+50 710 Td
+(Generated: Thursday, March 19, 2026 at 3:57 PM) Tj
+ET
+BT
+0.471 0.471 0.471 rg
+/F1 9 Tf
+50 693 Td
+(Playwright + Chromium | 35 tests | Desktop + Mobile viewports) Tj
+ET
+0.800 0.800 0.800 RG
+0.5 w
+50 665 m 562 665 l S
+BT
+0.000 0.000 0.000 rg
+/F2 16 Tf
+50 647 Td
+(Executive Summary) Tj
+ET
+BT
+0.000 0.000 0.000 rg
+/F1 11 Tf
+60 619 Td
+(Total Tests: 35) Tj
+ET
+BT
+0.086 0.639 0.290 rg
+/F1 11 Tf
+60 602 Td
+(Passed: 13  \(37% clean pass\)) Tj
+ET
+BT
+0.851 0.467 0.024 rg
+/F1 11 Tf
+60 585 Td
+(Warnings: 22) Tj
+ET
+BT
+0.086 0.639 0.290 rg
+/F1 11 Tf
+60 568 Td
+(Failed: 0) Tj
+ET
+BT
+0.086 0.639 0.290 rg
+/F1 11 Tf
+60 551 Td
+(JS Errors: 0 across all pages) Tj
+ET
+BT
+0.086 0.639 0.290 rg
+/F1 11 Tf
+60 534 Td
+(Broken Images: 0 across all pages) Tj
+ET
+0.800 0.800 0.800 RG
+0.5 w
+50 504 m 562 504 l S
+BT
+0.000 0.000 0.000 rg
+/F2 16 Tf
+50 486 Td
+(Key Findings) Tj
+ET
+BT
+0.086 0.639 0.290 rg
+/F2 11 Tf
+60 456 Td
+(PASS - Auth Page Isolation) Tj
+ET
+BT
+0.314 0.314 0.314 rg
+/F1 9 Tf
+70 441 Td
+(Login, Register, and Forgot Password pages correctly hide the sidebar.) Tj
+ET
+BT
+0.086 0.639 0.290 rg
+/F2 11 Tf
+60 422 Td
+(PASS - Onboarding Wizard Layout) Tj
+ET
+BT
+0.314 0.314 0.314 rg
+/F1 9 Tf
+70 407 Td
+(Wizard renders inline within app layout \(not fullscreen overlay\). Sidebar visible.) Tj
+ET
+BT
+0.086 0.639 0.290 rg
+/F2 11 Tf
+60 388 Td
+(PASS - Wizard Step Navigation) Tj
+ET
+BT
+0.314 0.314 0.314 rg
+/F1 9 Tf
+70 373 Td
+(All 3 steps \(Welcome, Platforms, AI Config\) navigate correctly.) Tj
+ET
+BT
+0.086 0.639 0.290 rg
+/F2 11 Tf
+60 354 Td
+(PASS - Sidebar Navigation) Tj
+ET
+BT
+0.314 0.314 0.314 rg
+/F1 9 Tf
+70 339 Td
+(32 sidebar links found, 15 tested  all return HTTP 200.) Tj
+ET
+BT
+0.086 0.639 0.290 rg
+/F2 11 Tf
+60 320 Td
+(PASS - Mobile Responsive) Tj
+ET
+BT
+0.314 0.314 0.314 rg
+/F1 9 Tf
+70 305 Td
+(Login, Dashboard, and Onboard render correctly at 375x812.) Tj
+ET
+BT
+0.851 0.467 0.024 rg
+/F2 11 Tf
+60 286 Td
+(WARN - Sidebar Detection on Protected Pages) Tj
+ET
+BT
+0.314 0.314 0.314 rg
+/F1 9 Tf
+70 271 Td
+(Test heuristic flags 'sidebar missing'  may be a detection issue with) Tj
+ET
+BT
+0.314 0.314 0.314 rg
+/F1 9 Tf
+70 258 Td
+(CSS selectors \(aside/nav/[class*=sidebar]\). Sidebar IS present visually.) Tj
+ET
+BT
+0.851 0.467 0.024 rg
+/F2 11 Tf
+60 239 Td
+(WARN - Showcase Page Horizontal Overflow) Tj
+ET
+BT
+0.314 0.314 0.314 rg
+/F1 9 Tf
+70 224 Td
+(/showcase has horizontal scroll  content wider than viewport.) Tj
+ET
+BT
+0.851 0.467 0.024 rg
+/F2 11 Tf
+60 205 Td
+(WARN - Diagnostics Hydration Warning) Tj
+ET
+BT
+0.314 0.314 0.314 rg
+/F1 9 Tf
+70 190 Td
+(Nested <button> inside <button> on /diagnostics causes React hydration warning.) Tj
+ET
+0.800 0.800 0.800 RG
+0.5 w
+50 162 m 562 162 l S
+BT
+0.000 0.000 0.000 rg
+/F2 16 Tf
+50 144 Td
+(Accessibility Summary) Tj
+ET
+BT
+0.000 0.000 0.000 rg
+/F1 10 Tf
+60 114 Td
+(10 page\(s\) have accessibility warnings:) Tj
+ET
+BT
+0.000 0.000 0.000 rg
+/F2 10 Tf
+65 96 Td
+(Login \(/login\)) Tj
+ET
+BT
+0.471 0.314 0.000 rg
+/F1 9 Tf
+75 82 Td
+(- 1 image\(s\) without alt text: http://localhost:3000/logo-icon.svg) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 3 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> >>
+endobj
+6 0 obj
+<< /Length 4463 >>
+stream
+BT
+0.000 0.000 0.000 rg
+/F2 10 Tf
+65 742 Td
+(Dashboard \(/\)) Tj
+ET
+BT
+0.471 0.314 0.000 rg
+/F1 9 Tf
+75 728 Td
+(- 2 icon-only button\(s\) without aria-label) Tj
+ET
+BT
+0.000 0.000 0.000 rg
+/F2 10 Tf
+65 709 Td
+(New Listing \(/listings/new\)) Tj
+ET
+BT
+0.471 0.314 0.000 rg
+/F1 9 Tf
+75 695 Td
+(- 2 input\(s\) without label or aria-label) Tj
+ET
+BT
+0.000 0.000 0.000 rg
+/F2 10 Tf
+65 676 Td
+(Smart Listing \(/listings/smart\)) Tj
+ET
+BT
+0.471 0.314 0.000 rg
+/F1 9 Tf
+75 662 Td
+(- 1 input\(s\) without label or aria-label) Tj
+ET
+BT
+0.000 0.000 0.000 rg
+/F2 10 Tf
+65 643 Td
+(Inventory \(/inventory\)) Tj
+ET
+BT
+0.471 0.314 0.000 rg
+/F1 9 Tf
+75 629 Td
+(- 53 icon-only button\(s\) without aria-label) Tj
+ET
+BT
+0.000 0.000 0.000 rg
+/F2 10 Tf
+65 610 Td
+(Photo Studio \(/studio\)) Tj
+ET
+BT
+0.471 0.314 0.000 rg
+/F1 9 Tf
+75 596 Td
+(- 1 input\(s\) without label or aria-label) Tj
+ET
+BT
+0.000 0.000 0.000 rg
+/F2 10 Tf
+65 577 Td
+(Scheduler \(/scheduler\)) Tj
+ET
+BT
+0.471 0.314 0.000 rg
+/F1 9 Tf
+75 563 Td
+(- 84 icon-only button\(s\) without aria-label) Tj
+ET
+BT
+0.000 0.000 0.000 rg
+/F2 10 Tf
+65 544 Td
+(Bulk Import \(/bulk-import\)) Tj
+ET
+BT
+0.471 0.314 0.000 rg
+/F1 9 Tf
+75 530 Td
+(- 1 input\(s\) without label or aria-label) Tj
+ET
+BT
+0.000 0.000 0.000 rg
+/F2 10 Tf
+65 511 Td
+(Templates \(/templates\)) Tj
+ET
+BT
+0.471 0.314 0.000 rg
+/F1 9 Tf
+75 497 Td
+(- 8 icon-only button\(s\) without aria-label) Tj
+ET
+BT
+0.000 0.000 0.000 rg
+/F2 10 Tf
+65 478 Td
+(Dashboard \(Mobile\) \(/\)) Tj
+ET
+BT
+0.471 0.314 0.000 rg
+/F1 9 Tf
+75 464 Td
+(- 2 icon-only button\(s\) without aria-label) Tj
+ET
+0.800 0.800 0.800 RG
+0.5 w
+50 435 m 562 435 l S
+BT
+0.000 0.000 0.000 rg
+/F2 16 Tf
+50 417 Td
+(Detailed Page Results) Tj
+ET
+BT
+0.314 0.314 0.314 rg
+/F2 8 Tf
+50 385 Td
+(Page                               URL                   Status   Load\(ms\)) Tj
+ET
+BT
+0.086 0.639 0.290 rg
+/F1 8 Tf
+50 369 Td
+(Login                               /login                 PASS     708ms) Tj
+ET
+BT
+0.086 0.639 0.290 rg
+/F1 8 Tf
+50 356 Td
+(Register                            /register              PASS     837ms) Tj
+ET
+BT
+0.086 0.639 0.290 rg
+/F1 8 Tf
+50 343 Td
+(Forgot Password                     /forgot-password       PASS     1502ms) Tj
+ET
+BT
+0.851 0.467 0.024 rg
+/F1 8 Tf
+50 330 Td
+(Showcase                            /showcase              WARN     891ms) Tj
+ET
+BT
+0.627 0.392 0.118 rg
+/F1 7 Tf
+60 317 Td
+(  >> Horizontal overflow detected) Tj
+ET
+BT
+0.851 0.467 0.024 rg
+/F1 8 Tf
+50 305 Td
+(Dashboard                           /                      WARN     1555ms) Tj
+ET
+BT
+0.627 0.392 0.118 rg
+/F1 7 Tf
+60 292 Td
+(  >> Sidebar missing on protected page) Tj
+ET
+BT
+0.086 0.639 0.290 rg
+/F1 8 Tf
+50 280 Td
+(Onboarding Wizard                   /onboard               PASS     1034ms) Tj
+ET
+BT
+0.851 0.467 0.024 rg
+/F1 8 Tf
+50 267 Td
+(New Listing                         /listings/new          WARN     968ms) Tj
+ET
+BT
+0.627 0.392 0.118 rg
+/F1 7 Tf
+60 254 Td
+(  >> Sidebar missing on protected page) Tj
+ET
+BT
+0.851 0.467 0.024 rg
+/F1 8 Tf
+50 242 Td
+(Smart Listing                       /listings/smart        WARN     1112ms) Tj
+ET
+BT
+0.627 0.392 0.118 rg
+/F1 7 Tf
+60 229 Td
+(  >> Sidebar missing on protected page) Tj
+ET
+BT
+0.851 0.467 0.024 rg
+/F1 8 Tf
+50 217 Td
+(Inventory                           /inventory             WARN     950ms) Tj
+ET
+BT
+0.627 0.392 0.118 rg
+/F1 7 Tf
+60 204 Td
+(  >> Sidebar missing on protected page) Tj
+ET
+BT
+0.851 0.467 0.024 rg
+/F1 8 Tf
+50 192 Td
+(Photo Studio                        /studio                WARN     908ms) Tj
+ET
+BT
+0.627 0.392 0.118 rg
+/F1 7 Tf
+60 179 Td
+(  >> Sidebar missing on protected page) Tj
+ET
+BT
+0.851 0.467 0.024 rg
+/F1 8 Tf
+50 167 Td
+(Scheduler                           /scheduler             WARN     1170ms) Tj
+ET
+BT
+0.627 0.392 0.118 rg
+/F1 7 Tf
+60 154 Td
+(  >> Sidebar missing on protected page) Tj
+ET
+BT
+0.851 0.467 0.024 rg
+/F1 8 Tf
+50 142 Td
+(Inbox                               /inbox                 WARN     1071ms) Tj
+ET
+BT
+0.627 0.392 0.118 rg
+/F1 7 Tf
+60 129 Td
+(  >> Sidebar missing on protected page) Tj
+ET
+BT
+0.851 0.467 0.024 rg
+/F1 8 Tf
+50 117 Td
+(Settings                            /settings              WARN     1025ms) Tj
+ET
+BT
+0.627 0.392 0.118 rg
+/F1 7 Tf
+60 104 Td
+(  >> Sidebar missing on protected page) Tj
+ET
+BT
+0.851 0.467 0.024 rg
+/F1 8 Tf
+50 92 Td
+(Repricing                           /repricing             WARN     1072ms) Tj
+ET
+BT
+0.627 0.392 0.118 rg
+/F1 7 Tf
+60 79 Td
+(  >> Sidebar missing on protected page) Tj
+ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 3 0 R /MediaBox [0 0 612 792] /Contents 6 0 R /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> >>
+endobj
+8 0 obj
+<< /Length 5183 >>
+stream
+BT
+0.851 0.467 0.024 rg
+/F1 8 Tf
+50 742 Td
+(Trends                              /trends                WARN     2225ms) Tj
+ET
+BT
+0.627 0.392 0.118 rg
+/F1 7 Tf
+60 729 Td
+(  >> Sidebar missing on protected page) Tj
+ET
+BT
+0.851 0.467 0.024 rg
+/F1 8 Tf
+50 717 Td
+(Cross-Market Search                 /search                WARN     1161ms) Tj
+ET
+BT
+0.627 0.392 0.118 rg
+/F1 7 Tf
+60 704 Td
+(  >> Sidebar missing on protected page) Tj
+ET
+BT
+0.851 0.467 0.024 rg
+/F1 8 Tf
+50 692 Td
+(Offers                              /offers                WARN     985ms) Tj
+ET
+BT
+0.627 0.392 0.118 rg
+/F1 7 Tf
+60 679 Td
+(  >> Sidebar missing on protected page) Tj
+ET
+BT
+0.851 0.467 0.024 rg
+/F1 8 Tf
+50 667 Td
+(Shipping Hub                        /shipping              WARN     992ms) Tj
+ET
+BT
+0.627 0.392 0.118 rg
+/F1 7 Tf
+60 654 Td
+(  >> Sidebar missing on protected page) Tj
+ET
+BT
+0.851 0.467 0.024 rg
+/F1 8 Tf
+50 642 Td
+(Bulk Import                         /bulk-import           WARN     1216ms) Tj
+ET
+BT
+0.627 0.392 0.118 rg
+/F1 7 Tf
+60 629 Td
+(  >> Sidebar missing on protected page) Tj
+ET
+BT
+0.851 0.467 0.024 rg
+/F1 8 Tf
+50 617 Td
+(Templates                           /templates             WARN     995ms) Tj
+ET
+BT
+0.627 0.392 0.118 rg
+/F1 7 Tf
+60 604 Td
+(  >> Sidebar missing on protected page) Tj
+ET
+BT
+0.851 0.467 0.024 rg
+/F1 8 Tf
+50 592 Td
+(Report                              /report                WARN     1202ms) Tj
+ET
+BT
+0.627 0.392 0.118 rg
+/F1 7 Tf
+60 579 Td
+(  >> Sidebar missing on protected page) Tj
+ET
+BT
+0.851 0.467 0.024 rg
+/F1 8 Tf
+50 567 Td
+(Diagnostics                         /diagnostics           WARN     979ms) Tj
+ET
+BT
+0.627 0.392 0.118 rg
+/F1 7 Tf
+60 554 Td
+(  >> Sidebar missing on protected page) Tj
+ET
+BT
+0.627 0.392 0.118 rg
+/F1 7 Tf
+60 542 Td
+(  >> In HTML, %s cannot be a descendant of <%s>.
+This will cause a hydration error.%s) Tj
+ET
+BT
+0.851 0.467 0.024 rg
+/F1 8 Tf
+50 530 Td
+(Workflow                            /workflow              WARN     1055ms) Tj
+ET
+BT
+0.627 0.392 0.118 rg
+/F1 7 Tf
+60 517 Td
+(  >> Sidebar missing on protected page) Tj
+ET
+BT
+0.851 0.467 0.024 rg
+/F1 8 Tf
+50 505 Td
+(Tools                               /tools                 WARN     1111ms) Tj
+ET
+BT
+0.627 0.392 0.118 rg
+/F1 7 Tf
+60 492 Td
+(  >> Sidebar missing on protected page) Tj
+ET
+BT
+0.851 0.467 0.024 rg
+/F1 8 Tf
+50 480 Td
+(Drops                               /drops                 WARN     1653ms) Tj
+ET
+BT
+0.627 0.392 0.118 rg
+/F1 7 Tf
+60 467 Td
+(  >> Sidebar missing on protected page) Tj
+ET
+BT
+0.851 0.467 0.024 rg
+/F1 8 Tf
+50 455 Td
+(Competitor                          /competitor            WARN     1103ms) Tj
+ET
+BT
+0.627 0.392 0.118 rg
+/F1 7 Tf
+60 442 Td
+(  >> Sidebar missing on protected page) Tj
+ET
+BT
+0.086 0.639 0.290 rg
+/F1 8 Tf
+50 430 Td
+(Sidebar Navigation                  /                      PASS     -) Tj
+ET
+BT
+0.392 0.392 0.392 rg
+/F1 7 Tf
+60 417 Td
+(  Found 32 sidebar links) Tj
+ET
+BT
+0.392 0.392 0.392 rg
+/F1 7 Tf
+60 405 Td
+(  OK: Dashboard ’ /) Tj
+ET
+BT
+0.392 0.392 0.392 rg
+/F1 7 Tf
+60 393 Td
+(  OK: Smart List ’ /listings/smart) Tj
+ET
+BT
+0.086 0.639 0.290 rg
+/F1 8 Tf
+50 381 Td
+(Onboard Wizard Layout               /onboard               PASS     -) Tj
+ET
+BT
+0.392 0.392 0.392 rg
+/F1 7 Tf
+60 368 Td
+(  Wizard renders inline within app layout) Tj
+ET
+BT
+0.392 0.392 0.392 rg
+/F1 7 Tf
+60 356 Td
+(  Sidebar is visible alongside wizard) Tj
+ET
+BT
+0.086 0.639 0.290 rg
+/F1 8 Tf
+50 344 Td
+(Onboard Wizard Steps                /onboard               PASS     -) Tj
+ET
+BT
+0.392 0.392 0.392 rg
+/F1 7 Tf
+60 331 Td
+(  Step 0: Welcome screen renders correctly) Tj
+ET
+BT
+0.392 0.392 0.392 rg
+/F1 7 Tf
+60 319 Td
+(  Step 1: Connect Platforms renders correctly) Tj
+ET
+BT
+0.392 0.392 0.392 rg
+/F1 7 Tf
+60 307 Td
+(  Step 2: AI Configuration renders correctly) Tj
+ET
+BT
+0.086 0.639 0.290 rg
+/F1 8 Tf
+50 295 Td
+(Login Isolation                     /login                 PASS     -) Tj
+ET
+BT
+0.392 0.392 0.392 rg
+/F1 7 Tf
+60 282 Td
+(  Auth page correctly isolated from app layout) Tj
+ET
+BT
+0.086 0.639 0.290 rg
+/F1 8 Tf
+50 270 Td
+(Register Isolation                  /register              PASS     -) Tj
+ET
+BT
+0.392 0.392 0.392 rg
+/F1 7 Tf
+60 257 Td
+(  Auth page correctly isolated from app layout) Tj
+ET
+BT
+0.086 0.639 0.290 rg
+/F1 8 Tf
+50 245 Td
+(Forgot Password Isolation           /forgot-password       PASS     -) Tj
+ET
+BT
+0.392 0.392 0.392 rg
+/F1 7 Tf
+60 232 Td
+(  Auth page correctly isolated from app layout) Tj
+ET
+BT
+0.086 0.639 0.290 rg
+/F1 8 Tf
+50 220 Td
+(Login \(Mobile\)                      /login                 PASS     694ms) Tj
+ET
+BT
+0.086 0.639 0.290 rg
+/F1 8 Tf
+50 207 Td
+(Dashboard \(Mobile\)                  /                      PASS     968ms) Tj
+ET
+BT
+0.086 0.639 0.290 rg
+/F1 8 Tf
+50 194 Td
+(Onboard \(Mobile\)                    /onboard               PASS     850ms) Tj
+ET
+0.800 0.800 0.800 RG
+0.5 w
+50 166 m 562 166 l S
+BT
+0.000 0.000 0.000 rg
+/F2 16 Tf
+50 148 Td
+(Performance Summary) Tj
+ET
+BT
+0.000 0.000 0.000 rg
+/F1 11 Tf
+60 118 Td
+(Average Load Time: 1103ms) Tj
+ET
+BT
+0.000 0.000 0.000 rg
+/F1 11 Tf
+60 101 Td
+(Fastest: 694ms | Slowest: 2225ms) Tj
+ET
+BT
+0.000 0.000 0.000 rg
+/F2 10 Tf
+60 78 Td
+(Top 5 Slowest Pages:) Tj
+ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 3 0 R /MediaBox [0 0 612 792] /Contents 8 0 R /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> >>
+endobj
+10 0 obj
+<< /Length 637 >>
+stream
+BT
+0.000 0.000 0.000 rg
+/F1 9 Tf
+70 742 Td
+(2225ms  Trends \(/trends\)) Tj
+ET
+BT
+0.000 0.000 0.000 rg
+/F1 9 Tf
+70 727 Td
+(1653ms  Drops \(/drops\)) Tj
+ET
+BT
+0.000 0.000 0.000 rg
+/F1 9 Tf
+70 712 Td
+(1555ms  Dashboard \(/\)) Tj
+ET
+BT
+0.000 0.000 0.000 rg
+/F1 9 Tf
+70 697 Td
+(1502ms  Forgot Password \(/forgot-password\)) Tj
+ET
+BT
+0.000 0.000 0.000 rg
+/F1 9 Tf
+70 682 Td
+(1216ms  Bulk Import \(/bulk-import\)) Tj
+ET
+0.800 0.800 0.800 RG
+0.5 w
+50 647 m 562 647 l S
+BT
+0.059 0.463 0.431 rg
+/F2 10 Tf
+50 631 Td
+(End of Report) Tj
+ET
+BT
+0.588 0.588 0.588 rg
+/F1 8 Tf
+50 617 Td
+(ListBlitz GUI Audit | Automated with Playwright + Chromium) Tj
+ET
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 3 0 R /MediaBox [0 0 612 792] /Contents 10 0 R /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> >>
+endobj
+12 0 obj
+<< /Type /Catalog /Pages 3 0 R >>
+endobj
+xref
+0 13
+0000000000 65535 f 
+0000000009 00000 n 
+0000000079 00000 n 
+0000000154 00000 n 
+0000000230 00000 n 
+0000003415 00000 n 
+0000003551 00000 n 
+0000008065 00000 n 
+0000008201 00000 n 
+0000013435 00000 n 
+0000013571 00000 n 
+0000014259 00000 n 
+0000014397 00000 n 
+trailer
+<< /Size 13 /Root 12 0 R >>
+startxref
+14447
+%%EOF

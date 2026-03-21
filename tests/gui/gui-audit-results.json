@@ -1,0 +1,526 @@
+{
+  "timestamp": "2026-03-19T19:57:42.623Z",
+  "totalPages": 35,
+  "passed": 13,
+  "warned": 22,
+  "failed": 0,
+  "results": [
+    {
+      "page": "Login",
+      "url": "/login",
+      "status": "PASS",
+      "loadTimeMs": 708,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [
+        "1 image(s) without alt text: http://localhost:3000/logo-icon.svg"
+      ],
+      "layoutIssues": [],
+      "notes": []
+    },
+    {
+      "page": "Register",
+      "url": "/register",
+      "status": "PASS",
+      "loadTimeMs": 837,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [],
+      "layoutIssues": [],
+      "notes": []
+    },
+    {
+      "page": "Forgot Password",
+      "url": "/forgot-password",
+      "status": "PASS",
+      "loadTimeMs": 1502,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [],
+      "layoutIssues": [],
+      "notes": []
+    },
+    {
+      "page": "Showcase",
+      "url": "/showcase",
+      "status": "WARN",
+      "loadTimeMs": 891,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [],
+      "layoutIssues": [
+        "Horizontal overflow detected"
+      ],
+      "notes": []
+    },
+    {
+      "page": "Dashboard",
+      "url": "/",
+      "status": "WARN",
+      "loadTimeMs": 1555,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [
+        "2 icon-only button(s) without aria-label"
+      ],
+      "layoutIssues": [
+        "Sidebar missing on protected page"
+      ],
+      "notes": []
+    },
+    {
+      "page": "Onboarding Wizard",
+      "url": "/onboard",
+      "status": "PASS",
+      "loadTimeMs": 1034,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [],
+      "layoutIssues": [],
+      "notes": []
+    },
+    {
+      "page": "New Listing",
+      "url": "/listings/new",
+      "status": "WARN",
+      "loadTimeMs": 968,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [
+        "2 input(s) without label or aria-label"
+      ],
+      "layoutIssues": [
+        "Sidebar missing on protected page"
+      ],
+      "notes": []
+    },
+    {
+      "page": "Smart Listing",
+      "url": "/listings/smart",
+      "status": "WARN",
+      "loadTimeMs": 1112,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [
+        "1 input(s) without label or aria-label"
+      ],
+      "layoutIssues": [
+        "Sidebar missing on protected page"
+      ],
+      "notes": []
+    },
+    {
+      "page": "Inventory",
+      "url": "/inventory",
+      "status": "WARN",
+      "loadTimeMs": 950,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [
+        "53 icon-only button(s) without aria-label"
+      ],
+      "layoutIssues": [
+        "Sidebar missing on protected page"
+      ],
+      "notes": []
+    },
+    {
+      "page": "Photo Studio",
+      "url": "/studio",
+      "status": "WARN",
+      "loadTimeMs": 908,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [
+        "1 input(s) without label or aria-label"
+      ],
+      "layoutIssues": [
+        "Sidebar missing on protected page"
+      ],
+      "notes": []
+    },
+    {
+      "page": "Scheduler",
+      "url": "/scheduler",
+      "status": "WARN",
+      "loadTimeMs": 1170,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [
+        "84 icon-only button(s) without aria-label"
+      ],
+      "layoutIssues": [
+        "Sidebar missing on protected page"
+      ],
+      "notes": []
+    },
+    {
+      "page": "Inbox",
+      "url": "/inbox",
+      "status": "WARN",
+      "loadTimeMs": 1071,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [],
+      "layoutIssues": [
+        "Sidebar missing on protected page"
+      ],
+      "notes": []
+    },
+    {
+      "page": "Settings",
+      "url": "/settings",
+      "status": "WARN",
+      "loadTimeMs": 1025,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [],
+      "layoutIssues": [
+        "Sidebar missing on protected page"
+      ],
+      "notes": []
+    },
+    {
+      "page": "Repricing",
+      "url": "/repricing",
+      "status": "WARN",
+      "loadTimeMs": 1072,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [],
+      "layoutIssues": [
+        "Sidebar missing on protected page"
+      ],
+      "notes": []
+    },
+    {
+      "page": "Trends",
+      "url": "/trends",
+      "status": "WARN",
+      "loadTimeMs": 2225,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [],
+      "layoutIssues": [
+        "Sidebar missing on protected page"
+      ],
+      "notes": []
+    },
+    {
+      "page": "Cross-Market Search",
+      "url": "/search",
+      "status": "WARN",
+      "loadTimeMs": 1161,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [],
+      "layoutIssues": [
+        "Sidebar missing on protected page"
+      ],
+      "notes": []
+    },
+    {
+      "page": "Offers",
+      "url": "/offers",
+      "status": "WARN",
+      "loadTimeMs": 985,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [],
+      "layoutIssues": [
+        "Sidebar missing on protected page"
+      ],
+      "notes": []
+    },
+    {
+      "page": "Shipping Hub",
+      "url": "/shipping",
+      "status": "WARN",
+      "loadTimeMs": 992,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [],
+      "layoutIssues": [
+        "Sidebar missing on protected page"
+      ],
+      "notes": []
+    },
+    {
+      "page": "Bulk Import",
+      "url": "/bulk-import",
+      "status": "WARN",
+      "loadTimeMs": 1216,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [
+        "1 input(s) without label or aria-label"
+      ],
+      "layoutIssues": [
+        "Sidebar missing on protected page"
+      ],
+      "notes": []
+    },
+    {
+      "page": "Templates",
+      "url": "/templates",
+      "status": "WARN",
+      "loadTimeMs": 995,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [
+        "8 icon-only button(s) without aria-label"
+      ],
+      "layoutIssues": [
+        "Sidebar missing on protected page"
+      ],
+      "notes": []
+    },
+    {
+      "page": "Report",
+      "url": "/report",
+      "status": "WARN",
+      "loadTimeMs": 1202,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [],
+      "layoutIssues": [
+        "Sidebar missing on protected page"
+      ],
+      "notes": []
+    },
+    {
+      "page": "Diagnostics",
+      "url": "/diagnostics",
+      "status": "WARN",
+      "loadTimeMs": 979,
+      "consoleErrors": [
+        "In HTML, %s cannot be a descendant of <%s>.\nThis will cause a hydration error.%s <button> button \n\n  ...\n    <RedirectErrorBoundary router={{...}}>\n      <InnerLayoutRouter url=\"/diagnostics\" tree={[...]} params={{}} cacheNode={{rsc:<Fragment>, ...}} ...>\n        <SegmentViewNode type=\"page\" pagePath=\"diagnostic...\">\n          <SegmentTrieNode>\n          <ClientPageRoot Component={function DiagnosticsPageWrapper} serverProvidedParams={{...}}>\n            <DiagnosticsPageWrapper params={Promise} searchParams={Promise}>\n              <Suspense fallback={null}>\n                <DiagnosticsPage>\n                  <div className=\"space-y-4 ...\">\n                    <div>\n                    <div>\n                    <div className=\"space-y-2\">\n                      <CategoryRow category={{id:\"auth\", ...}} result={null} isExpanded={false} isRunning={false} ...>\n                        <div className=\"rounded-xl...\">\n>                         <button\n>                           onClick={function onToggleExpand}\n>                           className=\"flex w-full items-center gap-3 px-4 py-2.5 sm:px-5 text-left transition-colors ...\"\n>                         >\n                            <ChevronRight>\n                            <div>\n                            <div>\n                            <span>\n                            <span>\n>                           <button\n>                             onClick={function onClick}\n>                             disabled={false}\n>                             className=\"inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium t...\"\n>                           >\n                      ...\n                    ...\n        ...\n      ...\n"
+      ],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [],
+      "layoutIssues": [
+        "Sidebar missing on protected page"
+      ],
+      "notes": []
+    },
+    {
+      "page": "Workflow",
+      "url": "/workflow",
+      "status": "WARN",
+      "loadTimeMs": 1055,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [],
+      "layoutIssues": [
+        "Sidebar missing on protected page"
+      ],
+      "notes": []
+    },
+    {
+      "page": "Tools",
+      "url": "/tools",
+      "status": "WARN",
+      "loadTimeMs": 1111,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [],
+      "layoutIssues": [
+        "Sidebar missing on protected page"
+      ],
+      "notes": []
+    },
+    {
+      "page": "Drops",
+      "url": "/drops",
+      "status": "WARN",
+      "loadTimeMs": 1653,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [],
+      "layoutIssues": [
+        "Sidebar missing on protected page"
+      ],
+      "notes": []
+    },
+    {
+      "page": "Competitor",
+      "url": "/competitor",
+      "status": "WARN",
+      "loadTimeMs": 1103,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [],
+      "layoutIssues": [
+        "Sidebar missing on protected page"
+      ],
+      "notes": []
+    },
+    {
+      "page": "Sidebar Navigation",
+      "url": "/",
+      "status": "PASS",
+      "loadTimeMs": 0,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [],
+      "layoutIssues": [],
+      "notes": [
+        "Found 32 sidebar links",
+        "OK: Dashboard → /",
+        "OK: Smart List → /listings/smart",
+        "OK: Photo Studio → /studio",
+        "OK: New Listing → /listings/new",
+        "OK: Bulk Import → /bulk-import",
+        "OK: Templates → /templates",
+        "OK: Products → /inventory",
+        "OK: Smart Repricer → /repricing",
+        "OK: Offer Hub → /offers",
+        "OK: Cross-Market Search → /search",
+        "OK: Inbox → /inbox",
+        "OK: Store Sync → /alignment",
+        "OK: Shipping Hub → /shipping",
+        "OK: AI Pipeline → /workflow",
+        "OK: Scheduler → /scheduler"
+      ]
+    },
+    {
+      "page": "Onboard Wizard Layout",
+      "url": "/onboard",
+      "status": "PASS",
+      "loadTimeMs": 0,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [],
+      "layoutIssues": [],
+      "notes": [
+        "Wizard renders inline within app layout",
+        "Sidebar is visible alongside wizard"
+      ]
+    },
+    {
+      "page": "Onboard Wizard Steps",
+      "url": "/onboard",
+      "status": "PASS",
+      "loadTimeMs": 0,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [],
+      "layoutIssues": [],
+      "notes": [
+        "Step 0: Welcome screen renders correctly",
+        "Step 1: Connect Platforms renders correctly",
+        "Step 2: AI Configuration renders correctly",
+        "Launch ListBlitz button is visible"
+      ]
+    },
+    {
+      "page": "Login Isolation",
+      "url": "/login",
+      "status": "PASS",
+      "loadTimeMs": 0,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [],
+      "layoutIssues": [],
+      "notes": [
+        "Auth page correctly isolated from app layout"
+      ]
+    },
+    {
+      "page": "Register Isolation",
+      "url": "/register",
+      "status": "PASS",
+      "loadTimeMs": 0,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [],
+      "layoutIssues": [],
+      "notes": [
+        "Auth page correctly isolated from app layout"
+      ]
+    },
+    {
+      "page": "Forgot Password Isolation",
+      "url": "/forgot-password",
+      "status": "PASS",
+      "loadTimeMs": 0,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [],
+      "layoutIssues": [],
+      "notes": [
+        "Auth page correctly isolated from app layout"
+      ]
+    },
+    {
+      "page": "Login (Mobile)",
+      "url": "/login",
+      "status": "PASS",
+      "loadTimeMs": 694,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [],
+      "layoutIssues": [],
+      "notes": []
+    },
+    {
+      "page": "Dashboard (Mobile)",
+      "url": "/",
+      "status": "PASS",
+      "loadTimeMs": 968,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [
+        "2 icon-only button(s) without aria-label"
+      ],
+      "layoutIssues": [],
+      "notes": []
+    },
+    {
+      "page": "Onboard (Mobile)",
+      "url": "/onboard",
+      "status": "PASS",
+      "loadTimeMs": 850,
+      "consoleErrors": [],
+      "jsErrors": [],
+      "missingImages": [],
+      "a11yIssues": [],
+      "layoutIssues": [],
+      "notes": []
+    }
+  ]
+}

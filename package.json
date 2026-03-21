@@ -9,7 +9,10 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:record": "npx playwright test --config playwright-recorder.config.ts record.spec.ts",
+    "test:replay": "npx playwright test --config playwright-recorder.config.ts replay.spec.ts",
+    "test:visual": "npx playwright test --config playwright-recorder.config.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.2.0",
