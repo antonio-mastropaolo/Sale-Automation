@@ -70,17 +70,17 @@ export default function LoginPage() {
   return (
     <div className="fixed inset-0 z-[100] flex min-h-screen">
       {/* Left branding panel — animated */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden items-center justify-center" style={{ background: "linear-gradient(135deg, #e8dff5 0%, #dce8f5 25%, #e0f0eb 50%, #f5ead8 75%, #f0dde8 100%)" }}>
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden items-center justify-center" style={{ background: "linear-gradient(160deg, #0c0e1a 0%, #111528 40%, #0a0f1e 100%)" }}>
         {/* Animated background */}
         <div className="absolute inset-0">
           {/* Floating orbs */}
-          <div className="absolute w-[500px] h-[500px] rounded-full opacity-30 blur-[120px] animate-orb-1" style={{ background: "radial-gradient(circle, #c4b5fd, transparent 70%)", top: "10%", left: "10%" }} />
-          <div className="absolute w-[400px] h-[400px] rounded-full opacity-25 blur-[100px] animate-orb-2" style={{ background: "radial-gradient(circle, #93c5fd, transparent 70%)", bottom: "10%", right: "5%" }} />
-          <div className="absolute w-[300px] h-[300px] rounded-full opacity-20 blur-[80px] animate-orb-3" style={{ background: "radial-gradient(circle, #6ee7b7, transparent 70%)", top: "50%", left: "50%", transform: "translate(-50%,-50%)" }} />
+          <div className="absolute w-[500px] h-[500px] rounded-full opacity-20 blur-[120px] animate-orb-1" style={{ background: "radial-gradient(circle, #6366f1, transparent 70%)", top: "10%", left: "10%" }} />
+          <div className="absolute w-[400px] h-[400px] rounded-full opacity-15 blur-[100px] animate-orb-2" style={{ background: "radial-gradient(circle, #3b82f6, transparent 70%)", bottom: "10%", right: "5%" }} />
+          <div className="absolute w-[300px] h-[300px] rounded-full opacity-10 blur-[80px] animate-orb-3" style={{ background: "radial-gradient(circle, #8b5cf6, transparent 70%)", top: "50%", left: "50%", transform: "translate(-50%,-50%)" }} />
 
           {/* Grid lines */}
-          <div className="absolute inset-0 opacity-[0.03]" style={{
-            backgroundImage: "linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px)",
+          <div className="absolute inset-0 opacity-[0.04]" style={{
+            backgroundImage: "linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)",
             backgroundSize: "60px 60px",
           }} />
 
@@ -88,7 +88,7 @@ export default function LoginPage() {
           {Array.from({ length: 20 }).map((_, i) => (
             <div
               key={i}
-              className="absolute w-1 h-1 rounded-full bg-black/10 animate-particle"
+              className="absolute w-1 h-1 rounded-full bg-white/10 animate-particle"
               style={{
                 left: `${10 + (i * 4.2) % 80}%`,
                 top: `${5 + (i * 7.3) % 90}%`,
@@ -107,14 +107,14 @@ export default function LoginPage() {
           </div>
 
           {/* Tagline */}
-          <h2 className="text-4xl font-bold text-white tracking-tight mb-4 animate-fade-up">
+          <h2 className="text-4xl font-bold text-[#e2e8f0] tracking-tight mb-4 animate-fade-up">
             List once.
             <br />
-            <span className="bg-gradient-to-r from-[#3b82f6] via-[#8b5cf6] to-[#f97316] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#60a5fa] via-[#a78bfa] to-[#f97316] bg-clip-text text-transparent">
               Sell everywhere.
             </span>
           </h2>
-          <p className="text-[#6b7a8d] text-base leading-relaxed mb-10 animate-fade-up-delay">
+          <p className="text-[#8899aa] text-base leading-relaxed mb-10 animate-fade-up-delay">
             AI-powered cross-listing to 8 marketplaces — in seconds.
           </p>
 
@@ -134,7 +134,7 @@ export default function LoginPage() {
                 <div className="relative mx-auto w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110">
                   <img src={p.icon} alt={p.name} className="h-10 w-10 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; (e.target as HTMLImageElement).parentElement!.innerHTML = `<span style="color:${p.color};font-weight:700;font-size:20px">${p.name[0]}</span>`; }} />
                 </div>
-                <p className="text-[10px] text-white/70 mt-1.5 font-medium">{p.name}</p>
+                <p className="text-[10px] text-white/40 mt-1.5 font-medium">{p.name}</p>
               </div>
             ))}
           </div>
@@ -147,8 +147,8 @@ export default function LoginPage() {
               { value: "20+", label: "Design Themes", sub: "Customizable" },
             ].map((stat) => (
               <div key={stat.label} className="text-center">
-                <p className="text-2xl font-bold text-white tracking-tight">{stat.value}</p>
-                <p className="text-[10px] text-white/25 uppercase tracking-wider mt-0.5">{stat.label}</p>
+                <p className="text-2xl font-bold text-[#e2e8f0] tracking-tight">{stat.value}</p>
+                <p className="text-[10px] text-white/35 uppercase tracking-wider mt-0.5">{stat.label}</p>
               </div>
             ))}
           </div>
@@ -156,7 +156,7 @@ export default function LoginPage() {
           {/* Feature list */}
           <div className="mt-8 flex flex-wrap justify-center gap-2 animate-fade-up-delay-2">
             {["AI Vision", "Smart Repricer", "Photo Studio", "Cross-Market Search", "Shipping Hub", "Pipeline"].map((f) => (
-              <span key={f} className="px-2.5 py-1 rounded-full text-[10px] font-medium border border-white/[0.06] text-white/30 bg-white/[0.02]">
+              <span key={f} className="px-2.5 py-1 rounded-full text-[10px] font-medium border border-white/[0.08] text-white/30 bg-white/[0.03]">
                 {f}
               </span>
             ))}
