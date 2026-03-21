@@ -155,13 +155,13 @@ export function RightRail() {
   /* ── Collapsed ── */
   if (collapsed) {
     return (
-      <aside className="sticky top-0 hidden h-screen w-10 shrink-0 flex-col items-center border-l border-white/[0.06] bg-[#0a0a12] py-3 gap-2.5 xl:flex">
-        <button onClick={toggleCollapsed} title="Expand" className="flex h-7 w-7 items-center justify-center rounded-md text-white/40 hover:bg-white/[0.06] hover:text-white/70 transition-colors">
+      <aside className="sticky top-0 hidden h-screen w-10 shrink-0 flex-col items-center border-l border-[var(--border)] bg-[var(--sidebar)] py-3 gap-2.5 xl:flex" style={{ backdropFilter: "saturate(180%) blur(40px)", WebkitBackdropFilter: "saturate(180%) blur(40px)" }}>
+        <button onClick={toggleCollapsed} title="Expand" className="flex h-7 w-7 items-center justify-center rounded-md text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]/70 transition-colors">
           <PanelRightOpen className="h-3.5 w-3.5" />
         </button>
-        <div className="h-px w-5 bg-white/[0.06]" />
-        <div title={`${data?.failed ?? 0} failed`} className={cn("flex h-6 w-6 items-center justify-center rounded text-[9px] font-bold tabular-nums", (data?.failed ?? 0) > 0 ? "bg-red-500/10 text-red-400" : "text-white/20")}>{data?.failed ?? 0}</div>
-        <div title={`${connectedCount}/8 platforms`} className={cn("flex h-6 w-6 items-center justify-center rounded", connectedCount > 0 ? "text-emerald-400" : "text-white/20")}>
+        <div className="h-px w-5 bg-[var(--muted)]" />
+        <div title={`${data?.failed ?? 0} failed`} className={cn("flex h-6 w-6 items-center justify-center rounded text-[9px] font-bold tabular-nums", (data?.failed ?? 0) > 0 ? "bg-red-500/10 text-red-400" : "text-[var(--muted-foreground)]")}>{data?.failed ?? 0}</div>
+        <div title={`${connectedCount}/8 platforms`} className={cn("flex h-6 w-6 items-center justify-center rounded", connectedCount > 0 ? "text-emerald-400" : "text-[var(--muted-foreground)]")}>
           {connectedCount > 0 ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
         </div>
         <div className="flex-1" />
@@ -172,14 +172,14 @@ export function RightRail() {
 
   /* ── Expanded ── */
   return (
-    <aside className="sticky top-0 hidden h-screen w-[260px] shrink-0 flex-col border-l border-white/[0.06] bg-[#0a0a12] xl:flex 2xl:w-[280px]">
+    <aside className="sticky top-0 hidden h-screen w-[260px] shrink-0 flex-col border-l border-[var(--border)] bg-[var(--sidebar)] xl:flex 2xl:w-[280px]" style={{ backdropFilter: "saturate(180%) blur(40px)", WebkitBackdropFilter: "saturate(180%) blur(40px)" }}>
 
       {/* Header */}
-      <div className="flex items-center gap-2 border-b border-white/[0.06] px-3.5 py-2.5 shrink-0">
+      <div className="flex items-center gap-2 border-b border-[var(--border)] px-3.5 py-2.5 shrink-0">
         <Activity className="h-3.5 w-3.5 text-[var(--primary)]" />
-        <span className="text-[13px] font-bold tracking-wide text-white">OPS</span>
+        <span className="text-[13px] font-bold tracking-wide text-[var(--foreground)]">OPS</span>
         <div className="flex-1" />
-        <button onClick={toggleCollapsed} className="flex h-6 w-6 items-center justify-center rounded-md text-white/30 hover:bg-white/[0.06] hover:text-white/60 transition-colors">
+        <button onClick={toggleCollapsed} className="flex h-6 w-6 items-center justify-center rounded-md text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]/60 transition-colors">
           <PanelRightClose className="h-3.5 w-3.5" />
         </button>
       </div>
@@ -189,12 +189,12 @@ export function RightRail() {
 
         {/* ═══ MONITOR ═══ */}
         <div className="px-3.5 pt-2.5 pb-1">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">Monitor</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] mb-2">Monitor</p>
           <div className="flex items-center gap-1 mb-2">
             {FILTER_CHIPS.map(({ key, label }) => (
               <button key={key} onClick={() => setMonitorFilter(key)}
                 className={cn("rounded px-2 py-[3px] text-[10px] font-semibold transition-all",
-                  monitorFilter === key ? "bg-white/[0.12] text-white shadow-sm" : "text-white/30 hover:text-white/50"
+                  monitorFilter === key ? "bg-[var(--accent)] text-[var(--foreground)] shadow-sm" : "text-[var(--muted-foreground)] hover:text-[var(--muted-foreground)]"
                 )}>{label}</button>
             ))}
           </div>
@@ -203,7 +203,7 @@ export function RightRail() {
         {/* Event list — limited height, not flex-1 */}
         <div className="max-h-[280px] overflow-y-auto min-h-0 px-1">
           {sortedEvents.length === 0 ? (
-            <p className="px-3 py-4 text-center text-[11px] text-white/20">No events</p>
+            <p className="px-3 py-4 text-center text-[11px] text-[var(--muted-foreground)]">No events</p>
           ) : (
             sortedEvents.slice(0, 20).map((event) => {
               const meta = EVENT_META[event.type] ?? { label: event.type.replace(/_/g, " "), dot: "bg-white/20", filter: "all" as const };
@@ -213,18 +213,18 @@ export function RightRail() {
               return (
                 <div key={event.id} className={cn("transition-all duration-300", dimmed && "opacity-25 scale-[0.97]")}>
                   <button onClick={() => setExpandedEventId(isExpanded ? null : event.id)}
-                    className={cn("flex w-full items-center gap-2 px-2.5 py-[5px] text-left transition-colors rounded-md hover:bg-white/[0.04]", isExpanded && "bg-white/[0.04]", matches && monitorFilter !== "all" && "bg-white/[0.03]")}>
+                    className={cn("flex w-full items-center gap-2 px-2.5 py-[5px] text-left transition-colors rounded-md hover:bg-[var(--muted)]", isExpanded && "bg-[var(--muted)]", matches && monitorFilter !== "all" && "bg-[var(--muted)]")}>
                     <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", meta.dot)} />
-                    <span className="flex-1 truncate text-[11px] text-white/70">
-                      <span className="font-medium text-white/90">{meta.label}</span>
-                      <span className="text-white/40"> · {event.title.slice(0, 20)}{event.title.length > 20 ? "…" : ""}</span>
+                    <span className="flex-1 truncate text-[11px] text-[var(--foreground)]/70">
+                      <span className="font-medium text-[var(--foreground)]">{meta.label}</span>
+                      <span className="text-[var(--muted-foreground)]"> · {event.title.slice(0, 20)}{event.title.length > 20 ? "…" : ""}</span>
                     </span>
-                    <span className="shrink-0 text-[9px] tabular-nums text-white/20">{fmtAgo(event.ts)}</span>
+                    <span className="shrink-0 text-[9px] tabular-nums text-[var(--muted-foreground)]">{fmtAgo(event.ts)}</span>
                   </button>
                   {isExpanded && (
-                    <div className="mx-2.5 mb-1 rounded border border-white/[0.06] bg-white/[0.02] p-2 space-y-1 text-[10px] animate-fade-in">
-                      <p className="text-white/90 font-medium">{event.title}</p>
-                      <p className="text-white/30 font-mono text-[9px]">{event.type} · {new Date(event.ts).toLocaleString()}</p>
+                    <div className="mx-2.5 mb-1 rounded border border-[var(--border)] bg-[var(--muted)] p-2 space-y-1 text-[10px] animate-fade-in">
+                      <p className="text-[var(--foreground)] font-medium">{event.title}</p>
+                      <p className="text-[var(--muted-foreground)] font-mono text-[9px]">{event.type} · {new Date(event.ts).toLocaleString()}</p>
                       {event.detail && (
                         event.severity === "error" ? (
                           <div className="flex items-start gap-1.5 rounded bg-red-500/5 border border-red-500/10 p-1.5">
@@ -237,9 +237,9 @@ export function RightRail() {
                               </button>
                             </div>
                           </div>
-                        ) : <p className="text-white/30 break-all">{event.detail.slice(0, 150)}</p>
+                        ) : <p className="text-[var(--muted-foreground)] break-all">{event.detail.slice(0, 150)}</p>
                       )}
-                      {event.platform && <p className="text-white/20 capitalize text-[9px]">Platform: {event.platform}</p>}
+                      {event.platform && <p className="text-[var(--muted-foreground)] capitalize text-[9px]">Platform: {event.platform}</p>}
                     </div>
                   )}
                 </div>
@@ -249,17 +249,17 @@ export function RightRail() {
         </div>
 
         <div className="px-3.5 pb-1.5 pt-1 shrink-0">
-          <Link href="/diagnostics?tab=audit" className="flex items-center justify-center gap-1 rounded bg-white/[0.04] px-2 py-1.5 text-[9px] font-medium text-white/30 transition-colors hover:bg-white/[0.08] hover:text-white/50">
+          <Link href="/diagnostics?tab=audit" className="flex items-center justify-center gap-1 rounded bg-[var(--muted)] px-2 py-1.5 text-[9px] font-medium text-[var(--muted-foreground)] transition-colors hover:bg-[var(--muted)] hover:text-[var(--muted-foreground)]">
             Full audit log <ExternalLink className="h-2.5 w-2.5" />
           </Link>
         </div>
 
-        <div className="mx-3.5 border-t border-white/[0.04] shrink-0" />
+        <div className="mx-3.5 border-t border-[var(--border)] shrink-0" />
 
         {/* ═══ SYSTEM — expanded dashboard ═══ */}
         <div className="px-3.5 py-3 shrink-0 space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">System</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]">System</p>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full",
               data?.system?.db?.status === "ok" ? "bg-emerald-500/10 text-emerald-400" : "bg-amber-500/10 text-amber-400"
             )}>
@@ -272,14 +272,14 @@ export function RightRail() {
               {/* Memory bar */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between text-[10px]">
-                  <span className="flex items-center gap-1.5 text-white/50">
+                  <span className="flex items-center gap-1.5 text-[var(--muted-foreground)]">
                     <HardDrive className="h-3 w-3" /> Memory
                   </span>
-                  <span className="font-semibold tabular-nums text-white/80">
-                    {data.system.memory.usedMB} <span className="text-white/25 font-normal">/ {data.system.memory.totalMB} MB</span>
+                  <span className="font-semibold tabular-nums text-[var(--foreground)]">
+                    {data.system.memory.usedMB} <span className="text-[var(--muted-foreground)] font-normal">/ {data.system.memory.totalMB} MB</span>
                   </span>
                 </div>
-                <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+                <div className="h-1.5 rounded-full bg-[var(--muted)] overflow-hidden">
                   <div className={cn("h-full rounded-full transition-all duration-500",
                     data.system.memory.percent > 85 ? "bg-red-400" : data.system.memory.percent > 65 ? "bg-amber-400" : "bg-emerald-400"
                   )} style={{ width: `${Math.min(data.system.memory.percent, 100)}%` }} />
@@ -288,52 +288,52 @@ export function RightRail() {
 
               {/* Metrics grid */}
               <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-lg bg-white/[0.03] border border-white/[0.04] px-2.5 py-2">
+                <div className="rounded-lg bg-[var(--muted)] border border-[var(--border)] px-2.5 py-2">
                   <div className="flex items-center gap-1.5 mb-1">
-                    <Database className="h-3 w-3 text-white/30" />
-                    <span className="text-[9px] text-white/30">Database</span>
+                    <Database className="h-3 w-3 text-[var(--muted-foreground)]" />
+                    <span className="text-[9px] text-[var(--muted-foreground)]">Database</span>
                   </div>
                   <p className={cn("text-[15px] font-bold tabular-nums", data.system.db.latencyMs > 100 ? "text-amber-400" : "text-emerald-400")}>{data.system.db.latencyMs}ms</p>
                 </div>
-                <div className="rounded-lg bg-white/[0.03] border border-white/[0.04] px-2.5 py-2">
+                <div className="rounded-lg bg-[var(--muted)] border border-[var(--border)] px-2.5 py-2">
                   <div className="flex items-center gap-1.5 mb-1">
-                    <Timer className="h-3 w-3 text-white/30" />
-                    <span className="text-[9px] text-white/30">API Response</span>
+                    <Timer className="h-3 w-3 text-[var(--muted-foreground)]" />
+                    <span className="text-[9px] text-[var(--muted-foreground)]">API Response</span>
                   </div>
-                  <p className="text-[15px] font-bold tabular-nums text-white/80">{data.system.responseMs}ms</p>
+                  <p className="text-[15px] font-bold tabular-nums text-[var(--foreground)]">{data.system.responseMs}ms</p>
                 </div>
-                <div className="rounded-lg bg-white/[0.03] border border-white/[0.04] px-2.5 py-2">
+                <div className="rounded-lg bg-[var(--muted)] border border-[var(--border)] px-2.5 py-2">
                   <div className="flex items-center gap-1.5 mb-1">
-                    <Clock className="h-3 w-3 text-white/30" />
-                    <span className="text-[9px] text-white/30">Uptime</span>
+                    <Clock className="h-3 w-3 text-[var(--muted-foreground)]" />
+                    <span className="text-[9px] text-[var(--muted-foreground)]">Uptime</span>
                   </div>
-                  <p className="text-[15px] font-bold tabular-nums text-white/80">{fmtUptime(data.system.uptime)}</p>
+                  <p className="text-[15px] font-bold tabular-nums text-[var(--foreground)]">{fmtUptime(data.system.uptime)}</p>
                 </div>
-                <div className="rounded-lg bg-white/[0.03] border border-white/[0.04] px-2.5 py-2">
+                <div className="rounded-lg bg-[var(--muted)] border border-[var(--border)] px-2.5 py-2">
                   <div className="flex items-center gap-1.5 mb-1">
-                    <Sparkles className="h-3 w-3 text-white/30" />
-                    <span className="text-[9px] text-white/30">AI Provider</span>
+                    <Sparkles className="h-3 w-3 text-[var(--muted-foreground)]" />
+                    <span className="text-[9px] text-[var(--muted-foreground)]">AI Provider</span>
                   </div>
-                  <p className={cn("text-[15px] font-bold capitalize", data?.ai?.configured ? "text-emerald-400" : "text-white/25")}>
+                  <p className={cn("text-[15px] font-bold capitalize", data?.ai?.configured ? "text-emerald-400" : "text-[var(--muted-foreground)]")}>
                     {data?.ai?.configured ? data.ai.provider : "None"}
                   </p>
                 </div>
               </div>
 
               {/* Platform connections */}
-              <div className="rounded-lg bg-white/[0.03] border border-white/[0.04] px-2.5 py-2">
+              <div className="rounded-lg bg-[var(--muted)] border border-[var(--border)] px-2.5 py-2">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[9px] font-semibold text-white/30">Platforms</span>
-                  <span className="text-[9px] tabular-nums text-white/40">{connectedCount}/8 connected</span>
+                  <span className="text-[9px] font-semibold text-[var(--muted-foreground)]">Platforms</span>
+                  <span className="text-[9px] tabular-nums text-[var(--muted-foreground)]">{connectedCount}/8 connected</span>
                 </div>
-                <div className="h-1 rounded-full bg-white/[0.06] overflow-hidden">
+                <div className="h-1 rounded-full bg-[var(--muted)] overflow-hidden">
                   <div className="h-full rounded-full bg-emerald-400 transition-all duration-500" style={{ width: `${(connectedCount / 8) * 100}%` }} />
                 </div>
               </div>
 
               {/* Listings summary */}
               {data?.listings && (
-                <div className="flex items-center justify-between text-[10px] text-white/40">
+                <div className="flex items-center justify-between text-[10px] text-[var(--muted-foreground)]">
                   <span>{data.listings.total} listings</span>
                   <span>{data.listings.active} active</span>
                   <span>{data.published} published</span>
@@ -341,23 +341,23 @@ export function RightRail() {
               )}
 
               <button onClick={() => refresh()}
-                className="flex w-full items-center justify-center gap-1.5 rounded bg-white/[0.04] px-2 py-1.5 text-[9px] font-medium text-white/30 transition-colors hover:bg-white/[0.08] hover:text-white/50">
+                className="flex w-full items-center justify-center gap-1.5 rounded bg-[var(--muted)] px-2 py-1.5 text-[9px] font-medium text-[var(--muted-foreground)] transition-colors hover:bg-[var(--muted)] hover:text-[var(--muted-foreground)]">
                 <RefreshCw className="h-2.5 w-2.5" /> Refresh
               </button>
             </>
           )}
         </div>
 
-        <div className="mx-3.5 border-t border-white/[0.04] shrink-0" />
+        <div className="mx-3.5 border-t border-[var(--border)] shrink-0" />
 
         {/* ═══ ACTIONS — compact ═══ */}
         <div className="px-3.5 py-2 shrink-0 space-y-1">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1.5">Actions</p>
-          <Link href="/workflow" className="flex w-full items-center gap-2 rounded-lg border border-white/[0.06] bg-white/[0.02] px-2.5 py-1.5 text-[11px] font-medium text-white/70 hover:bg-white/[0.05] hover:text-white transition-colors">
-            <Workflow className="h-3.5 w-3.5 text-indigo-400" /> AI Pipeline <ChevronRight className="ml-auto h-3 w-3 text-white/15" />
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] mb-1.5">Actions</p>
+          <Link href="/workflow" className="flex w-full items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--muted)] px-2.5 py-1.5 text-[11px] font-medium text-[var(--foreground)]/70 hover:bg-white/[0.05] hover:text-[var(--foreground)] transition-colors">
+            <Workflow className="h-3.5 w-3.5 text-indigo-400" /> AI Pipeline <ChevronRight className="ml-auto h-3 w-3 text-[var(--foreground)]/15" />
           </Link>
-          <Link href="/diagnostics" className="flex w-full items-center gap-2 rounded-lg border border-white/[0.06] bg-white/[0.02] px-2.5 py-1.5 text-[11px] font-medium text-white/70 hover:bg-white/[0.05] hover:text-white transition-colors">
-            <FileText className="h-3.5 w-3.5 text-violet-400" /> Diagnostics <ChevronRight className="ml-auto h-3 w-3 text-white/15" />
+          <Link href="/diagnostics" className="flex w-full items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--muted)] px-2.5 py-1.5 text-[11px] font-medium text-[var(--foreground)]/70 hover:bg-white/[0.05] hover:text-[var(--foreground)] transition-colors">
+            <FileText className="h-3.5 w-3.5 text-violet-400" /> Diagnostics <ChevronRight className="ml-auto h-3 w-3 text-[var(--foreground)]/15" />
           </Link>
           <button onClick={() => window.dispatchEvent(new CustomEvent("toggle-help-assistant"))}
             className="flex w-full items-center gap-2 rounded-lg bg-gradient-to-r from-blue-500/10 to-indigo-500/10 border border-blue-500/20 px-2.5 py-1.5 text-[11px] font-medium text-blue-400 hover:from-blue-500/20 hover:to-indigo-500/20 transition-colors">
