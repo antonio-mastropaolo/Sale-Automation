@@ -1131,7 +1131,8 @@ function PlatformsTab() {
     setSaving(null);
   };
 
-  const connectedCount = platforms.filter((p) => p.connected).length;
+  // Only count as "connected" if credentials exist AND test hasn't failed
+  const connectedCount = platforms.filter((p) => p.connected && !(testResults[p.platform]?.success === false)).length;
 
   return (
     <div className="space-y-4 pt-2">
@@ -1193,7 +1194,12 @@ function PlatformsTab() {
                         )}
                       </div>
                     </div>
-                    {p.connected ? (
+                    {p.connected && testResults[p.platform]?.success === false ? (
+                      <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                        <XCircle className="h-3 w-3" />
+                        Credentials failed{p.username ? ` (${p.username})` : ""}
+                      </p>
+                    ) : p.connected ? (
                       <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                         <CheckCircle2 className="h-3 w-3" />
                         Connected{p.username && p.username !== "extension-session" ? ` as ${p.username}` : ""}
