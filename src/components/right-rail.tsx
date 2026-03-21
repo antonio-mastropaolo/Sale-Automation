@@ -128,17 +128,17 @@ export function RightRail() {
     try { localStorage.setItem("right-rail-dark", String(next)); } catch {}
   };
 
-  // Dynamic styles for dark/glass mode
+  // Dynamic styles — both modes use light text since the backdrop is always dark
   const railStyle = railDark
     ? { background: "rgba(28,28,30,0.88)", backdropFilter: "saturate(180%) blur(40px)", WebkitBackdropFilter: "saturate(180%) blur(40px)" }
     : { backdropFilter: "saturate(180%) blur(40px)", WebkitBackdropFilter: "saturate(180%) blur(40px)" };
   const railBg = railDark ? "bg-transparent" : "bg-[var(--sidebar)]";
-  const railText = railDark ? "text-white/80" : "text-[var(--foreground)]";
-  const railMuted = railDark ? "text-white/40" : "text-[var(--muted-foreground)]";
-  const railBorder = railDark ? "border-white/[0.08]" : "border-[var(--border)]";
-  const railCardBg = railDark ? "bg-white/[0.05]" : "bg-[var(--muted)]";
-  const railHover = railDark ? "hover:bg-white/[0.08]" : "hover:bg-[var(--muted)]";
-  const railActive = railDark ? "bg-white/[0.12] text-white" : "bg-[var(--accent)] text-[var(--accent-foreground)]";
+  const railText = "text-white";
+  const railMuted = "text-white/60";
+  const railBorder = "border-white/[0.10]";
+  const railCardBg = "bg-white/[0.06]";
+  const railHover = "hover:bg-white/[0.10]";
+  const railActive = "bg-white/[0.15] text-white";
 
   useEffect(() => {
     try { const s = localStorage.getItem("right-rail-collapsed"); if (s === "true") setCollapsed(true); } catch {}
@@ -179,12 +179,12 @@ export function RightRail() {
   if (collapsed) {
     return (
       <aside className={cn("sticky top-0 hidden h-screen w-10 shrink-0 flex-col items-center border-l py-3 gap-2.5 xl:flex", railBg, railBorder)} style={railStyle}>
-        <button onClick={toggleCollapsed} title="Expand" className="flex h-7 w-7 items-center justify-center rounded-md text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]/70 transition-colors">
+        <button onClick={toggleCollapsed} title="Expand" className={cn("flex h-7 w-7 items-center justify-center rounded-md transition-colors", railMuted, railHover)}>
           <PanelRightOpen className="h-3.5 w-3.5" />
         </button>
-        <div className="h-px w-5 bg-[var(--muted)]" />
-        <div title={`${data?.failed ?? 0} failed`} className={cn("flex h-6 w-6 items-center justify-center rounded text-[9px] font-bold tabular-nums", (data?.failed ?? 0) > 0 ? "bg-red-500/10 text-red-400" : "text-[var(--muted-foreground)]")}>{data?.failed ?? 0}</div>
-        <div title={`${connectedCount}/8 platforms`} className={cn("flex h-6 w-6 items-center justify-center rounded", connectedCount > 0 ? "text-emerald-400" : "text-[var(--muted-foreground)]")}>
+        <div className="h-px w-5 bg-white/[0.10]" />
+        <div title={`${data?.failed ?? 0} failed`} className={cn("flex h-6 w-6 items-center justify-center rounded text-[9px] font-bold tabular-nums", (data?.failed ?? 0) > 0 ? "bg-red-500/10 text-red-400" : railMuted)}>{data?.failed ?? 0}</div>
+        <div title={`${connectedCount}/8 platforms`} className={cn("flex h-6 w-6 items-center justify-center rounded", connectedCount > 0 ? "text-emerald-400" : railMuted)}>
           {connectedCount > 0 ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
         </div>
         <div className="flex-1" />
@@ -199,7 +199,7 @@ export function RightRail() {
 
       {/* Header */}
       <div className={cn("flex items-center gap-2 border-b px-3.5 py-2.5 shrink-0", railBorder)}>
-        <Activity className="h-3.5 w-3.5 text-[var(--primary)]" />
+        <Activity className="h-3.5 w-3.5 text-emerald-400" />
         <span className={cn("text-[13px] font-bold tracking-wide", railText)}>OPS</span>
         <div className="flex-1" />
         <button onClick={toggleRailTheme} title={railDark ? "Glass mode" : "Dark mode"} className={cn("flex h-6 w-6 items-center justify-center rounded-md transition-colors", railMuted, railHover)}>
@@ -352,7 +352,7 @@ export function RightRail() {
                   <span className={cn("text-[9px] font-semibold", railMuted)}>Platforms</span>
                   <span className={cn("text-[9px] tabular-nums", railMuted)}>{connectedCount}/8 connected</span>
                 </div>
-                <div className={cn("h-1 rounded-full overflow-hidden", railDark ? "bg-white/[0.08]" : "bg-[var(--muted)]")}>
+                <div className="h-1 rounded-full overflow-hidden bg-white/[0.08]">
                   <div className="h-full rounded-full bg-emerald-400 transition-all duration-500" style={{ width: `${(connectedCount / 8) * 100}%` }} />
                 </div>
               </div>

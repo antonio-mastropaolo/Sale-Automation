@@ -8,17 +8,24 @@ import { logActivity } from "@/lib/activity-log";
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const status = searchParams.get("status");
+  const limit = Math.min(parseInt(searchParams.get("limit") || "100"), 500);
+  const offset = parseInt(searchParams.get("offset") || "0");
 
-  const listings = await prisma.listing.findMany({
-    where: status ? { status } : undefined,
-    include: {
-      images: { orderBy: { order: "asc" } },
-      platformListings: true,
-    },
-    orderBy: { createdAt: "desc" },
-  });
+  const [listings, total] = await Promise.all([
+    prisma.listing.findMany({
+      where: status ? { status } : undefined,
+      include: {
+        images: { orderBy: { order: "asc" } },
+        platformListings: true,
+      },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      skip: offset,
+    }),
+    prisma.listing.count({ where: status ? { status } : undefined }),
+  ]);
 
-  return NextResponse.json(listings);
+  return NextResponse.json({ listings, total, limit, offset });
 }
 
 export async function POST(request: NextRequest) {

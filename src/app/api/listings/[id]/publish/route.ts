@@ -59,21 +59,17 @@ export async function POST(
       hashtags: JSON.parse(platformListing.hashtags || "[]"),
     });
 
-    await prisma.platformListing.update({
-      where: { id: platformListing.id },
-      data: {
-        status: "published",
-        platformUrl: result.url,
-        publishedAt: new Date(),
-      },
-    });
-
-    await prisma.listing.update({
-      where: { id },
-      data: { status: "active" },
-    });
-
-    await logActivity({ type: "publish_success", title: listing.title, platform, severity: "success" });
+    await Promise.all([
+      prisma.platformListing.update({
+        where: { id: platformListing.id },
+        data: { status: "published", platformUrl: result.url, publishedAt: new Date() },
+      }),
+      prisma.listing.update({
+        where: { id },
+        data: { status: "active" },
+      }),
+      logActivity({ type: "publish_success", title: listing.title, platform, severity: "success" }),
+    ]);
 
     return NextResponse.json({ success: true, url: result.url });
   } catch (error) {

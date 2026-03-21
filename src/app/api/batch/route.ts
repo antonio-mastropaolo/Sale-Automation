@@ -55,25 +55,20 @@ export async function POST(request: NextRequest) {
       where: { id: { in: listingIds } },
     });
 
-    let duplicated = 0;
-    for (const listing of listings) {
-      await prisma.listing.create({
-        data: {
-          title: `${listing.title} (Copy)`,
-          description: listing.description,
-          category: listing.category,
-          brand: listing.brand,
-          size: listing.size,
-          condition: listing.condition,
-          price: listing.price,
-          costPrice: listing.costPrice,
-          status: "draft",
-        },
-      });
-      duplicated++;
-    }
+    const duplicateData = listings.map((listing) => ({
+      title: `${listing.title} (Copy)`,
+      description: listing.description,
+      category: listing.category,
+      brand: listing.brand,
+      size: listing.size,
+      condition: listing.condition,
+      price: listing.price,
+      costPrice: listing.costPrice,
+      status: "draft",
+    }));
 
-    return NextResponse.json({ updated: duplicated });
+    const result = await prisma.listing.createMany({ data: duplicateData });
+    return NextResponse.json({ updated: result.count });
   }
 
   return NextResponse.json(

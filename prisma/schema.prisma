@@ -26,6 +26,9 @@ model Listing {
   sales            Sale[]
   scheduledPosts   ScheduledPost[]
   conversations    Conversation[]
+
+  @@index([status])
+  @@index([createdAt])
 }
 
 model ListingImage {
@@ -35,6 +38,8 @@ model ListingImage {
   order     Int    @default(0)
 
   listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId])
 }
 
 model PlatformListing {
@@ -52,6 +57,10 @@ model PlatformListing {
 
   listing         Listing          @relation(fields: [listingId], references: [id], onDelete: Cascade)
   analyticsEvents AnalyticsEvent[]
+
+  @@index([listingId])
+  @@index([platform])
+  @@index([status])
 }
 
 model PlatformCredential {
@@ -71,6 +80,9 @@ model AnalyticsEvent {
   recordedAt        DateTime @default(now())
 
   platformListing PlatformListing @relation(fields: [platformListingId], references: [id], onDelete: Cascade)
+
+  @@index([platformListingId])
+  @@index([eventType])
 }
 
 model Setting {
@@ -118,6 +130,10 @@ model Sale {
   notes        String   @default("")
 
   listing Listing? @relation(fields: [listingId], references: [id], onDelete: SetNull)
+
+  @@index([listingId])
+  @@index([platform])
+  @@index([soldAt])
 }
 
 model ScheduledPost {
@@ -130,6 +146,10 @@ model ScheduledPost {
   createdAt   DateTime  @default(now())
 
   listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId])
+  @@index([status])
+  @@index([scheduledAt])
 }
 
 model ImportJob {
@@ -180,6 +200,9 @@ model Session {
   expiresAt DateTime
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 model Conversation {
@@ -199,6 +222,11 @@ model Conversation {
 
   listing  Listing?  @relation(fields: [listingId], references: [id], onDelete: SetNull)
   messages Message[]
+
+  @@index([listingId])
+  @@index([platform])
+  @@index([status])
+  @@index([lastMessageAt])
 }
 
 model Message {
@@ -211,6 +239,8 @@ model Message {
   createdAt      DateTime @default(now())
 
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
 }
 
 model PasswordReset {

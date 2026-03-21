@@ -14,6 +14,7 @@ export async function GET() {
         images: { take: 1, orderBy: { order: "asc" } },
       },
       orderBy: { createdAt: "desc" },
+      take: 200, // cap to prevent unbounded query on large datasets
     });
 
     const now = Date.now();

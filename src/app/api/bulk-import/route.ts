@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
   }
 
   const errors: string[] = [];
-  let imported = 0;
+  const validRows: { title: string; description: string; category: string; brand: string; size: string; condition: string; price: number; costPrice: number }[] = [];
 
   for (let i = 1; i < rows.length; i++) {
     const row = rows[i];
@@ -94,43 +94,35 @@ export async function POST(request: NextRequest) {
     const title = get("title");
     const priceStr = get("price");
 
-    // Skip rows with missing title or price
-    if (!title) {
-      errors.push(`Row ${rowNum}: missing title, skipped`);
-      continue;
-    }
-    if (!priceStr) {
-      errors.push(`Row ${rowNum}: missing price, skipped`);
-      continue;
-    }
+    if (!title) { errors.push(`Row ${rowNum}: missing title, skipped`); continue; }
+    if (!priceStr) { errors.push(`Row ${rowNum}: missing price, skipped`); continue; }
 
     const price = parseFloat(priceStr);
-    if (isNaN(price) || price <= 0) {
-      errors.push(`Row ${rowNum}: invalid price "${priceStr}", skipped`);
-      continue;
-    }
+    if (isNaN(price) || price <= 0) { errors.push(`Row ${rowNum}: invalid price "${priceStr}", skipped`); continue; }
 
     const costPriceStr = get("costprice");
     const costPrice = costPriceStr ? parseFloat(costPriceStr) : 0;
 
+    validRows.push({
+      title,
+      description: get("description") || "",
+      category: get("category") || "Other",
+      brand: get("brand") || "",
+      size: get("size") || "",
+      condition: get("condition") || "Good",
+      price,
+      costPrice: isNaN(costPrice) ? 0 : costPrice,
+    });
+  }
+
+  // Batch insert all valid rows at once instead of one-by-one
+  let imported = 0;
+  if (validRows.length > 0) {
     try {
-      await prisma.listing.create({
-        data: {
-          title,
-          description: get("description") || "",
-          category: get("category") || "Other",
-          brand: get("brand") || "",
-          size: get("size") || "",
-          condition: get("condition") || "Good",
-          price,
-          costPrice: isNaN(costPrice) ? 0 : costPrice,
-        },
-      });
-      imported++;
+      const result = await prisma.listing.createMany({ data: validRows });
+      imported = result.count;
     } catch (err) {
-      errors.push(
-        `Row ${rowNum}: database error — ${err instanceof Error ? err.message : "unknown"}`
-      );
+      errors.push(`Batch insert failed: ${err instanceof Error ? err.message : "unknown"}`);
     }
   }
 
