@@ -88,10 +88,50 @@ export async function optimizeForAllPlatforms(
   platforms?: Platform[]
 ): Promise<OptimizedListing[]> {
   const targets = platforms || (["depop", "grailed", "poshmark", "mercari", "ebay", "vinted", "facebook", "vestiaire"] as Platform[]);
-  const results = await Promise.all(
-    targets.map((platform) => optimizeForPlatform(listing, platform))
-  );
-  return results;
+
+  // Batched AI call — split into 2 parallel batches of 4 for speed
+  try {
+    const mid = Math.ceil(targets.length / 2);
+    const batch1 = targets.slice(0, mid);
+    const batch2 = targets.slice(mid);
+
+    const buildPrompt = (plats: Platform[]) => `Optimize "${listing.title}" ($${listing.price}, ${listing.brand || "?"}, ${listing.condition || "Good"}, ${listing.size || "?"}) for ${plats.join(",")}.
+Return JSON array:[{"platform":"...","title":"...","description":"1-2 sentences","hashtags":["4 tags"],"suggestedPrice":${listing.price}}]
+JSON ONLY:`;
+
+    const [text1, text2] = await Promise.all([
+      chat(buildPrompt(batch1), 512),
+      batch2.length > 0 ? chat(buildPrompt(batch2), 512) : Promise.resolve("[]"),
+    ]);
+
+    const parsed1 = parseAIJson<OptimizedListing[]>(text1) || [];
+    const parsed2 = parseAIJson<OptimizedListing[]>(text2) || [];
+    const allParsed = [...(Array.isArray(parsed1) ? parsed1 : []), ...(Array.isArray(parsed2) ? parsed2 : [])];
+
+    if (allParsed.length > 0) {
+      return targets.map((platform) => {
+        const match = allParsed.find((p) => p.platform === platform);
+        return match || {
+          platform,
+          title: listing.title,
+          description: listing.description,
+          hashtags: [],
+          suggestedPrice: listing.price,
+        };
+      });
+    }
+  } catch {
+    // Fallback: if batched call fails, return basic results without AI
+  }
+
+  // Fallback: return unoptimized listings for each platform
+  return targets.map((platform) => ({
+    platform,
+    title: listing.title,
+    description: listing.description,
+    hashtags: [],
+    suggestedPrice: listing.price,
+  }));
 }
 
 export async function enhanceDescription(
