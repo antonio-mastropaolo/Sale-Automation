@@ -42,6 +42,19 @@ async function chat(prompt: string, maxTokens: number = 1024): Promise<string> {
   return response.choices[0]?.message?.content || "";
 }
 
+// Fast variant — uses flash model for speed-critical operations (must finish < 10s for Vercel)
+async function chatFast(prompt: string, maxTokens: number = 1024): Promise<string> {
+  const { client, model } = await getAIClient();
+  // Use flash variant if available, otherwise use configured model
+  const fastModel = model.includes("gemini") ? "gemini-2.5-flash" : model;
+  const response = await client.chat.completions.create({
+    model: fastModel,
+    ...tokenParams(fastModel, maxTokens),
+    messages: [{ role: "user", content: prompt }],
+  });
+  return response.choices[0]?.message?.content || "";
+}
+
 export async function optimizeForPlatform(
   listing: ListingInput,
   platform: Platform
@@ -89,39 +102,23 @@ export async function optimizeForAllPlatforms(
 ): Promise<OptimizedListing[]> {
   const targets = platforms || (["depop", "grailed", "poshmark", "mercari", "ebay", "vinted", "facebook", "vestiaire"] as Platform[]);
 
-  // Batched AI call — split into 2 parallel batches of 4 for speed
+  // Single AI call for all platforms — must complete within 10s (Vercel limit)
   try {
-    const mid = Math.ceil(targets.length / 2);
-    const batch1 = targets.slice(0, mid);
-    const batch2 = targets.slice(mid);
+    const prompt = `Optimize "${listing.title}" (${listing.brand||"?"}, $${listing.price}, ${listing.size||"?"}, ${listing.condition||"Good"}) for: ${targets.join(",")}.
+Return ONLY a JSON array, one object per platform:
+[{"platform":"depop","title":"optimized title","description":"short desc","hashtags":["tag1","tag2","tag3"],"suggestedPrice":${listing.price}}]`;
 
-    const buildPrompt = (plats: Platform[]) => `Optimize "${listing.title}" ($${listing.price}, ${listing.brand || "?"}, ${listing.condition || "Good"}, ${listing.size || "?"}) for ${plats.join(",")}.
-Return JSON array:[{"platform":"...","title":"...","description":"1-2 sentences","hashtags":["4 tags"],"suggestedPrice":${listing.price}}]
-JSON ONLY:`;
+    const text = await chatFast(prompt, 1024);
+    const parsed = parseAIJson<OptimizedListing[]>(text);
 
-    const [text1, text2] = await Promise.all([
-      chat(buildPrompt(batch1), 512),
-      batch2.length > 0 ? chat(buildPrompt(batch2), 512) : Promise.resolve("[]"),
-    ]);
-
-    const parsed1 = parseAIJson<OptimizedListing[]>(text1) || [];
-    const parsed2 = parseAIJson<OptimizedListing[]>(text2) || [];
-    const allParsed = [...(Array.isArray(parsed1) ? parsed1 : []), ...(Array.isArray(parsed2) ? parsed2 : [])];
-
-    if (allParsed.length > 0) {
+    if (Array.isArray(parsed) && parsed.length > 0) {
       return targets.map((platform) => {
-        const match = allParsed.find((p) => p.platform === platform);
-        return match || {
-          platform,
-          title: listing.title,
-          description: listing.description,
-          hashtags: [],
-          suggestedPrice: listing.price,
-        };
+        const match = parsed.find((p) => p.platform === platform);
+        return match || { platform, title: listing.title, description: listing.description, hashtags: [], suggestedPrice: listing.price };
       });
     }
-  } catch {
-    // Fallback: if batched call fails, return basic results without AI
+  } catch (err) {
+    console.error("AI optimize batch error:", err);
   }
 
   // Fallback: return unoptimized listings for each platform
