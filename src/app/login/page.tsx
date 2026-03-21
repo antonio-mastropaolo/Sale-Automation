@@ -70,17 +70,17 @@ export default function LoginPage() {
   return (
     <div className="fixed inset-0 z-[100] flex min-h-screen">
       {/* Left branding panel — animated */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-[#0a0e1a] items-center justify-center">
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden items-center justify-center" style={{ background: "linear-gradient(135deg, #e8dff5 0%, #dce8f5 25%, #e0f0eb 50%, #f5ead8 75%, #f0dde8 100%)" }}>
         {/* Animated background */}
         <div className="absolute inset-0">
           {/* Floating orbs */}
-          <div className="absolute w-[500px] h-[500px] rounded-full opacity-20 blur-[120px] animate-orb-1" style={{ background: "radial-gradient(circle, #3a7bd5, transparent 70%)", top: "10%", left: "10%" }} />
-          <div className="absolute w-[400px] h-[400px] rounded-full opacity-15 blur-[100px] animate-orb-2" style={{ background: "radial-gradient(circle, #f97316, transparent 70%)", bottom: "10%", right: "5%" }} />
-          <div className="absolute w-[300px] h-[300px] rounded-full opacity-10 blur-[80px] animate-orb-3" style={{ background: "radial-gradient(circle, #8b5cf6, transparent 70%)", top: "50%", left: "50%", transform: "translate(-50%,-50%)" }} />
+          <div className="absolute w-[500px] h-[500px] rounded-full opacity-30 blur-[120px] animate-orb-1" style={{ background: "radial-gradient(circle, #c4b5fd, transparent 70%)", top: "10%", left: "10%" }} />
+          <div className="absolute w-[400px] h-[400px] rounded-full opacity-25 blur-[100px] animate-orb-2" style={{ background: "radial-gradient(circle, #93c5fd, transparent 70%)", bottom: "10%", right: "5%" }} />
+          <div className="absolute w-[300px] h-[300px] rounded-full opacity-20 blur-[80px] animate-orb-3" style={{ background: "radial-gradient(circle, #6ee7b7, transparent 70%)", top: "50%", left: "50%", transform: "translate(-50%,-50%)" }} />
 
           {/* Grid lines */}
           <div className="absolute inset-0 opacity-[0.03]" style={{
-            backgroundImage: "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
+            backgroundImage: "linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px)",
             backgroundSize: "60px 60px",
           }} />
 
@@ -88,7 +88,7 @@ export default function LoginPage() {
           {Array.from({ length: 20 }).map((_, i) => (
             <div
               key={i}
-              className="absolute w-1 h-1 rounded-full bg-white/20 animate-particle"
+              className="absolute w-1 h-1 rounded-full bg-black/10 animate-particle"
               style={{
                 left: `${10 + (i * 4.2) % 80}%`,
                 top: `${5 + (i * 7.3) % 90}%`,

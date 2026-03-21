@@ -244,8 +244,8 @@ export function Sidebar({ className }: { className?: string }) {
           "flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors",
           indented && "pl-7",
           isActive
-            ? "bg-white text-black"
-            : "text-[#888] hover:bg-[#1a1a1a] hover:text-white"
+            ? "bg-[var(--accent)] text-[var(--accent-foreground)]"
+            : "text-[var(--sidebar-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
         )}
       >
         <Icon className="h-[18px] w-[18px] shrink-0" />
@@ -270,14 +270,14 @@ export function Sidebar({ className }: { className?: string }) {
           className={cn(
             "w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors",
             hasActive && !isOpen
-              ? "text-white"
-              : "text-[#888] hover:bg-[#1a1a1a] hover:text-white"
+              ? "text-[var(--foreground)]"
+              : "text-[var(--sidebar-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
           )}
         >
-          <GroupIcon className={cn("h-[18px] w-[18px] shrink-0", hasActive && "text-white")} />
+          <GroupIcon className={cn("h-[18px] w-[18px] shrink-0", hasActive && "text-[var(--foreground)]")} />
           <span className="truncate">{group.label}</span>
           {hasActive && !isOpen && (
-            <span className="ml-auto h-1.5 w-1.5 rounded-full bg-white" />
+            <span className="ml-auto h-1.5 w-1.5 rounded-full bg-[var(--foreground)]" />
           )}
           <ChevronDown className={cn(
             "ml-auto h-3.5 w-3.5 shrink-0 transition-transform duration-200",
@@ -303,7 +303,7 @@ export function Sidebar({ className }: { className?: string }) {
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-4 py-4">
         <img src="/logo-icon.svg" alt="ListBlitz" className="h-6 w-6 shrink-0" />
-        <h1 className="text-[15px] font-semibold tracking-tight text-white">ListBlitz</h1>
+        <h1 className="text-[15px] font-semibold tracking-tight text-[var(--foreground)]">ListBlitz</h1>
       </div>
 
       <div className="mx-3 border-t border-[var(--border)]" />
@@ -330,9 +330,9 @@ export function Sidebar({ className }: { className?: string }) {
           )}
           <div className="flex-1 min-w-0 text-left">
             <p className="text-[12px] font-semibold truncate text-white">{userName || "User"}</p>
-            <p className="text-[9px] text-[#666] truncate">{userEmail}</p>
+            <p className="text-[9px] text-[var(--muted-foreground)] truncate">{userEmail}</p>
           </div>
-          <ChevronUp className={cn("h-3 w-3 text-[#666] transition-transform", !userMenuOpen && "rotate-180")} />
+          <ChevronUp className={cn("h-3 w-3 text-[var(--muted-foreground)] transition-transform", !userMenuOpen && "rotate-180")} />
         </button>
 
         {userMenuOpen && (
@@ -370,7 +370,7 @@ export function Sidebar({ className }: { className?: string }) {
 
       {/* Branding */}
       <div className="shrink-0 px-3 py-2 text-center">
-        <p className="text-[10px] text-[#444]">&copy; {new Date().getFullYear()} ListBlitz</p>
+        <p className="text-[10px] text-[var(--muted-foreground)]">&copy; {new Date().getFullYear()} ListBlitz</p>
       </div>
     </>
   );
@@ -404,7 +404,7 @@ export function Sidebar({ className }: { className?: string }) {
           "fixed inset-y-0 left-0 z-40 flex w-[220px] flex-col shadow-2xl transition-transform duration-300 ease-in-out lg:hidden",
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         )}
-        style={{ background: "var(--sidebar)" }}
+        style={{ background: "var(--sidebar)", backdropFilter: "saturate(180%) blur(40px)", WebkitBackdropFilter: "saturate(180%) blur(40px)" }}
       >
         {navContent}
       </aside>
@@ -416,7 +416,7 @@ export function Sidebar({ className }: { className?: string }) {
           collapsed ? "w-14" : "w-[220px]",
           className,
         )}
-        style={{ background: "var(--sidebar)" }}
+        style={{ background: "var(--sidebar)", backdropFilter: "saturate(180%) blur(40px)", WebkitBackdropFilter: "saturate(180%) blur(40px)" }}
       >
         {collapsed ? (
           <>
@@ -436,8 +436,8 @@ export function Sidebar({ className }: { className?: string }) {
                     className={cn(
                       "flex h-9 w-9 items-center justify-center rounded-lg mx-auto transition-colors",
                       isActive
-                        ? "bg-white text-black"
-                        : "text-[#888] hover:bg-[#1a1a1a] hover:text-white"
+                        ? "bg-[var(--accent)] text-[var(--accent-foreground)]"
+                        : "text-[var(--sidebar-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
                     )}
                   >
                     <Icon className="h-[18px] w-[18px]" />
