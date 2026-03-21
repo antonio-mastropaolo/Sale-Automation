@@ -140,52 +140,41 @@ const bootDismissScript = `
   var stepEls=document.querySelectorAll('.boot-step');
   var total=stepEls.length;
   var current=0;
-  var dismissed=false;
-  var healthResult=null;
   var progress=0;
-  var minTime=Date.now()+3500;
-
-  // Smooth continuous progress bar — ticks every 50ms
-  var progressTimer=setInterval(function(){
-    if(dismissed)return;
-    // Slow down as we approach 90%, never exceed 95% until done
-    var target=current>=total?92:Math.min(90,(current/total)*85+5);
-    var speed=progress<50?0.8:progress<80?0.4:0.15;
-    progress=Math.min(target,progress+speed);
-    if(bar)bar.style.width=progress+'%';
-  },50);
-
-  function dismiss(){
-    if(dismissed)return;
-    var wait=Math.max(0,minTime-Date.now());
-    setTimeout(function(){
-      dismissed=true;
-      clearInterval(progressTimer);
-      // Animate to 100%
-      progress=100;
-      if(bar)bar.style.width='100%';
-      stepEls.forEach(function(el){el.classList.add('done');el.classList.remove('active')});
-      if(healthResult&&healthResult.status==='auto-fixed'){
-        var sub=document.querySelector('.boot-sub');
-        if(sub){sub.textContent='⚠ AI model switched: '+healthResult.previousModel+' → '+healthResult.newModel;sub.style.color='#f59e0b'}
-        setTimeout(doHide,1500);
-      } else if(healthResult&&healthResult.status==='unhealthy'){
-        var sub=document.querySelector('.boot-sub');
-        if(sub){sub.textContent='⚠ AI provider issue detected — check Settings';sub.style.color='#ef4444'}
-        setTimeout(doHide,2000);
-      } else {
-        setTimeout(doHide,400);
-      }
-    },wait);
-  }
 
   function doHide(){
     var el=document.getElementById('boot-screen');
     if(el){el.classList.add('hidden');setTimeout(function(){el.remove()},600)}
   }
 
+  // Only show boot screen after login — skip on refresh/navigation
+  var showBoot=false;
+  try{showBoot=sessionStorage.getItem('listblitz-show-boot')==='true';sessionStorage.removeItem('listblitz-show-boot')}catch(e){}
+  if(!showBoot){doHide();return}
+
+  // Fire health check in background — never blocks dismissal
+  fetch('/api/health-check').catch(function(){});
+
+  // Smooth progress bar — ticks every 50ms on a fixed timeline
+  var progressTimer=setInterval(function(){
+    var target=Math.min(95,(current/total)*90+5);
+    if(current>=total)target=100;
+    var speed=progress<50?0.8:progress<80?0.5:0.3;
+    progress=Math.min(target,progress+speed);
+    if(bar)bar.style.width=progress+'%';
+    if(progress>=100)clearInterval(progressTimer);
+  },50);
+
+  // Steps run on a fixed timeline — no network dependency
   function runStep(){
-    if(current>=total){runHealthCheck();return;}
+    if(current>=total){
+      // All steps done — animate to 100% and dismiss
+      progress=100;
+      if(bar)bar.style.width='100%';
+      stepEls.forEach(function(el){el.classList.add('done');el.classList.remove('active')});
+      setTimeout(doHide,400);
+      return;
+    }
     stepEls.forEach(function(el,i){
       el.classList.remove('active','done');
       if(i<current)el.classList.add('done');
@@ -203,31 +192,10 @@ const bootDismissScript = `
     },delay);
   }
 
-  function runHealthCheck(){
-    var sub=document.querySelector('.boot-sub');
-    if(sub)sub.textContent='Preparing your workspace...';
-    fetch('/api/health-check').then(function(r){return r.json()}).then(function(data){
-      healthResult=data;dismiss();
-    }).catch(function(){dismiss()});
-  }
-
-  // Only show boot screen after login — skip on refresh/navigation
-  var showBoot=false;
-  try{showBoot=sessionStorage.getItem('listblitz-show-boot')==='true';sessionStorage.removeItem('listblitz-show-boot')}catch(e){}
-  if(!showBoot){doHide();return}
-
   setTimeout(runStep,500);
 
-  window.addEventListener('app:ready',function(){
-    for(var i=current;i<total;i++){
-      stepEls[i].classList.add('done');stepEls[i].classList.remove('active');
-      var s=stepEls[i].querySelector('.step-status');if(s)s.textContent='OK';
-    }
-    current=total;
-    if(!healthResult)runHealthCheck();
-  });
-
-  setTimeout(function(){if(!dismissed)dismiss()},8000);
+  // Hard safety net — guaranteed dismiss after 5s no matter what
+  setTimeout(function(){doHide()},5000);
 })();
 `;
 
