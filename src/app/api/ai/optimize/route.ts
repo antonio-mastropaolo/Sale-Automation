@@ -35,11 +35,18 @@ export async function POST(request: NextRequest) {
     if (!title || !description) {
       return NextResponse.json({ error: "Title and description required" }, { status: 400 });
     }
-    const optimized = await optimizeForAllPlatforms(
-      { title, description, category: category || "", brand: brand || "", size: size || "", condition: condition || "Good", price: price || 0 },
-      targetPlatforms
-    );
-    return NextResponse.json(optimized);
+    try {
+      const optimized = await optimizeForAllPlatforms(
+        { title, description, category: category || "", brand: brand || "", size: size || "", condition: condition || "Good", price: price || 0 },
+        targetPlatforms
+      );
+      return NextResponse.json(optimized);
+    } catch (err) {
+      console.error("AI optimize error:", err);
+      // Return fallback (unoptimized) instead of 500
+      const platforms = targetPlatforms || ["depop", "grailed", "poshmark", "mercari", "ebay", "vinted", "facebook", "vestiaire"] as Platform[];
+      return NextResponse.json(platforms.map((p) => ({ platform: p, title, description, hashtags: [], suggestedPrice: price || 0 })));
+    }
   }
 
   return NextResponse.json({ error: "Invalid action" }, { status: 400 });
