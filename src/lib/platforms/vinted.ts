@@ -44,7 +44,7 @@ export class VintedAutomation extends PlatformAutomation {
 
     // Standard username/password mode
     try {
-      const res = await fetch("https://www.vinted.com/member/login", {
+      const res = await fetch("https://www.vinted.com", {
         method: "GET",
         headers: {
           "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",

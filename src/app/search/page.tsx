@@ -391,7 +391,7 @@ export default function CrossMarketSearchPage() {
                       <p className="text-[11px] text-muted-foreground/40 font-medium">Image unavailable</p>
                     </div>
                     {/* Platform badge — with real icon */}
-                    <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black">
+                    <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-sm">
                       <img src={`/platforms/${result.platform.toLowerCase().replace(" ", "")}.svg`} alt="" className="h-4 w-4 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
                       <span className="text-[11px] font-semibold text-white">{result.platform}</span>
                     </div>

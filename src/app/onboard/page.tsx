@@ -45,11 +45,11 @@ const PLATFORMS = [
 
 const PLATFORM_SET_PASSWORD: Record<string, string> = {
   depop: "https://www.depop.com/settings/account/",
-  grailed: "https://www.grailed.com/account/settings",
-  poshmark: "https://poshmark.com/account/info",
-  mercari: "https://www.mercari.com/mypage/settings/",
-  ebay: "https://accountsettings.ebay.com/uas/change-password",
-  vinted: "https://www.vinted.com/member/settings",
+  grailed: "https://www.grailed.com/profile/settings",
+  poshmark: "https://poshmark.com/closet/settings",
+  mercari: "https://www.mercari.com/account/settings/",
+  ebay: "https://www.ebay.com/myb/AccountSettings",
+  vinted: "https://www.vinted.com/settings",
   facebook: "https://www.facebook.com/settings/?tab=security",
   vestiaire: "https://www.vestiairecollective.com/settings/",
 };

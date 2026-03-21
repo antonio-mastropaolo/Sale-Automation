@@ -58,10 +58,11 @@ const bootScreenStyle = `
   position:fixed;inset:0;z-index:99999;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   background:#0a0a0f;
-  transition:opacity .6s cubic-bezier(0.16,1,0.3,1),visibility .6s;
   font-family:system-ui,-apple-system,sans-serif;
+  animation:bootAutoDismiss .6s ease-out 4s forwards;
 }
 #boot-screen.hidden{opacity:0;visibility:hidden;pointer-events:none}
+@keyframes bootAutoDismiss{to{opacity:0;visibility:hidden;pointer-events:none}}
 #boot-screen .boot-logo{
   margin-bottom:20px;opacity:0;
   animation:bootFadeUp .6s cubic-bezier(0.16,1,0.3,1) .1s forwards;
@@ -194,8 +195,8 @@ const bootDismissScript = `
 
   setTimeout(runStep,500);
 
-  // Hard safety net — guaranteed dismiss after 5s no matter what
-  setTimeout(function(){doHide()},5000);
+  // Hard safety net — guaranteed dismiss after 3.5s no matter what
+  setTimeout(function(){doHide()},3500);
 })();
 `;
 
