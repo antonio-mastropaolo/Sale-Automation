@@ -241,14 +241,14 @@ export function Sidebar({ className }: { className?: string }) {
         href={item.href}
         onClick={() => setMobileOpen(false)}
         className={cn(
-          "flex items-center gap-2 rounded-md px-2.5 py-[6px] text-[14px] font-medium transition-all duration-200",
-          indented && "pl-6",
+          "flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors",
+          indented && "pl-7",
           isActive
-            ? "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-md shadow-[var(--primary)]/20"
-            : "text-[var(--foreground)]/70 hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
+            ? "bg-[var(--foreground)] text-[var(--background)]"
+            : "text-[var(--muted-foreground)] hover:bg-[var(--accent)] hover:text-[var(--foreground)]"
         )}
       >
-        <Icon className="h-4 w-4 shrink-0" />
+        <Icon className="h-[18px] w-[18px] shrink-0" />
         <span className="truncate">{item.label}</span>
       </Link>
     );
@@ -268,19 +268,19 @@ export function Sidebar({ className }: { className?: string }) {
         <button
           onClick={() => toggleGroup(group.id)}
           className={cn(
-            "w-full flex items-center gap-2 rounded-md px-2.5 py-[6px] text-[14px] font-medium transition-all duration-200",
+            "w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors",
             hasActive && !isOpen
               ? "text-[var(--foreground)]"
-              : "text-[var(--foreground)]/70 hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
+              : "text-[var(--muted-foreground)] hover:bg-[var(--accent)] hover:text-[var(--foreground)]"
           )}
         >
-          <GroupIcon className={cn("h-4 w-4 shrink-0", hasActive && "text-[var(--primary)]")} />
+          <GroupIcon className={cn("h-[18px] w-[18px] shrink-0", hasActive && "text-[var(--foreground)]")} />
           <span className="truncate">{group.label}</span>
           {hasActive && !isOpen && (
-            <span className="ml-auto h-1.5 w-1.5 rounded-full bg-[var(--primary)]" />
+            <span className="ml-auto h-1.5 w-1.5 rounded-full bg-[var(--foreground)]" />
           )}
           <ChevronDown className={cn(
-            "ml-auto h-3 w-3 shrink-0 transition-transform duration-200",
+            "ml-auto h-3.5 w-3.5 shrink-0 transition-transform duration-200",
             isOpen && "rotate-180"
           )} />
         </button>
@@ -300,28 +300,23 @@ export function Sidebar({ className }: { className?: string }) {
 
   const navContent = (
     <>
-      {/* Logo — compact */}
-      <div className="flex items-center gap-2.5 px-4 py-3">
-        <img src="/logo-icon.svg" alt="ListBlitz" className="h-7 w-7 shrink-0" />
-        <div className="min-w-0">
-          <h1 className="text-[13px] font-bold tracking-tight">ListBlitz</h1>
-          <p className="truncate text-[8px] font-semibold uppercase tracking-wider bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-500 bg-clip-text text-transparent">
-            AI Cross-Listing
-          </p>
-        </div>
+      {/* Logo */}
+      <div className="flex items-center gap-2.5 px-4 py-4">
+        <img src="/logo-icon.svg" alt="ListBlitz" className="h-6 w-6 shrink-0" />
+        <h1 className="text-[15px] font-semibold tracking-tight text-[var(--foreground)]">ListBlitz</h1>
       </div>
 
-      <div className="mx-3 border-t border-[var(--sidebar-border)]" />
+      <div className="mx-3 border-t border-[var(--border)]" />
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 py-2">
+      <nav className="flex-1 space-y-1 overflow-y-auto px-2 py-3">
         {navStructure.map((entry) =>
           isGroup(entry) ? renderNavGroup(entry) : renderNavLink(entry as NavItem)
         )}
       </nav>
 
       {/* User profile */}
-      <div ref={menuRef} className="shrink-0 border-t border-[var(--sidebar-border)] relative">
+      <div ref={menuRef} className="shrink-0 border-t border-[var(--border)] relative">
         <button
           onClick={() => setUserMenuOpen((o) => !o)}
           className="w-full flex items-center gap-2.5 px-3 py-2.5 transition-colors hover:bg-[var(--muted)]/50"
@@ -375,7 +370,7 @@ export function Sidebar({ className }: { className?: string }) {
 
       {/* Branding */}
       <div className="shrink-0 px-3 py-2 text-center">
-        <p className="text-[9px] text-[var(--muted-foreground)]/30">&copy; {new Date().getFullYear()} <span className="font-semibold bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-500 bg-clip-text text-transparent">ListBlitz</span> v1.0.0</p>
+        <p className="text-[10px] text-[var(--muted-foreground)]">&copy; {new Date().getFullYear()} ListBlitz</p>
       </div>
     </>
   );
@@ -409,7 +404,7 @@ export function Sidebar({ className }: { className?: string }) {
           "fixed inset-y-0 left-0 z-40 flex w-[220px] flex-col shadow-2xl transition-transform duration-300 ease-in-out lg:hidden",
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         )}
-        style={{ background: "var(--sidebar-bg)", backdropFilter: "var(--sidebar-blur)", WebkitBackdropFilter: "var(--sidebar-blur)" }}
+        style={{ background: "var(--sidebar)" }}
       >
         {navContent}
       </aside>
@@ -417,18 +412,18 @@ export function Sidebar({ className }: { className?: string }) {
       {/* Desktop sidebar — 220px expanded, icon-only collapsed */}
       <aside
         className={cn(
-          "sticky top-0 hidden h-screen shrink-0 flex-col border-r border-[var(--sidebar-border)] transition-all duration-300 ease-in-out lg:flex",
+          "sticky top-0 hidden h-screen shrink-0 flex-col border-r border-[var(--border)] transition-all duration-300 ease-in-out lg:flex",
           collapsed ? "w-14" : "w-[220px]",
           className,
         )}
-        style={{ background: "var(--sidebar-bg)", backdropFilter: "var(--sidebar-blur)", WebkitBackdropFilter: "var(--sidebar-blur)" }}
+        style={{ background: "var(--sidebar)" }}
       >
         {collapsed ? (
           <>
             <div className="flex justify-center px-1 py-3">
               <img src="/logo-icon.svg" alt="ListBlitz" className="h-7 w-7" />
             </div>
-            <div className="mx-2 border-t border-[var(--sidebar-border)]" />
+            <div className="mx-2 border-t border-[var(--border)]" />
             <nav className="flex-1 space-y-0.5 overflow-y-auto px-1.5 py-2">
               {allNavItems.filter((item) => !ADMIN_ONLY_PATHS.includes(item.href) || isAdmin).map((item) => {
                 const isActive = isItemActive(item.href);
@@ -439,19 +434,19 @@ export function Sidebar({ className }: { className?: string }) {
                     href={item.href}
                     title={item.label}
                     className={cn(
-                      "flex h-8 w-8 items-center justify-center rounded-md mx-auto transition-all duration-200",
+                      "flex h-9 w-9 items-center justify-center rounded-lg mx-auto transition-colors",
                       isActive
-                        ? "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-md shadow-[var(--primary)]/20"
-                        : "text-[var(--foreground)]/70 hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
+                        ? "bg-[var(--foreground)] text-[var(--background)]"
+                        : "text-[var(--muted-foreground)] hover:bg-[var(--accent)] hover:text-[var(--foreground)]"
                     )}
                   >
-                    <Icon className="h-4 w-4" />
+                    <Icon className="h-[18px] w-[18px]" />
                   </Link>
                 );
               })}
             </nav>
             {/* Collapsed user avatar */}
-            <div className="shrink-0 border-t border-[var(--sidebar-border)] flex justify-center py-2">
+            <div className="shrink-0 border-t border-[var(--border)] flex justify-center py-2">
               {profilePic ? (
                 <img src={profilePic} alt="" className="h-7 w-7 rounded-full object-cover" />
               ) : (
