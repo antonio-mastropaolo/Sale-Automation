@@ -37,9 +37,11 @@ export async function GET(req: Request) {
 
     const today = new Date().toISOString().split("T")[0];
 
+    // Use flash model for speed on Vercel
+    const fastModel = model.includes("gemini") ? "gemini-2.5-flash" : model;
     const response = await client.chat.completions.create({
-      model,
-      ...tokenParams(model, 2000),
+      model: fastModel,
+      ...tokenParams(fastModel, 2000),
       messages: [
         {
           role: "user",

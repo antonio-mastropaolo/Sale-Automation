@@ -83,14 +83,16 @@ export async function GET(_request: NextRequest) {
     const prompt = interpolatePrompt(template, { today });
 
     const { client, model } = await getAIClient();
+    // Use flash model for trends — large response, must fit in Vercel 10s limit
+    const fastModel = model.includes("gemini") ? "gemini-2.5-flash" : model;
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30_000);
+    const timeout = setTimeout(() => controller.abort(), 9_000); // 9s hard limit for Vercel
 
     const response = await client.chat.completions.create(
       {
-        model,
-        ...tokenParams(model, 4096),
+        model: fastModel,
+        ...tokenParams(fastModel, 4096),
         messages: [{ role: "user", content: prompt }],
       },
       { signal: controller.signal }
