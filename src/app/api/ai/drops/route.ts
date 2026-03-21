@@ -1,4 +1,3 @@
-export const maxDuration = 30;
 import { NextResponse } from "next/server";
 import { getAIClient } from "@/lib/settings";
 import { tokenParams } from "@/lib/ai";
