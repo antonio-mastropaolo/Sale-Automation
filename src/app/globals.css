@@ -78,14 +78,14 @@
   --chart-4: #a855f7;
   --chart-5: #ef4444;
   --radius: 0.5rem;
-  --sidebar: #fafafa;
-  --sidebar-foreground: #0a0a0a;
-  --sidebar-primary: #0a0a0a;
-  --sidebar-primary-foreground: #fafafa;
-  --sidebar-accent: #f5f5f5;
-  --sidebar-accent-foreground: #0a0a0a;
-  --sidebar-border: #e5e5e5;
-  --sidebar-ring: #0a0a0a;
+  --sidebar: #000000;
+  --sidebar-foreground: #a1a1a1;
+  --sidebar-primary: #ffffff;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #1a1a1a;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #1f1f1f;
+  --sidebar-ring: #ffffff;
 }
 
 .dark {
@@ -175,16 +175,9 @@ body {
 :root:not(.dark) {
   color-scheme: light;
 }
-:root:not(.dark) aside,
-:root:not(.dark) aside * {
-  color: var(--sidebar-foreground, #1c1c1e) !important;
-}
-:root:not(.dark) aside .text-muted-foreground {
-  color: var(--muted-foreground, #8e8e93) !important;
-}
-:root:not(.dark) aside a:hover,
-:root:not(.dark) aside button:hover {
-  color: var(--foreground, #000000) !important;
+/* Sidebar is always dark (Vercel-style) */
+aside, aside * {
+  color-scheme: dark;
 }
 /* Main content: ensure labels, stat values, card text are visible */
 :root:not(.dark) p,
@@ -209,18 +202,7 @@ body {
   border-color: rgba(0, 0, 0, 0.08);
 }
 
-/* ── Dark mode text contrast fix ──────────────────────────────────────────── */
-.dark aside,
-.dark aside * {
-  color: var(--sidebar-foreground, #e5e5ea) !important;
-}
-.dark aside .text-muted-foreground {
-  color: var(--muted-foreground, #8e8e93) !important;
-}
-.dark aside a:hover,
-.dark aside button:hover {
-  color: #ffffff !important;
-}
+/* ── Dark mode text ── */
 .dark p,
 .dark span,
 .dark h1, .dark h2, .dark h3, .dark h4,
